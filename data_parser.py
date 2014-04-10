@@ -23,7 +23,7 @@ while True:
     # convert data into a list of ints => [user, movie, date, rating]
     data = data.split()
 
-    data = [int(i) for i in data]
+    data = [int(data[0]), np.int16(data[1]), np.int16(data[2]), np.int16(data[3])]
 
     if data[0] % 10000 == 0:
         print data[0]

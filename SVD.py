@@ -8,7 +8,7 @@ NUM_USERS = 100;#458293;
 # Number of movies
 NUM_MOVIES = 17770;
 
-NUM_ITERATIONS = 1;
+NUM_ITERATIONS = 10;
 
 LEARNING_RATE = 0.001;
 
@@ -90,8 +90,8 @@ def improved_movie_avg(data, global_avg, K = 25):
 	print("Computing the movie averages (improved)...");
 
 	movie_avg = [None for i in xrange(NUM_MOVIES)];
-	movie_cnt = [K * global_avg for i in xrange(NUM_MOVIES)];
-	movie_sum = [K for i in xrange(NUM_MOVIES)];
+	movie_cnt = [K for i in xrange(NUM_MOVIES)];
+	movie_sum = [K * global_avg for i in xrange(NUM_MOVIES)];
 
 	for u in xrange(NUM_USERS):
 		for i in xrange(len(data[u]) / 2):
@@ -168,8 +168,10 @@ for i in xrange(NUM_ITERATIONS):
 			for i in xrange(len(data[u]) / 2):
 				train(user_features, movie_features, f, user_offset, movie_avg, u, data[u][2 * i] - 1, rating_initialized, data[u][2 * i + 1], LEARNING_RATE);
 	rating_initialized = True;
+	print("Iteration ", i, " completed!");
 
-print predict_rating(user_features, movie_features, user_offset, movie_avg, 10, 10, rating_initialized);
+
+print predict_rating(user_features, movie_features, user_offset, better_movie_avg, 10, 10, rating_initialized);
 
 # Learning is done at this point.
 # use predict_rating to predict ratings

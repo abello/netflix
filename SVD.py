@@ -35,7 +35,7 @@ NUM_USERS = 100;#458293;
 NUM_MOVIES = 17770;
 
 # Number of desired iterations
-NUM_ITERATIONS = 1;
+NUM_ITERATIONS = 3;
 
 # Learning rate
 LEARNING_RATE = 0.001;
@@ -120,7 +120,7 @@ def compute_user_offset(data, global_avg):
 def improved_movie_avg(data, global_avg, K = 25):
     sys.stderr.write("Computing the movie averages (improved)...\n");
 
-    movie_avg = np.array([0 for i in xrange(NUM_MOVIES)]);
+    movie_avg = np.array([0.0 for i in xrange(NUM_MOVIES)]);
     movie_cnt = [K for i in xrange(NUM_MOVIES)];
     movie_sum = [K * global_avg for i in xrange(NUM_MOVIES)];
 
@@ -153,8 +153,10 @@ def predict_rating(user_features, movie_features, user_offset, movie_avg, user_i
         return tot_sum;
 
 # Actually do the training!
+# @do_profile(follow=[get_number])
 def train(user_features, movie_features, f, user_offset, movie_avg, user_id, movie_id, rating_initialized, actual_rating, learning_rate):
-    error = learning_rate * (actual_rating - predict_rating(user_features, movie_features, user_offset, movie_avg, user_id, movie_id, rating_initialized));
+    predicted = predict_rating(user_features, movie_features, user_offset, movie_avg, user_id, movie_id, rating_initialized);
+    error = learning_rate * (actual_rating - predicted)
     uv_old = user_features[f][user_id];
     user_features[f][user_id] += error * movie_features[f][movie_id];
     movie_features[f][movie_id] += error * uv_old;

@@ -171,17 +171,17 @@ def main():
 
     print("Finished reading from data.npz!");
 
-#     user_features = np.array([None for i in xrange(NUM_FEATURES)]);
+    user_features = [None for i in xrange(NUM_FEATURES)];
 
-    user_features = np.array([np.array([0.1 for i in xrange(NUM_USERS)]) for j in xrange(NUM_FEATURES)]);
+#     user_features = [np.array([0.1 for i in xrange(NUM_USERS)]) for j in xrange(NUM_FEATURES)];
+# 
+#     movie_features = [np.array([0.1 for i in xrange(NUM_MOVIES)]) for j in xrange(NUM_FEATURES)];
 
-    movie_features = np.array([np.array([0.1 for i in xrange(NUM_MOVIES)]) for j in xrange(NUM_FEATURES)]);
+    movie_features = np.array([None for i in xrange(NUM_FEATURES)]);
 
-#     movie_features = np.array([None for i in xrange(NUM_FEATURES)]);
-
-#     for f in xrange(NUM_FEATURES):
-#         user_features[f] = [0.1 for i in xrange(NUM_USERS)];
-#         movie_features[f] = [0.1 for i in xrange(NUM_MOVIES)];
+    for f in xrange(NUM_FEATURES):
+        user_features[f] = [0.1 for i in xrange(NUM_USERS)];
+        movie_features[f] = [0.1 for i in xrange(NUM_MOVIES)];
 
     global_avg = compute_global_avg(data);
     print global_avg;

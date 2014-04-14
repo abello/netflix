@@ -31,7 +31,10 @@ while True:
     idx = int(idx)
 
     # If it corresponds to the training set
-    if idx in [1, 2, 3]:
+#     if idx in [1, 2, 3]:
+
+    # If it's probe
+    if idx == 4:
 
         # If we already have this user, add (movie, rating) tuple to array
         if raw[data[0]] != None:

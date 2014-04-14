@@ -40,6 +40,8 @@ NUM_ITERATIONS = 3;
 # Learning rate
 LEARNING_RATE = 0.001;
 
+cache = {}
+
 
 # Compute the global average
 def compute_global_avg(data):
@@ -146,7 +148,9 @@ def predict_rating_uninitialized(user_offset, movie_avg, user_id, movie_id):
 # TODO: Memoize this
 def predict_rating(user_features, movie_features, user_offset, movie_avg, user_id, movie_id, rating_initialized):
     if not rating_initialized:
-        return predict_rating_uninitialized(user_offset, movie_avg, user_id, movie_id);
+        result = predict_rating_uninitialized(user_offset, movie_avg, user_id, movie_id)
+#         cache[(user_id, movie_id)] = result
+        return result
     else:
         tot_sum = 0;
         for f in xrange(NUM_FEATURES):
@@ -154,13 +158,25 @@ def predict_rating(user_features, movie_features, user_offset, movie_avg, user_i
         return tot_sum;
 
 # Actually do the training!
-@do_profile(follow=[get_number])
+# @do_profile(follow=[get_number])
 def train(user_features, movie_features, f, user_offset, movie_avg, user_id, movie_id, rating_initialized, actual_rating, learning_rate):
-    predicted = predict_rating(user_features, movie_features, user_offset, movie_avg, user_id, movie_id, rating_initialized);
+#     predicted = predict_rating(user_features, movie_features, user_offset, movie_avg, user_id, movie_id, rating_initialized);
+
+    if not rating_initialized:
+        result = predict_rating_uninitialized(user_offset, movie_avg, user_id, movie_id)
+        cache[(user_id, movie_id)] = result
+        predicted = result
+    else: 
+        predicted = cache[(user_id, movie_id)]
+
+    tmp = user_features[f][user_id] * movie_features[f][movie_id];
+
     error = learning_rate * (actual_rating - predicted)
     uv_old = user_features[f][user_id];
     user_features[f][user_id] += error * movie_features[f][movie_id];
     movie_features[f][movie_id] += error * uv_old;
+    cache[(user_id, movie_id)] = cache[(user_id, movie_id)] - tmp + user_features[f][user_id] * movie_features[f][movie_id];
+
     return;
 
 

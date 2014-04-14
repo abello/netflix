@@ -142,14 +142,14 @@ better_movie_avg = improved_movie_avg(data, global_avg);
 # Use predict_rating_uninitialized(user_offset, better_movie_avg, user_id, movie_id):
 # to get version 2
 
-rating_initialized = false;
+rating_initialized = False;
 
 for i in xrange(NUM_ITERATIONS):
 	for f in xrange(NUM_FEATURES):
 		for u in xrange(NUM_USERS):
 			for i in xrange(len(data[u]) / 2):
 				train(user_features, movie_features, f, user_offset, better_movie_avg, u, data[u][2 * i] - 1, rating_initialized, data[u][2 * i + 1], LEARNING_RATE);
-	rating_initialized = true;
+	rating_initialized = True;
 
 # Learning is done at this point.
 # use predict_rating to predict ratings

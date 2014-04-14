@@ -143,6 +143,7 @@ def predict_rating_uninitialized(user_offset, movie_avg, user_id, movie_id):
     return movie_avg[movie_id] + user_offset[user_id];
 
 # Predict rating given the specified inputs
+# TODO: Memoize this
 def predict_rating(user_features, movie_features, user_offset, movie_avg, user_id, movie_id, rating_initialized):
     if not rating_initialized:
         return predict_rating_uninitialized(user_offset, movie_avg, user_id, movie_id);
@@ -153,7 +154,7 @@ def predict_rating(user_features, movie_features, user_offset, movie_avg, user_i
         return tot_sum;
 
 # Actually do the training!
-# @do_profile(follow=[get_number])
+@do_profile(follow=[get_number])
 def train(user_features, movie_features, f, user_offset, movie_avg, user_id, movie_id, rating_initialized, actual_rating, learning_rate):
     predicted = predict_rating(user_features, movie_features, user_offset, movie_avg, user_id, movie_id, rating_initialized);
     error = learning_rate * (actual_rating - predicted)
@@ -200,13 +201,13 @@ def main():
 
     rating_initialized = False;
 
-    for i in xrange(NUM_ITERATIONS):
+    for j in xrange(NUM_ITERATIONS):
         for f in xrange(NUM_FEATURES):
             for u in xrange(NUM_USERS):
                 for i in xrange(len(data[u]) / 2):
                     train(user_features, movie_features, f, user_offset, movie_avg, u, data[u][2 * i] - 1, rating_initialized, data[u][2 * i + 1], LEARNING_RATE);
         rating_initialized = True;
-        print("Iteration " + str(i) + " completed!");
+        print("Iteration " + str(j) + " completed!");
 
 
     # Learning is done at this point.

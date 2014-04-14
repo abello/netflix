@@ -8,13 +8,18 @@ NUM_USERS = 100;#458293;
 # Number of movies
 NUM_MOVIES = 17770;
 
-NUM_ITERATIONS = 10;
+NUM_ITERATIONS = 1;
 
 LEARNING_RATE = 0.001;
 
 
 def compute_global_avg(data):
 	print("Computing the global average...");
+
+
+#DEBUG CODE
+	cnt = 1;
+#DEBUG CODE END
 
 	tot_cnt = 0;
 	tot_sum = 0;
@@ -24,9 +29,14 @@ def compute_global_avg(data):
 		
 		for i in xrange(len(user_data) / 2):
 			tot_sum += user_data[2 * i + 1];
+		#DEBUG CODE
+		cnt += 1;
+		if (cnt == NUM_USERS):
+			break;
+		#DEBUG CODE END
 
 	print("Finished computing the global average!");
-	return tot_sum;
+	return float(tot_sum) / float(tot_cnt);
 
 
 def compute_user_avg(data):
@@ -41,7 +51,7 @@ def compute_user_avg(data):
 		for i in xrange(len(data[u]) / 2):
 			user_sum += data[u][2 * i + 1];
 
-		user_avg[u] = user_sum / user_cnt;
+		user_avg[u] = float(user_sum) / float(user_cnt);
 
 	print("Finished computing the user averages!");
 	return user_avg;
@@ -61,7 +71,12 @@ def compute_movie_avg(data):
 			movie_sum[movie_no] += data[u][2 * i + 1];
 
 	for m in xrange(NUM_MOVIES):
-		movie_avg[m] = movie_sum[m] / movie_cnt[m];
+		#DEBUG CODE
+		if (movie_cnt[m] == 0):
+			movie_avg[m] = 2.5;
+			continue;
+		#DEBUG CODE END
+		movie_avg[m] = float(movie_sum[m]) / float(movie_cnt[m]);
 
 	print("Finished computing the movie averages!");
 	return movie_avg;
@@ -85,7 +100,7 @@ def improved_movie_avg(data, global_avg, K = 25):
 			movie_sum[movie_no] += data[u][2 * i + 1];
 
 	for m in xrange(NUM_MOVIES):
-		movie_avg[m] = movie_sum[m] / movie_cnt[m];
+		movie_avg[m] = float(movie_sum[m]) / float(movie_cnt[m]);
 
 	print("Finished computing the movie averages!");
 	return movie_avg;
@@ -93,6 +108,7 @@ def improved_movie_avg(data, global_avg, K = 25):
 
 # base value for predicted ratings
 def predict_rating_uninitialized(user_offset, movie_avg, user_id, movie_id):
+	#print movie_avg[movie_id] + user_offset[user_id];
 	return movie_avg[movie_id] + user_offset[user_id];
 
 def predict_rating(user_features, movie_features, user_offset, movie_avg, user_id, movie_id, rating_initialized):
@@ -130,11 +146,13 @@ for f in xrange(NUM_FEATURES):
 	movie_features[f] = [0.1 for i in xrange(NUM_MOVIES)];
 
 global_avg = compute_global_avg(data);
+print global_avg;
+
 
 user_offset = compute_user_offset(data, global_avg);
 
 # Uncomment for raw movie average
-# movie_avg = compute_movie_avg(data, global_avg);
+movie_avg = compute_movie_avg(data);
 # Use predict_rating_uninitialized(user_offset, movie_avg, user_id, movie_id):
 # to get Version 1
 
@@ -148,8 +166,10 @@ for i in xrange(NUM_ITERATIONS):
 	for f in xrange(NUM_FEATURES):
 		for u in xrange(NUM_USERS):
 			for i in xrange(len(data[u]) / 2):
-				train(user_features, movie_features, f, user_offset, better_movie_avg, u, data[u][2 * i] - 1, rating_initialized, data[u][2 * i + 1], LEARNING_RATE);
+				train(user_features, movie_features, f, user_offset, movie_avg, u, data[u][2 * i] - 1, rating_initialized, data[u][2 * i + 1], LEARNING_RATE);
 	rating_initialized = True;
+
+print predict_rating(user_features, movie_features, user_offset, movie_avg, 10, 10, rating_initialized);
 
 # Learning is done at this point.
 # use predict_rating to predict ratings

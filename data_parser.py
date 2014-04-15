@@ -7,8 +7,8 @@ NUM_USERS = 458293
 NUM_MOVIES = 17770
 
 # Open files using a large buffer
-alldata = open("um/all.dta", "r", buffering=(2<<26))
-index = open("um/all.idx", "r", buffering=(2<<26))
+alldata = open("mu/all.dta", "r", buffering=(2<<26))
+index = open("mu/all.idx", "r", buffering=(2<<26))
 
 # Raw data. A list of numpy arrays containing (movie, rating) pairs
 # raw = [None for i in range(NUM_USERS + 1)]
@@ -30,10 +30,15 @@ while True:
 #     data = [int(data[0]), np.int16(data[1]), np.int16(data[2]), np.int16(data[3])]
 
     # For mu
-    data = [int(data[0]), np.int32(data[1]), np.int16(data[2]), np.int16(data[3])]
+    data = [int(data[0]), np.int16(data[1]), np.int16(data[2]), np.int16(data[3])]
 
-    if data[0] % 10000 == 0:
-        print data[0]
+#     if data[0] % 10000 == 0:
+#         print data[0]
+
+    # For mu
+    if data[1] % 10000 == 0:
+        print data[1]
+
 
     idx = int(idx)
 
@@ -55,12 +60,12 @@ while True:
         # For mu
 
         # If we already have this movie, add (user, rating) tuple to array
-        if raw[data[0]] != None:
-            raw[data[0]] = np.append(raw[data[0]], (data[1], data[3]))
+        if raw[data[1]] != None:
+            raw[data[1]] = np.append(raw[data[1]], (data[0], data[3]))
 
         # Else create array
         else:
-            raw[data[0]] = np.array((data[1], data[3]), dtype=np.int32)
+            raw[data[1]] = np.array((data[0], data[3]), dtype=np.int32)
         
 
 

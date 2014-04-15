@@ -145,7 +145,6 @@ def predict_rating_uninitialized(user_offset, movie_avg, user_id, movie_id):
     return movie_avg[movie_id] + user_offset[user_id]
 
 # Predict rating given the specified inputs
-# TODO: Memoize this
 def predict_rating(user_features, movie_features, user_offset, movie_avg, user_id, movie_id, rating_initialized):
     if not rating_initialized:
         result = predict_rating_uninitialized(user_offset, movie_avg, user_id, movie_id)

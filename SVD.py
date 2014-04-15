@@ -29,7 +29,7 @@ def get_number():
 NUM_FEATURES = 40;
 
 # Number of users in all.dta
-NUM_USERS = 100;#458293;
+NUM_USERS = 458293;
 
 # Number of movies
 NUM_MOVIES = 17770;

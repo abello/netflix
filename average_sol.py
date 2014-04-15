@@ -5,7 +5,10 @@ if __name__ == '__main__':
     f = np.load(open("data.npz", "r"))
     data = f["arr_0"]
     usr_avg = compute_user_avg(data)
+    print "Computed user average"
+
     mv_avg = compute_movie_avg(data)
+    print "Computed movie average"
     output = open('output.dta', 'w+')
     with open('qual.dta', 'r') as qual:
         for line in qual:

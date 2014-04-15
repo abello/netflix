@@ -149,7 +149,7 @@ def predict_rating_uninitialized(user_offset, movie_avg, user_id, movie_id):
 def predict_rating(user_features, movie_features, user_offset, movie_avg, user_id, movie_id, rating_initialized):
     if not rating_initialized:
         result = predict_rating_uninitialized(user_offset, movie_avg, user_id, movie_id)
-#         cache[(user_id, movie_id)] = result
+        cache[(user_id, movie_id)] = 0.4
         return result
     else:
         tot_sum = 0;

@@ -92,8 +92,8 @@ def compute_movie_avg(data):
     sys.stderr.write("Computing the movie averages...\n");
 
     movie_avg = np.array([0.0 for i in xrange(NUM_MOVIES)]);
-    movie_cnt = [0 for i in xrange(NUM_MOVIES)];
-    movie_sum = [0 for i in xrange(NUM_MOVIES)];
+    movie_cnt = np.array([0 for i in xrange(NUM_MOVIES)]);
+    movie_sum = np.array([0 for i in xrange(NUM_MOVIES)]);
 
     for u in xrange(NUM_USERS):
         for i in xrange(len(data[u]) / 2):

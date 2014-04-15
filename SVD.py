@@ -103,9 +103,9 @@ def compute_movie_avg(data):
 
     for m in xrange(NUM_MOVIES):
         #DEBUG CODE
-        if (movie_cnt[m] == 0):
-            movie_avg[m] = 2.5;
-            continue;
+#         if (movie_cnt[m] == 0):
+#             movie_avg[m] = 2.5;
+#             continue;
         #DEBUG CODE END
         movie_avg[m] = float(movie_sum[m]) / float(movie_cnt[m]);
 

@@ -40,11 +40,13 @@ def compute_user_offset(movie_avg):
             user_rating = user[j + 1]
             actual_rating = movie_avg[movie_id - 1]
             diff = user_rating - actual_rating
+            # TODO: Get rid of append
             ratings.append(diff)
         user_off[i] = sum(ratings) / float(len(ratings))
     return user_off
 
 def predict_rating(movie, user, movie_avg, user_off):
+    # TODO: Get rid of branching
     if !TRAINING_STARTED:
         return movie_avg[movie - 1] + user_off[user - 1]
     else:

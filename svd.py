@@ -71,11 +71,13 @@ def cache_init():
 def compute_avg(np_arr, improved=False):
     height = np.shape(np_arr)[0]
     avg_arr = [0 for i in xrange(height)]
-    for i in xrange(height):
-        if !improved:
-            avg_arr[i] = sum(np_arr[i][1::2]) / float(len(np_arr[i][1::2]))
-        else:
-            avg_arr[i] = (GLOBAL_AVG * K + sum(np_arr[i][1::2])) / (K + len(np_arr[i][1::2]))
+    if !improved:
+        for i in xrange(height):
+                avg_arr[i] = sum(np_arr[i][1::2]) / float(len(np_arr[i][1::2]))
+    else:
+        for i in xrange(height):
+                avg_arr[i] = (GLOBAL_AVG * K + sum(np_arr[i][1::2])) / (K + len(np_arr[i][1::2]))
+
     return avg_arr
 
 def compute_user_offset(movie_avg):

@@ -59,9 +59,25 @@ def init_features(user_features, movie_features):
         user_features[f] = [0.1 for i in xrange(NUM_USERS)]
         movie_features[f] = [0.1 for i in xrange(NUM_MOVIES)] 
 
-def cache_init():
-    # Todo
+
+# Return movie average
+def movie_average(m):
+    # TODO
     pass
+
+
+# Initialize the cache to baseline rating
+def cache_init():
+    for u in xrange(NUM_USERS):
+        user = u+1
+        rng = len(data[u]/2
+        for i in xrange(rng):
+            movie = data[2*i]
+            rating = data[2*i + 1]
+            cache[(movie, user)] = movie_avgerage(movie) + user_offset(user)
+
+            
+            
 
     
 

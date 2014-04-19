@@ -74,7 +74,6 @@ def compute_avg(np_arr, improved=False):
             avg_arr[i] = sum(np_arr[i+1][1::2]) / float(len(np_arr[i+1][1::2]))
     else:
         for i in xrange(height):
-            sum(np_arr[i+1][1::2])
             avg_arr[i] = (GLOBAL_AVG * K + sum(np_arr[i+1][1::2])) / (K + len(np_arr[i+1][1::2]))
 
     return avg_arr
@@ -106,16 +105,8 @@ def get_rating(movie, user):
 # Initialize the cache to baseline rating
 # TODO: Use baseline at some point
 def cache_init():
-    global movie_avgs
-    global user_ofsts
 
-    movie_avgs = compute_avg(mu_dta, True)
-    print "Computed movie averages"
-
-    user_ofsts = compute_user_offset(movie_avgs)
-    print "Computed user offsets"
-
-    for u in xrange(1, NUM_USERS + 1):
+    for u in xrange(NUM_USERS):
         rng = len(um_dta[u])/2
         for i in xrange(rng):
             movie = um_dta[u][2*i]
@@ -141,13 +132,14 @@ def cache_opt_init():
 
 # (Training version) 
 # Should be inlined
-# Takes actual user_id and movie_id
+# Takes OBO user_id and movie_id
 def predict_rating_t(movie, user):
     return cache[(user, movie)]
 
 
 # Train! Super critical sector, needs to be heavily optimized.
-# Takes the actual user_id and movie_id, no off by one crap
+# Takes the OBO user_id and movie_id
+# TODO: The Thikonov regularization stuff
 def train(movie, user, f):
     user_off = user_ofsts[user]
     movie_avg = movie_avgs[movie]
@@ -171,6 +163,9 @@ def train(movie, user, f):
         
 # Cythonize this so it unrolls loops and stuff
 def main():
+    pass
+
+if __name__ == "__main__":
     f1, f2 = open('data.npz', 'r'), open('data-mu.npz', 'r')
     um = np.load(f1)
     global um_dta
@@ -187,30 +182,36 @@ def main():
 
     print "Loaded from files"
 
-    # Initialize cache
-    cache_init()
+    global movie_avgs
+    global user_ofsts
+
+    movie_avgs = compute_avg(mu_dta, True)
+    # Shouldn't need this after this point
+    del mu_dta
+    print "Computed movie averages"
+
+    user_ofsts = compute_user_offset(movie_avgs)
+    print "Computed user offsets"
     np.save(open("movie_avgs", "w"), movie_avgs)
     np.save(open("user_avgs", "w"), user_ofsts)
+
+    # Initialize cache
+    cache_init()
     print "Initialized cache"
 
     init_features()
     print "Initialized features"
 
-    # Shouldn't need this after this point
-    del mu_dta
 
     data = um_dta
 
     for i in xrange(NUM_ITERATIONS):
         for f in xrange(NUM_FEATURES):
-            for u in xrange(1, NUM_USERS + 1):
+            for u in xrange(NUM_USERS):
                 for j in xrange(len(data[u]) / 2):
                     movie = data[u][2 * j] - 1
                     train(movie, u, f)
         print "Finished iteration %d", i
-
-if __name__ == "__main__":
-    main()
 
 
 

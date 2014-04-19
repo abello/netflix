@@ -23,18 +23,7 @@ def get_number():
 
 # EDN profiling stuff
 
-f1, f2 = open('data.npz', 'r'), open('data-mu.npz', 'r')
-um = np.load(f1)
-um_dta = um["arr_0"]
-f1.close()
-mu = np.load(f2)
-mu_dta = mu["arr_0"]
-f2.close()
 
-print "Loaded from files"
-
-NUM_USERS = np.shape(um_dta)[0]
-NUM_MOVIES = np.shape(mu_dta)[0]
 
 NUM_FEATURES = 40
 
@@ -60,8 +49,8 @@ movie_features = [None for i in xrange(NUM_FEATURES)]
 def init_features(user_features, movie_features):
     # TODO: Numpy arrays?
     for f in xrange(NUM_FEATURES):
-        user_features[f] = [0.1 for i in xrange(NUM_USERS)]
-        movie_features[f] = [0.1 for i in xrange(NUM_MOVIES)] 
+        user_features[f] = np.array([0.1 for i in xrange(NUM_USERS)])
+        movie_features[f] = np.array([0.1 for i in xrange(NUM_MOVIES)])
 
 # Takes either mu or um numpy array (from data.npz or data-mu.npz), returns a
 # list of lists, index being movie/user index, value being movie avg or user 
@@ -88,6 +77,7 @@ def compute_user_offset(movie_avg):
             user_rating = user[j + 1]
             actual_rating = movie_avg[movie_id - 1]
             diff = user_rating - actual_rating
+
             # TODO: Get rid of append
             ratings.append(diff)
         user_off[i] = sum(ratings) / float(len(ratings))
@@ -144,6 +134,18 @@ def train(movie, user, f):
         
 # Cythonize this so it unrolls loops and stuff
 def main():
+    f1, f2 = open('data.npz', 'r'), open('data-mu.npz', 'r')
+    um = np.load(f1)
+    um_dta = um["arr_0"]
+    f1.close()
+    mu = np.load(f2)
+    mu_dta = mu["arr_0"]
+    f2.close()
+
+    NUM_USERS = np.shape(um_dta)[0]
+    NUM_MOVIES = np.shape(mu_dta)[0]
+
+    print "Loaded from files"
 
     # Calculate movie averages
     movie_avgs = compute_avg(mu, True)
@@ -156,6 +158,12 @@ def main():
     # Initialize cache
     cache_init()
     print "Initialized cache"
+
+    init_features()
+    print "Initialized features"
+
+    # Shouldn't need this after this point
+    del mu_dta
 
     for i in xrange(NUM_ITERATIONS):
         for f in xrange(NUM_FEATURES):

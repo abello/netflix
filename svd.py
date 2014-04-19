@@ -156,7 +156,7 @@ def main():
     print "Loaded from files"
 
     # Calculate movie averages
-    movie_avgs = compute_avg(mu, True)
+    movie_avgs = compute_avg(mu_dta, True)
     print "Calculated movie averages"
 
     # Calculate the user offset array, usign the movie_avgs array

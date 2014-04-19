@@ -71,8 +71,9 @@ def compute_user_offset(movie_avg):
     for i in xrange(NUM_USERS):
         c = 0
         user = um_dta[i]
-        ratings = [0 for i in xrange(0, len(user), 2)]
-        for j in xrange(0, len(user), 2):
+        len_user = len(user)
+        ratings = [0 for i in xrange(0, len_user, 2)]
+        for j in xrange(0, len_user, 2):
             movie_id = user[j]
             user_rating = user[j + 1]
             actual_rating = movie_avg[movie_id - 1]
@@ -80,7 +81,7 @@ def compute_user_offset(movie_avg):
 
             ratings[c] = diff
             c += 1
-        user_off[i] = sum(ratings) / float(len(ratings))
+        user_off[i] = sum(ratings) / float(len_user/2)
     return user_off
 
 # Returns the rating for this (movie, user) pair

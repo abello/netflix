@@ -60,10 +60,11 @@ def compute_avg(np_arr, improved=False):
     avg_arr = [0 for i in xrange(height)]
     if not improved:
         for i in xrange(height):
-                avg_arr[i] = sum(np_arr[i+1][1::2]) / float(len(np_arr[i+1][1::2]))
+            avg_arr[i] = sum(np_arr[i+1][1::2]) / float(len(np_arr[i+1][1::2]))
     else:
         for i in xrange(height):
-                avg_arr[i] = (GLOBAL_AVG * K + sum(np_arr[i+1][1::2])) / (K + len(np_arr[i+1][1::2]))
+            sum(np_arr[i+1][1::2])
+            avg_arr[i] = (GLOBAL_AVG * K + sum(np_arr[i+1][1::2])) / (K + len(np_arr[i+1][1::2]))
 
     return avg_arr
 

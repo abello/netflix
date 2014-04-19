@@ -25,11 +25,11 @@ def get_number():
 
 f1, f2 = open('data.npz', 'r'), open('data-mu.npz', 'r')
 um = np.load(f1)
+um_dta = um["arr_0"]
 f1.close()
 mu = np.load(f2)
-f2.close()
-um_dta = um["arr_0"]
 mu_dta = mu["arr_0"]
+f2.close()
 
 NUM_USERS = np.shape(um_dta)[0]
 NUM_MOVIES = np.shape(mu_dta)[0]

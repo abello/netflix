@@ -31,6 +31,8 @@ mu = np.load(f2)
 mu_dta = mu["arr_0"]
 f2.close()
 
+print "Loaded from files"
+
 NUM_USERS = np.shape(um_dta)[0]
 NUM_MOVIES = np.shape(mu_dta)[0]
 
@@ -145,10 +147,15 @@ def main():
 
     # Calculate movie averages
     movie_avgs = compute_avg(mu, True)
+    print "Calculated movie averages"
+
     # Calculate the user offset array, usign the movie_avgs array
     user_ofsts = compute_user_offset(movie_avgs)
+    print "Initialized user offsets"
+
     # Initialize cache
     cache_init()
+    print "Initialized cache"
 
     for i in xrange(NUM_ITERATIONS):
         for f in xrange(NUM_FEATURES):

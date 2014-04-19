@@ -92,9 +92,9 @@ def get_rating(movie, user):
 # Initialize the cache to baseline rating
 def cache_init():
     for u in xrange(NUM_USERS):
-        rng = len(um[u])/2
+        rng = len(um_dta[u])/2
         for i in xrange(rng):
-            movie = um[u][2*i]
+            movie = um_dta[u][2*i]
             cache[(movie, user)] = movie_avgs[movie - 1] + user_ofsts[u]
 
 # This version should be used only TRAINING_STARTED is false, i.e. in the 

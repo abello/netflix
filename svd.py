@@ -142,17 +142,23 @@ def main():
     mu_dta = mu["arr_0"]
     f2.close()
 
-    global NUM_USERS = np.shape(um_dta)[0]
-    global NUM_MOVIES = np.shape(mu_dta)[0]
+    global NUM_USERS
+    global NUM_MOVIES
+
+    global movie_avgs
+    global user_ofsts
+
+    NUM_USERS = np.shape(um_dta)[0]
+    NUM_MOVIES = np.shape(mu_dta)[0]
 
     print "Loaded from files"
 
     # Calculate movie averages
-    global movie_avgs = compute_avg(mu, True)
+    movie_avgs = compute_avg(mu, True)
     print "Calculated movie averages"
 
     # Calculate the user offset array, usign the movie_avgs array
-    global user_ofsts = compute_user_offset(movie_avgs)
+    user_ofsts = compute_user_offset(movie_avgs)
     print "Initialized user offsets"
 
     # Initialize cache

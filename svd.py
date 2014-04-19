@@ -41,8 +41,7 @@ NUM_ITERATIONS = 3
 # TODO: Average of what?
 GLOBAL_AVG = 3.512599976023349
 
-cache = {}
-cache_opt = [None for i in xrange(NUM_USERS)]
+cache = [None for i in xrange(NUM_USERS)]
 
 K = 25
 
@@ -101,19 +100,7 @@ def compute_user_offset(movie_avg):
 def get_rating(movie, user):
     return data[user][2 * (movie - 1) + 1]
 
-
-# Initialize the cache to baseline rating
-# TODO: Use baseline at some point
 def cache_init():
-
-    for u in xrange(NUM_USERS):
-        rng = len(um_dta[u])/2
-        for i in xrange(rng):
-            movie = um_dta[u][2*i]
-#             cache[(movie, u)] = movie_avgs[movie - 1] + user_ofsts[u]
-            cache[(movie, u)] = 0.4
-
-def cache_opt_init():
     for i in xrange(NUM_USERS):
         user = um_dta[i]
         # convert to float16 array:
@@ -121,7 +108,24 @@ def cache_opt_init():
         # Initialize the cache for every movie to 0.4
         for j in xrange(1, len(user_float), 2):
             user_float[j] = 0.4
-        cache_opt[i] = user_float
+        cache[i] = user_float
+
+def cache_set(user_id, movie_id, val):
+    user = cache[user_id - 1]
+    for i in xrange(0, len(user), 2):
+        if user[i] == movie_id:
+            user[i + 1] = val
+            break
+    print "Invalid cache access. Exiting."
+    exit()
+
+def cache_get(user_id, movie_id):
+    user = cache[user_id - 1]
+    for i in xrange(0, len(user), 2):
+        if user[i] == movie_id:
+            return user[i + 1]
+    print "Invalid cache access. Exiting"
+    exit()
 
 # This version should be used only TRAINING_STARTED is false, i.e. in the 
 # first iteration
@@ -134,7 +138,7 @@ def cache_opt_init():
 # Should be inlined
 # Takes OBO user_id and movie_id
 def predict_rating_t(movie, user):
-    return cache[(user, movie)]
+    return cache_get(user, movie)
 
 
 # Train! Super critical sector, needs to be heavily optimized.
@@ -157,7 +161,7 @@ def train(movie, user, f):
     movie_features[f][movie] += error * uv_old
     
     # Update cache
-    cache[(user, movie)] = cache[(user, movie)] - tmp + user_features[f][user] * movie_features[f][movie]
+    cache_set(user, movie, cache_get(user, movie) - tmp + user_features[f][user] * movie_features[f][movie])
 
 
         

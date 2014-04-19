@@ -69,10 +69,11 @@ def compute_avg(np_arr, improved=False):
     return avg_arr
 
 def compute_user_offset(movie_avg):
-    user_off = [0 for i in xrange(NUM_USERS)]
+    user_off = np.array([0 for i in xrange(NUM_USERS)], dtype=np.float16)
     for i in xrange(NUM_USERS):
+        c = 0
         user = um_dta[i]
-        ratings = []
+        ratings = [0 for i in xrange(0, len(user), 2)]
         for j in xrange(0, len(user), 2):
             movie_id = user[j]
             user_rating = user[j + 1]
@@ -80,7 +81,8 @@ def compute_user_offset(movie_avg):
             diff = user_rating - actual_rating
 
             # TODO: Get rid of append
-            ratings.append(diff)
+            ratings[c] = diff
+            c += 1
         user_off[i] = sum(ratings) / float(len(ratings))
     return user_off
 
@@ -93,7 +95,11 @@ def get_rating(movie, user):
 # Initialize the cache to baseline rating
 def cache_init():
     movie_avgs = compute_avg(mu_dta, True)
+    print "Computed movie averages"
+
     user_ofsts = compute_user_offset(movie_avgs)
+    print "Computed user offsets"
+
     for u in xrange(NUM_USERS):
         rng = len(um_dta[u])/2
         for i in xrange(rng):
@@ -167,6 +173,8 @@ def main():
 
     # Shouldn't need this after this point
     del mu_dta
+
+    data = um_dta
 
     for i in xrange(NUM_ITERATIONS):
         for f in xrange(NUM_FEATURES):

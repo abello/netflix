@@ -39,7 +39,6 @@ K = 25
 TRAINING_STARTED = False
 
 # User features and movie features globals
-# TODO: Numpy arrays?
 user_features = [None for i in xrange(NUM_FEATURES)]
 
 movie_features = [None for i in xrange(NUM_FEATURES)]
@@ -47,7 +46,6 @@ movie_features = [None for i in xrange(NUM_FEATURES)]
 
 # Initializes the feature vectors
 def init_features(user_features, movie_features):
-    # TODO: Numpy arrays?
     for f in xrange(NUM_FEATURES):
         user_features[f] = np.array([0.1 for i in xrange(NUM_USERS)])
         movie_features[f] = np.array([0.1 for i in xrange(NUM_MOVIES)])
@@ -71,6 +69,7 @@ def compute_avg(np_arr, improved=False):
 def compute_user_offset(movie_avg):
     user_off = np.array([0 for i in xrange(NUM_USERS)], dtype=np.float16)
     for i in xrange(NUM_USERS):
+        print i
         c = 0
         user = um_dta[i]
         ratings = [0 for i in xrange(0, len(user), 2)]
@@ -80,7 +79,6 @@ def compute_user_offset(movie_avg):
             actual_rating = movie_avg[movie_id - 1]
             diff = user_rating - actual_rating
 
-            # TODO: Get rid of append
             ratings[c] = diff
             c += 1
         user_off[i] = sum(ratings) / float(len(ratings))

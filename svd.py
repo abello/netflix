@@ -54,7 +54,10 @@ movie_features = [None for i in xrange(NUM_FEATURES)]
 
 
 # Initializes the feature vectors
-def init_features(user_features, movie_features):
+def init_features():
+    global user_features
+    global movie_features
+
     for f in xrange(NUM_FEATURES):
         user_features[f] = np.array([0.1 for i in xrange(NUM_USERS)])
         movie_features[f] = np.array([0.1 for i in xrange(NUM_MOVIES)])

@@ -136,9 +136,11 @@ def train(movie, user, f):
 def main():
     f1, f2 = open('data.npz', 'r'), open('data-mu.npz', 'r')
     um = np.load(f1)
+    global um_dta
     um_dta = um["arr_0"]
     f1.close()
     mu = np.load(f2)
+    global mu_dta
     mu_dta = mu["arr_0"]
     f2.close()
 

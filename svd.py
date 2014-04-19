@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 
 
 # Dunny declarations, just for globals 
@@ -78,12 +79,12 @@ def compute_avg(np_arr, improved=False):
     return avg_arr
 
 def compute_user_offset(movie_avg):
-    user_off = np.array([0 for i in xrange(NUM_USERS)], dtype=np.float16)
+    result = np.array([0 for i in xrange(NUM_USERS)], dtype=np.float16)
     for i in xrange(NUM_USERS):
         c = 0
         user = um_dta[i]
         len_user = len(user)
-        ratings = [0 for i in xrange(0, len_user, 2)]
+        ratings = [0 for k in xrange(0, len_user, 2)]
         for j in xrange(0, len_user, 2):
             movie_id = user[j]
             user_rating = user[j + 1]
@@ -92,8 +93,8 @@ def compute_user_offset(movie_avg):
 
             ratings[c] = diff
             c += 1
-        user_off[i] = sum(ratings) / float(len_user/2)
-    return user_off
+        result[i] = sum(ratings) / float(len_user/2)
+    return result
 
 # Returns the rating for this (movie, user) pair
 # TODO: Check this
@@ -161,30 +162,28 @@ if __name__ == "__main__":
     global um_dta
     um_dta = um["arr_0"]
     f1.close()
-    mu = np.load(f2)
-    global mu_dta
-    mu_dta = mu["arr_0"]
-    f2.close()
+#     mu = np.load(f2)
+#     global mu_dta
+#     mu_dta = mu["arr_0"]
+#     f2.close()
 
 
     NUM_USERS = np.shape(um_dta)[0]
-    NUM_MOVIES = np.shape(mu_dta)[0]
+    NUM_MOVIES = 17770
 
     print "Loaded from files"
 
-    global movie_avgs
-    global user_ofsts
 
-    movie_avgs = compute_avg(mu_dta, True)
+#     movie_avgs = compute_avg(mu_dta, True)
+    movie_avgs = np.load(open("movie_avgs", "r"))
     # Shouldn't need this after this point
-    del mu_dta
-    print "Computed movie averages"
+    print "Loaded movie averages"
 
     user_ofsts = compute_user_offset(movie_avgs)
     print "Computed user offsets"
-    np.save(open("movie_avgs", "w"), movie_avgs)
-    np.save(open("user_avgs", "w"), user_ofsts)
+    np.save(open("user_ofsts", "w"), user_ofsts)
 
+    sys.iafexit()
     # Initialize cache
     cache_init()
     print "Initialized cache"

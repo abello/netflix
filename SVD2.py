@@ -11,6 +11,7 @@ mu_dta = mu["arr_0"]
 NUM_USERS = np.shape(um_dta)[0]
 NUM_MOVIES = np.shape(mu_dta)[0]
 
+# TODO: Average of what?
 GLOBAL_AVG = 3.512599976023349
 
 K = 25
@@ -45,12 +46,14 @@ def compute_user_offset(movie_avg):
         user_off[i] = sum(ratings) / float(len(ratings))
     return user_off
 
-def predict_rating(movie, user, movie_avg, user_off):
-    # TODO: Get rid of branching
-    if !TRAINING_STARTED:
-        return movie_avg[movie - 1] + user_off[user - 1]
-    else:
+# This version should be used only TRAINING_STARTED is false, i.e. in the 
+# first iteration
+def predict_rating_0(movie, user, movie_avg, user_off):
+    return movie_avg[movie - 1] + user_off[user - 1]
          
+
+# General version, after training has started
+def predict_rating(movie, user, movie_avg, user_off):
         
         
     

@@ -21,7 +21,7 @@ def get_number():
     for x in xrange(5000000):
         yield x
 
-# ENDN profiling stuff
+# EDN profiling stuff
 
 f1, f2 = open('data.npz', 'r'), open('data-mu.npz', 'r')
 um = np.load(f1)

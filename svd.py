@@ -60,10 +60,6 @@ def init_features(user_features, movie_features):
         movie_features[f] = [0.1 for i in xrange(NUM_MOVIES)] 
 
 
-            
-            
-
-    
 
 # Takes either mu or um numpy array (from data.npz or data-mu.npz), returns a
 # list of lists, index being movie/user index, value being movie avg or user 
@@ -130,6 +126,10 @@ def predict_rating_t(movie, user, movie_avg, user_off):
 
 # Train! Super critical sector, needs to be heavily optimized.
 def train(movie, user, f):
+    user_off = usr_ofsts[user]
+    movie_avg = movie_avgs[movie]
+
+    # Rating we currently have
     predicted = predict_rating_t(movie, user, movie_avg, user_off)
 
     tmp = user_features[f][user] * movie_features[f][movie_id]

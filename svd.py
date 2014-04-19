@@ -69,7 +69,6 @@ def compute_avg(np_arr, improved=False):
 def compute_user_offset(movie_avg):
     user_off = np.array([0 for i in xrange(NUM_USERS)], dtype=np.float16)
     for i in xrange(NUM_USERS):
-        print i
         c = 0
         user = um_dta[i]
         ratings = [0 for i in xrange(0, len(user), 2)]

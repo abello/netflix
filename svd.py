@@ -133,6 +133,7 @@ def predict_rating_t(movie, user):
 
 
 # Train! Super critical sector, needs to be heavily optimized.
+# Takes the actual user_id and movie_id, no off by one crap
 def train(movie, user, f):
     user_off = user_ofsts[user]
     movie_avg = movie_avgs[movie]
@@ -150,7 +151,7 @@ def train(movie, user, f):
     movie_features[f][movie] += error * uv_old
     
     # Update cache
-    cache[(user_id, movie_id)] = cache[(user_id, movie_id)] - tmp + user_features[f][user_id] * movie_features[f][movie_id]
+    cache[(user, movie)] = cache[(user, movie)] - tmp + user_features[f][user] * movie_features[f][movie]
 
 
         

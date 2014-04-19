@@ -1,5 +1,14 @@
 import numpy as np
 
+
+# Dunny declarations, just for globals 
+
+NUM_USERS = 0
+NUM_MOVIES = 0
+
+movie_avgs = 0
+user_ofsts = 0
+
 # Profiling stuff from https://zapier.com/engineering/profiling-python-boss/
 
 def do_profile(follow=[]):
@@ -92,6 +101,9 @@ def get_rating(movie, user):
 
 # Initialize the cache to baseline rating
 def cache_init():
+    global movie_avgs
+    global user_ofsts
+
     movie_avgs = compute_avg(mu_dta, True)
     print "Computed movie averages"
 
@@ -102,7 +114,7 @@ def cache_init():
         rng = len(um_dta[u])/2
         for i in xrange(rng):
             movie = um_dta[u][2*i]
-            cache[(movie, user)] = movie_avgs[movie - 1] + user_ofsts[u]
+            cache[(movie, u)] = movie_avgs[movie - 1] + user_ofsts[u]
 
 # This version should be used only TRAINING_STARTED is false, i.e. in the 
 # first iteration
@@ -151,11 +163,6 @@ def main():
     mu_dta = mu["arr_0"]
     f2.close()
 
-    global NUM_USERS
-    global NUM_MOVIES
-
-    global movie_avgs
-    global user_ofsts
 
     NUM_USERS = np.shape(um_dta)[0]
     NUM_MOVIES = np.shape(mu_dta)[0]
@@ -164,6 +171,8 @@ def main():
 
     # Initialize cache
     cache_init()
+    np.save(open("movie_avgs", "w"), movie_avgs)
+    np.save(open("user_avgs", "w"), user_ofsts)
     print "Initialized cache"
 
     init_features()

@@ -60,10 +60,10 @@ def compute_avg(np_arr, improved=False):
     avg_arr = [0 for i in xrange(height)]
     if not improved:
         for i in xrange(height):
-                avg_arr[i] = sum(np_arr[i][1::2]) / float(len(np_arr[i][1::2]))
+                avg_arr[i] = sum(np_arr[i+1][1::2]) / float(len(np_arr[i+1][1::2]))
     else:
         for i in xrange(height):
-                avg_arr[i] = (GLOBAL_AVG * K + sum(np_arr[i][1::2])) / (K + len(np_arr[i][1::2]))
+                avg_arr[i] = (GLOBAL_AVG * K + sum(np_arr[i+1][1::2])) / (K + len(np_arr[i+1][1::2]))
 
     return avg_arr
 
@@ -91,6 +91,8 @@ def get_rating(movie, user):
 
 # Initialize the cache to baseline rating
 def cache_init():
+    movie_avgs = compute_avg(mu_dta, True)
+    user_ofsts = compute_user_offset(movie_avgs)
     for u in xrange(NUM_USERS):
         rng = len(um_dta[u])/2
         for i in xrange(rng):
@@ -106,7 +108,7 @@ def cache_init():
 
 # (Training version) 
 # Should be inlined
-def predict_rating_t(movie, user, movie_avg, user_off):
+def predict_rating_t(movie, user):
     return cache[(user, movie)]
 
 
@@ -116,7 +118,7 @@ def train(movie, user, f):
     movie_avg = movie_avgs[movie]
 
     # Rating we currently have
-    predicted = predict_rating_t(movie, user, movie_avg, user_off)
+    predicted = predict_rating_t(movie, user)
 
     tmp = user_features[f][user] * movie_features[f][movie_id]
     actual_rating = get_rating(movie, user)
@@ -154,14 +156,6 @@ def main():
     NUM_MOVIES = np.shape(mu_dta)[0]
 
     print "Loaded from files"
-
-    # Calculate movie averages
-    movie_avgs = compute_avg(mu_dta, True)
-    print "Calculated movie averages"
-
-    # Calculate the user offset array, usign the movie_avgs array
-    user_ofsts = compute_user_offset(movie_avgs)
-    print "Initialized user offsets"
 
     # Initialize cache
     cache_init()

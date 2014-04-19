@@ -134,7 +134,7 @@ def predict_rating_t(movie, user):
 
 # Train! Super critical sector, needs to be heavily optimized.
 def train(movie, user, f):
-    user_off = usr_ofsts[user]
+    user_off = user_ofsts[user]
     movie_avg = movie_avgs[movie]
 
     # Rating we currently have

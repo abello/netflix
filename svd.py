@@ -60,22 +60,6 @@ def init_features(user_features, movie_features):
         movie_features[f] = [0.1 for i in xrange(NUM_MOVIES)] 
 
 
-# Return movie average
-def movie_average(m):
-    # TODO
-    pass
-
-
-# Initialize the cache to baseline rating
-def cache_init():
-    for u in xrange(NUM_USERS):
-        user = u+1
-        rng = len(data[u]/2
-        for i in xrange(rng):
-            movie = data[2*i]
-            rating = data[2*i + 1]
-            cache[(movie, user)] = movie_avgerage(movie) + user_offset(user)
-
             
             
 
@@ -115,7 +99,21 @@ def compute_user_offset(movie_avg):
 # TODO: Check this
 def get_rating(movie, user):
     return data[user][2 * (movie - 1) + 1]
-    
+
+# Calculate movie averages
+movie_avgs = compute_avg(mu, True)
+# Calculate the user offset array, usign the movie_avgs array
+user_ofsts = compute_user_offset(movie_avgs)
+
+# Initialize the cache to baseline rating
+def cache_init():
+    for u in xrange(NUM_USERS):
+        user = u+1
+        rng = len(data[u]/2
+        for i in xrange(rng):
+            movie = data[2*i]
+            rating = data[2*i + 1]
+            cache[(movie, user)] = movie_avgerage(movie) + user_offset(user)
 
 # This version should be used only TRAINING_STARTED is false, i.e. in the 
 # first iteration

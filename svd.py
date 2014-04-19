@@ -58,11 +58,6 @@ def init_features(user_features, movie_features):
     for f in xrange(NUM_FEATURES):
         user_features[f] = [0.1 for i in xrange(NUM_USERS)]
         movie_features[f] = [0.1 for i in xrange(NUM_MOVIES)] 
-
-
-            
-            
-
     
 
 # Takes either mu or um numpy array (from data.npz or data-mu.npz), returns a
@@ -108,12 +103,10 @@ user_ofsts = compute_user_offset(movie_avgs)
 # Initialize the cache to baseline rating
 def cache_init():
     for u in xrange(NUM_USERS):
-        user = u+1
-        rng = len(data[u]/2
+        rng = len(um[u])/2
         for i in xrange(rng):
-            movie = data[2*i]
-            rating = data[2*i + 1]
-            cache[(movie, user)] = movie_avgerage(movie) + user_offset(user)
+            movie = um[u][2*i]
+            cache[(movie, user)] = movie_avgs[movie - 1] + user_ofsts[u]
 
 # This version should be used only TRAINING_STARTED is false, i.e. in the 
 # first iteration

@@ -42,6 +42,7 @@ NUM_ITERATIONS = 3
 GLOBAL_AVG = 3.512599976023349
 
 cache = {}
+cache_opt = [None for i in xrange(NUM_USERS)]
 
 K = 25
 
@@ -120,7 +121,16 @@ def cache_init():
             movie = um_dta[u][2*i]
 #             cache[(movie, u)] = movie_avgs[movie - 1] + user_ofsts[u]
             cache[(movie, u)] = 0.4
-            
+
+def cache_opt_init():
+    for i in xrange(NUM_USERS):
+        user = um_dta[i]
+        # convert to float16 array:
+        user_float = np.array(user, dtype=np.float16)
+        # Initialize the cache for every movie to 0.4
+        for j in xrange(1, len(user_float), 2):
+            user_float[j] = 0.4
+        cache_opt[i] = user_float
 
 # This version should be used only TRAINING_STARTED is false, i.e. in the 
 # first iteration

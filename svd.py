@@ -67,7 +67,7 @@ def init_features(user_features, movie_features):
 def compute_avg(np_arr, improved=False):
     height = np.shape(np_arr)[0]
     avg_arr = [0 for i in xrange(height)]
-    if !improved:
+    if not improved:
         for i in xrange(height):
                 avg_arr[i] = sum(np_arr[i][1::2]) / float(len(np_arr[i][1::2]))
     else:

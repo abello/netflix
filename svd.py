@@ -56,7 +56,7 @@ def init_features(user_features, movie_features):
 # list of lists, index being movie/user index, value being movie avg or user 
 # average rating.
 def compute_avg(np_arr, improved=False):
-    height = np.shape(np_arr)[0]
+    height = np.shape(np_arr)[0] - 1
     avg_arr = [0 for i in xrange(height)]
     if not improved:
         for i in xrange(height):

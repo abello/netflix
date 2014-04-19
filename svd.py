@@ -145,13 +145,13 @@ def train(movie, user, f):
     # Rating we currently have
     predicted = predict_rating_t(movie, user)
 
-    tmp = user_features[f][user] * movie_features[f][movie_id]
+    tmp = user_features[f][user] * movie_features[f][movie]
     actual_rating = get_rating(movie, user)
 
     error = LEARNING_RATE * (actual_rating - predicted)
 
     uv_old = user_features[f][user]
-    user_features[f][user] += error * movie_features[f][movie_id]
+    user_features[f][user] += error * movie_features[f][movie]
     movie_features[f][movie] += error * uv_old
     
     # Update cache

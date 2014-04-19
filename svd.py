@@ -114,7 +114,7 @@ def cache_init():
     user_ofsts = compute_user_offset(movie_avgs)
     print "Computed user offsets"
 
-    for u in xrange(1, NUM_USERS + 1):
+    for u in xrange(NUM_USERS):
         rng = len(um_dta[u])/2
         for i in xrange(rng):
             movie = um_dta[u][2*i]
@@ -131,13 +131,13 @@ def cache_init():
 
 # (Training version) 
 # Should be inlined
-# Takes actual user_id and movie_id
+# Takes OBO user_id and movie_id
 def predict_rating_t(movie, user):
     return cache[(user, movie)]
 
 
 # Train! Super critical sector, needs to be heavily optimized.
-# Takes the actual user_id and movie_id, no off by one crap
+# Takes the OBO user_id and movie_id
 def train(movie, user, f):
     user_off = user_ofsts[user]
     movie_avg = movie_avgs[movie]
@@ -193,7 +193,7 @@ def main():
 
     for i in xrange(NUM_ITERATIONS):
         for f in xrange(NUM_FEATURES):
-            for u in xrange(1, NUM_USERS + 1):
+            for u in xrange(NUM_USERS):
                 for j in xrange(len(data[u]) / 2):
                     movie = data[u][2 * j] - 1
                     train(movie, u, f)

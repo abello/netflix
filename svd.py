@@ -41,6 +41,8 @@ NUM_ITERATIONS = 3
 # TODO: Average of what?
 GLOBAL_AVG = 3.512599976023349
 
+cache = {}
+
 K = 25
 
 TRAINING_STARTED = False
@@ -94,10 +96,6 @@ def compute_user_offset(movie_avg):
 def get_rating(movie, user):
     return data[user][2 * (movie - 1) + 1]
 
-# Calculate movie averages
-movie_avgs = compute_avg(mu, True)
-# Calculate the user offset array, usign the movie_avgs array
-user_ofsts = compute_user_offset(movie_avgs)
 
 # Initialize the cache to baseline rating
 def cache_init():
@@ -144,6 +142,14 @@ def train(movie, user, f):
         
 # Cythonize this so it unrolls loops and stuff
 def main():
+
+    # Calculate movie averages
+    movie_avgs = compute_avg(mu, True)
+    # Calculate the user offset array, usign the movie_avgs array
+    user_ofsts = compute_user_offset(movie_avgs)
+    # Initialize cache
+    cache_init()
+
     for i in xrange(NUM_ITERATIONS):
         for f in xrange(NUM_FEATURES):
             for u in xrange(NUM_USERS):
@@ -151,6 +157,9 @@ def main():
                     movie = data[u][2 * j] - 1
                     train(movie, u, f)
         print "Finished iteration %d", i
+
+if __name__ == "__main__":
+    main()
 
 
 

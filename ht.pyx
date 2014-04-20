@@ -34,6 +34,8 @@ def cache_init(um_dta):
             
             # movie_id
             m = user[j] - 1
+            e.cache = <unsigned short> 400
+            e.rating = <unsigned short> user[j+1]
 
             cache[u * NUM_MOVIES + m] = deref(e)
             #cache.emplace(u * NUM_MOVIES + m, <float>0.4)

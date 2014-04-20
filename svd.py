@@ -102,8 +102,12 @@ def compute_user_offset(movie_avg):
 # Returns the rating for this (movie, user) pair
 # Both movie and user are OBO
 def get_rating(movie, user):
-    tmp = 
-    return data[user][2 * (movie - 1) + 1]
+    tmp = data[user]
+    for i in xrange(0, len(tmp), 2):
+        if (tmp[i] - 1) == movie + 1
+            return tmp[i + 1]
+    print "Invalid get_rating. Exiting.", user, movie
+    sys.exit()
 
 def cache_init():
     for i in xrange(NUM_USERS):
@@ -143,10 +147,7 @@ def cache_get(user_id, movie_id):
 # Should be inlined
 # Takes OBO user_id and movie_id
 def predict_rating_t(movie, user):
-    tmp = data[user]
-    for i in xrange(0, len(tmp), 2):
-        if (tmp[i] - 1) == movie + 1
-            return tmp[i + 1]
+    return cache_get(user, movie)
 
 
 # Train! Super critical sector, needs to be heavily optimized.

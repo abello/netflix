@@ -320,8 +320,6 @@ if __name__ == "__main__":
     ratings = np.load(open("ratings", "r"))
     print "Loaded ratings"
 
-    sys.asdf()
-
     init_features()
     print "Initialized features"
 

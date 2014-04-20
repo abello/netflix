@@ -9,13 +9,11 @@ cdef int NUM_MOVIES = 17770
 
 cdef unordered_map[int, float] *cache
 
-c = None
-
 
 def cache_init(um_dta, user):
     cdef int len_user, j, u, m
 
-    c = new unordered_map[int, int]()
+    cache = new unordered_map[int, int]()
 
 
     for u in xrange(NUM_USERS):

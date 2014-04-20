@@ -10,6 +10,8 @@ NUM_USERS = 458293
 # Number of movies
 NUM_MOVIES = 17770
 
+LEARNING_RATE = 0.001
+
 movie_avgs = 0
 user_ofsts = 0
 
@@ -107,6 +109,7 @@ def get_rating(movie, user):
         if (tmp[i] - 1) == movie:
             return tmp[i + 1]
     print "Invalid get_rating. Exiting.", user, movie
+    print sys.exc_info()
     sys.exit()
 
 def cache_init():
@@ -126,6 +129,7 @@ def cache_set(movie_id, user_id, val):
             user[i + 1] = val
             break
     print "Invalid cache set. Exiting.", user_id, movie_id
+    print sys.exc_info()
     sys.exit()
 
 def cache_get(movie_id, user_id):
@@ -134,6 +138,7 @@ def cache_get(movie_id, user_id):
         if (user[i] - 1) == movie_id:
             return user[i + 1]
     print "Invalid cache set. Exiting.", user_id, movie_id
+    print sys.exc_info()
     sys.exit()
 
 # This version should be used only TRAINING_STARTED is false, i.e. in the 

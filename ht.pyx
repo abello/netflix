@@ -1,15 +1,22 @@
 #distutils: language = c++
 from libcpp.unordered_map cimport unordered_map
 
-int NUM_USERS = 458293
+# SO and google (and code samples) were used to hack this together
 
-int NUM_MOVIES = 17770
+cdef int NUM_USERS = 458293
 
-cdef unordered_map[int, float] cache;
+cdef int NUM_MOVIES = 17770
+
+cdef unordered_map[int, float] *cache
+
+c = None
 
 
-def cache_init():
-    cdef int user, len_user, j, u, m
+def cache_init(um_dta, user):
+    cdef int len_user, j, u, m
+
+    c = new unordered_map[int, int]()
+
 
     for u in xrange(NUM_USERS):
         user = um_dta[u]

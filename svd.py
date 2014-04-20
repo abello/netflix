@@ -101,8 +101,8 @@ def compute_user_offset(movie_avg):
 
 # Returns the rating for this (movie, user) pair
 # Both movie and user are OBO
-# TODO: Check this
 def get_rating(movie, user):
+    tmp = 
     return data[user][2 * (movie - 1) + 1]
 
 def cache_init():
@@ -121,16 +121,16 @@ def cache_set(user_id, movie_id, val):
         if (user[i] - 1) == movie_id:
             user[i + 1] = val
             break
-    print "Invalid cache set. Exiting."
-    exit()
+    print "Invalid cache set. Exiting.", user_id, movie_id
+    sys.exit()
 
 def cache_get(user_id, movie_id):
     user = cache[user_id]
     for i in xrange(0, len(user), 2):
         if (user[i] - 1) == movie_id:
             return user[i + 1]
-    print "Invalid cache get. Exiting"
-    exit()
+    print "Invalid cache set. Exiting.", user_id, movie_id
+    sys.exit()
 
 # This version should be used only TRAINING_STARTED is false, i.e. in the 
 # first iteration
@@ -143,7 +143,10 @@ def cache_get(user_id, movie_id):
 # Should be inlined
 # Takes OBO user_id and movie_id
 def predict_rating_t(movie, user):
-    return cache_get(user, movie)
+    tmp = data[user]
+    for i in xrange(0, len(tmp), 2):
+        if (tmp[i] - 1) == movie + 1
+            return tmp[i + 1]
 
 
 # Train! Super critical sector, needs to be heavily optimized.

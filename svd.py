@@ -129,7 +129,7 @@ def cache_set(movie_id, user_id, val):
         if (user[i] - 1) == movie_id:
             user[i + 1] = val
             break
-    print "Invalid cache set. Exiting.", user_id, movie_id
+    print "Invalid cache set. Exiting.", movie_id, user_id
     traceback.print_exc()
     sys.exit()
 
@@ -138,7 +138,7 @@ def cache_get(movie_id, user_id):
     for i in xrange(0, len(user), 2):
         if (user[i] - 1) == movie_id:
             return user[i + 1]
-    print "Invalid cache set. Exiting.", user_id, movie_id
+    print "Invalid cache get. Exiting.", movie_id, user_id
     traceback.print_exc()
     sys.exit()
 
@@ -176,7 +176,7 @@ def train(movie, user, f):
     movie_features[f][movie] += error * uv_old
     
     # Update cache
-    cache_set(movie, user, cache_get(user, movie) - tmp + user_features[f][user] * movie_features[f][movie])
+    cache_set(movie, user, cache_get(movie, user) - tmp + user_features[f][user] * movie_features[f][movie])
 
 
         

@@ -1,3 +1,4 @@
+#distutils: language = c++
 from libcpp.unordered_map cimport unordered_map
 
 int NUM_USERS = 458293

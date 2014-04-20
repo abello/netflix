@@ -1,9 +1,9 @@
 #distutils: language = c++
 from libcpp.unordered_map cimport unordered_map
 
-int NUM_USERS = 458293
+cdef int NUM_USERS = 458293
 
-int NUM_MOVIES = 17770
+cdef int NUM_MOVIES = 17770
 
 cdef unordered_map[int, float] cache;
 

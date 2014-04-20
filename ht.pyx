@@ -57,13 +57,3 @@ def ratings_set(unsigned int movie, unsigned int user, unsigned short val):
     cache[user * NUM_MOVIES + movie] = <unsigned int> curr
 
 
-def store_shorts(unsigned short high, unsigned short low):
-    return (high << 16) | (low & 0xffff)
-
-def get_low(unsigned int num):
-    return num & 0xffff
-
-#420
-def get_high(unsigned int num):
-    return (num >> 16) & 0xffff
-

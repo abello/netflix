@@ -86,8 +86,8 @@ def init_features():
     global movie_features
 
     for f in xrange(NUM_FEATURES):
-        user_features[f] = np.array([0.1 for i in xrange(NUM_USERS)], dtype=np.float16)
-        movie_features[f] = np.array([0.1 for i in xrange(NUM_MOVIES)], dtype=np.float16)
+        user_features[f] = np.array([0.1 for i in xrange(NUM_USERS)], dtype=np.float32)
+        movie_features[f] = np.array([0.1 for i in xrange(NUM_MOVIES)], dtype=np.float32)
 
 # Takes either mu or um numpy array (from data.npz or data-mu.npz), returns a
 # list of lists, index being movie/user index, value being movie avg or user 
@@ -338,11 +338,13 @@ if __name__ == "__main__":
 
 #     movie_avgs = compute_avg(mu_dta, True)
     movie_avgs = np.load(open("movie_avgs", "r"))
+    movie_avgs = np.array(movie_avgs, dtype=np.float32)
     # Shouldn't need this after this point
     print "Loaded movie averages"
 
 #     user_ofsts = compute_user_offset(movie_avgs)
     user_ofsts = np.load(open("user_ofsts", "r")) 
+    user_ofsts = np.array(user_ofsts, dtype=np.float32)
     print "Loaded user offsets"
 
 

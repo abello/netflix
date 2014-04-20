@@ -5,8 +5,13 @@ if __name__ == '__main__':
     f = open('data.npz', 'r')
     um = np.load(f)
     um_dta = um["arr_0"]
-    cache_init(um_dta)
     NUM_USERS = np.shape(um_dta)[0]
+
+    print "Loaded from file"
+
+    cache_init(um_dta)
+    print "Initialized cache"
+
     for i in xrange(NUM_USERS):
         user = i
         for j in xrange(0, len(um_dta[i]), 2):

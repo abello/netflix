@@ -128,7 +128,7 @@ def cache_set(movie_id, user_id, val):
     for i in xrange(0, len(user), 2):
         if (user[i] - 1) == movie_id:
             user[i + 1] = val
-            break
+            return
     print "Invalid cache set. Exiting.", movie_id, user_id
     traceback.print_exc()
     sys.exit()

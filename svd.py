@@ -312,17 +312,18 @@ if __name__ == "__main__":
 
 
     # Initialize cache
-    cache = np.load(open("cache", "r"))
+    cache = cp.load(open("cache", "r"))
+#     cache_init() 
     print "Loaded cache"
 
 
     # Initialize ratings
-    ratings = np.load(open("ratings", "r"))
+    ratings = cp.load(open("ratings", "r"))
+#     ratings_init()
     print "Loaded ratings"
 
     init_features()
     print "Initialized features"
-
 
     data = um_dta
 

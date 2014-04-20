@@ -9,8 +9,8 @@ cdef int NUM_MOVIES = 17770
 
 # TODO: Use reserve?
 # TODO: Set load factors
-cdef unordered_map[unsigned int, unsigned short] cache
-cdef unordered_map[unsigned int, unsigned short] ratings
+cdef unordered_map[unsigned int, float] cache
+cdef unordered_map[unsigned int, float] ratings
 
 def cache_init(um_dta):
     cdef int len_user, j, u, m
@@ -24,14 +24,14 @@ def cache_init(um_dta):
             # movie_id
             m = user[j] - 1
 
-            cache[u * NUM_MOVIES + m] = <unsigned short>40
+            cache[u * NUM_MOVIES + m] = <float>40
             #cache.emplace(u * NUM_MOVIES + m, <float>0.4)
 
 def cache_get(unsigned int movie, unsigned int user):
     return cache[user * NUM_MOVIES + movie]
 
 def cache_set(unsigned int movie, unsigned int user, double val):
-    cache[user * NUM_MOVIES + movie] = (unsigned short) (val * 100)
+    cache[user * NUM_MOVIES + movie] = (float) (val * 100)
 
 
 
@@ -47,11 +47,11 @@ def ratings_init(um_dta):
             # movie_id
             m = user[j] - 1
 
-            cache[u * NUM_MOVIES + m] = <unsigned short>user[j+1]
+            cache[u * NUM_MOVIES + m] = <float>user[j+1]
             #cache.emplace(u * NUM_MOVIES + m, <float>0.4)
 
 def ratings_get(unsigned int movie, unsigned int user):
     return ratings[user * NUM_MOVIES + movie]
 
 def ratings_set(unsigned int movie, unsigned int user, double val):
-    ratings[user * NUM_MOVIES + movie] = (unsigned short) (val * 100)
+    ratings[user * NUM_MOVIES + movie] = (float) (val * 100)

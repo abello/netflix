@@ -4,6 +4,7 @@ import traceback
 from line_profiler import LineProfiler
 import time
 from scipy.sparse import coo_matrix, csr_matrix
+import cPickle as cp
 
 
 # Dunny declarations, just for globals 

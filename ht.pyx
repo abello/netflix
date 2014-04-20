@@ -22,7 +22,9 @@ cdef unordered_map[unsigned int, unsigned int] cache
 
 def cache_init(um_dta):
     cdef int len_user, j, u, m
-    cdef unsigned short c, r
+    cdef short c
+    cdef short rating
+
     #cdef elem *e
 
     for u in xrange(NUM_USERS):
@@ -35,8 +37,8 @@ def cache_init(um_dta):
 
             # movie_id
             m = user[j] - 1
-            c = <unsigned short> 400
-            r = <unsigned short> user[j+1]
+            c = <short> 400
+            r = <short> user[j+1]
 
             cache[u * NUM_MOVIES + m] = <unsigned int> ((c<<16) | (r & 0xffff))
 
@@ -45,13 +47,13 @@ def cache_get(unsigned int movie, unsigned int user):
 
 def cache_set(unsigned int movie, unsigned int user, double val):
     cdef unsigned int curr = cache[user * NUM_MOVIES + movie]
-    curr = (curr & 0x0000ffff) | ((<unsigned short> (val * 100)) << 16)
+    curr = (curr & 0x0000ffff) | ((<short> (val * 100)) << 16)
     cache[user * NUM_MOVIES + movie] = curr
 
 def ratings_get(unsigned int movie, unsigned int user):
     return cache[user * NUM_MOVIES + movie] & 0xffff
 
-def ratings_set(unsigned int movie, unsigned int user, unsigned short val):
+def ratings_set(unsigned int movie, unsigned int user, short val):
     cdef unsigned int curr = cache[user * NUM_MOVIES + movie]
     curr = (curr & 0x0000) | (val & 0xffff)
     cache[user * NUM_MOVIES + movie] = <unsigned int> curr

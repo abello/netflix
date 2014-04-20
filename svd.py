@@ -5,6 +5,7 @@ from line_profiler import LineProfiler
 import time
 from scipy.sparse import coo_matrix, csr_matrix
 import cPickle as cp
+from ht import cache_init, cache_get, cache_set, ratings_get, ratings_set
 
 
 # Dunny declarations, just for globals 
@@ -122,8 +123,8 @@ def compute_user_offset(movie_avg):
 
 # Returns the rating for this (movie, user) pair
 # Both movie and user are OBO
-def get_rating(movie, user):
-    return ratings[movie, user]
+# def get_rating(movie, user):
+#     return ratings[movie, user]
 #     tmp = data[user]
 #     for i in xrange(0, len(tmp), 2):
 #         if (tmp[i] - 1) == movie:
@@ -134,19 +135,19 @@ def get_rating(movie, user):
 
 
 
-def cache_init():
-    for i in xrange(NUM_USERS):
-        user = um_dta[i]
-        len_user = len(user)
-
-        # All values OBO
-        for j in range(0, len_user, 2):
-            # movie_id
-            m = user[j] - 1
-
-            # user_id
-            u = i
-            cache[u * NUM_MOVIES + m] = 0.4
+# def cache_init():
+#     for i in xrange(NUM_USERS):
+#         user = um_dta[i]
+#         len_user = len(user)
+# 
+#         # All values OBO
+#         for j in range(0, len_user, 2):
+#             # movie_id
+#             m = user[j] - 1
+# 
+#             # user_id
+#             u = i
+#             cache[u * NUM_MOVIES + m] = 0.4
 
 
     # Representing cache as coo sparse matrix
@@ -182,14 +183,14 @@ def cache_init():
 
 
 # Init the ratings sparse matrix (very similar to cache)
-def ratings_init():
-        for j in range(0, len_user, 2):
-            # movie_id
-            m = user[j] - 1
-
-            # user_id
-            u = i
-            cache[u * NUM_MOVIES + m] = user[j+1]
+# def ratings_init():
+#         for j in range(0, len_user, 2):
+#             # movie_id
+#             m = user[j] - 1
+# 
+#             # user_id
+#             u = i
+#             cache[u * NUM_MOVIES + m] = user[j+1]
 
 #     # Representing ratings as coo sparse matrix
 #     # xs are movies, ys are movies
@@ -237,8 +238,8 @@ def ratings_init():
 #         cache[i] = user_float
 
 # @do_profile(follow=[get_number])
-def cache_set(movie_id, user_id, val):
-    cache[user_id * NUM_MOVIES + movie_id] = val
+# def cache_set(movie_id, user_id, val):
+#     cache[user_id * NUM_MOVIES + movie_id] = val
 
 
 
@@ -260,8 +261,8 @@ def cache_set(movie_id, user_id, val):
 #     traceback.print_exc()
 #     sys.exit()
 
-def cache_get(movie_id, user_id):
-    return cache[user_id * NUM_MOVIES + movie_id]
+# def cache_get(movie_id, user_id):
+#     return cache[user_id * NUM_MOVIES + movie_id]
 
 
 
@@ -303,7 +304,7 @@ def train(movie, user, f):
     predicted = cache_get(movie, user)
 
     tmp = user_features[f][user] * movie_features[f][movie]
-    actual_rating = get_rating(movie, user)
+    actual_rating = ratings_get(movie, user)
 
     error = LEARNING_RATE * (actual_rating - predicted)
 
@@ -346,14 +347,14 @@ if __name__ == "__main__":
 
     # Initialize cache
 #     cache = cp.load(open("cache", "r"))
-    cache_init() 
-    print "Loaded cache"
+    cache_init(um_dta) 
+    print "Initialized cache"
 
 
     # Initialize ratings
 #     ratings = cp.load(open("ratings", "r"))
-    ratings_init()
-    print "Loaded ratings"
+#     ratings_init()
+#     print "Loaded ratings"
 
     init_features()
     print "Initialized features"

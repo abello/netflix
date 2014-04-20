@@ -163,7 +163,7 @@ def cache_init():
             n += 1
 
     tmp = coo_matrix((vals, (xs, ys)), shape=(NUM_MOVIES, NUM_USERS), dtype=np.float16)
-    cache = csr_matrix(tmp, dtype=float16)
+    cache = csr_matrix(tmp, dtype=np.float16)
 
 
 # Init the ratings sparse matrix (very similar to cache)
@@ -195,12 +195,12 @@ def ratings_init():
             ys[n] = i
 
             # actual rating
-            vals[n] = user[l+1]
+            vals[n] = user[j+1]
 
             n += 1
 
     tmp = coo_matrix((vals, (xs, ys)), shape=(NUM_MOVIES, NUM_USERS), dtype=np.float16)
-    ratings = csr_matrix(tmp, dtype=float16)
+    ratings = csr_matrix(tmp, dtype=np.float16)
     
 
 
@@ -312,13 +312,13 @@ if __name__ == "__main__":
 
 
     # Initialize cache
-    cache_init()
-    print "Initialized cache"
+    cache = np.load(open("cache", "r"))
+    print "Loaded cache"
 
 
     # Initialize ratings
-    cache_init()
-    print "Initialized ratings"
+    ratings = np.load(open("ratings", "r"))
+    print "Loaded ratings"
 
     sys.asdf()
 

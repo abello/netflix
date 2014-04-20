@@ -104,7 +104,7 @@ def compute_user_offset(movie_avg):
 def get_rating(movie, user):
     tmp = data[user]
     for i in xrange(0, len(tmp), 2):
-        if (tmp[i] - 1) == movie + 1:
+        if (tmp[i] - 1) == movie:
             return tmp[i + 1]
     print "Invalid get_rating. Exiting.", user, movie
     sys.exit()

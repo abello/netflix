@@ -193,11 +193,10 @@ if __name__ == "__main__":
     # Shouldn't need this after this point
     print "Loaded movie averages"
 
-    user_ofsts = compute_user_offset(movie_avgs)
-    print "Computed user offsets"
-    np.save(open("user_ofsts", "w"), user_ofsts)
+#     user_ofsts = compute_user_offset(movie_avgs)
+    user_ofsts = np.load(open("user_ofsts", "r")) 
+    print "Loaded user offsets"
 
-    sys.iafexit()
     # Initialize cache
     cache_init()
     print "Initialized cache"

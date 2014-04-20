@@ -23,7 +23,7 @@ def cache_init(um_dta):
             # movie_id
             m = user[j] - 1
 
-            cache[u * NUM_MOVIES + m] = <int> ((<int>(0.4 * 100)<<4 + (<int>(user[j+1] * 100)))
+            cache[u * NUM_MOVIES + m] = 
             #cache.emplace(u * NUM_MOVIES + m, <float>0.4)
 
 def cache_get(unsigned int movie, unsigned int user):

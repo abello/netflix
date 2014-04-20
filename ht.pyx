@@ -44,7 +44,9 @@ def cache_get(unsigned int movie, unsigned int user):
     return ((cache[user * NUM_MOVIES + movie]>> 16) & 0xffff) / 100.0
 
 def cache_set(unsigned int movie, unsigned int user, double val):
-    cache[user * NUM_MOVIES + movie] = 
+    unsigned int curr = cache[user * NUM_MOVIES + movie]
+    curr = (curr & 0x0000ffff) | (((<unsigned short) (val * 100)) << 16)
+    cache[user * NUM_MOVIES + movie] = curr
 
 def ratings_get(unsigned int movie, unsigned int user):
     return cache[user * NUM_MOVIES + movie] & 0xffff

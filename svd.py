@@ -1,6 +1,8 @@
 import numpy as np
 import sys
 import traceback
+from line_profiler import LineProfiler
+import time
 
 
 # Dunny declarations, just for globals 
@@ -17,6 +19,14 @@ movie_avgs = 0
 user_ofsts = 0
 
 # Profiling stuff from https://zapier.com/engineering/profiling-python-boss/
+def timef(f):
+    def f_timer(*args, **kwargs):
+        start = time.time()
+        result = f(*args, **kwargs)
+        end = time.time()
+        print f.__name__, 'took', end - start, 'time'
+        return result
+    return f_timer
 
 def do_profile(follow=[]):
     def inner(func):
@@ -123,19 +133,23 @@ def cache_init():
             user_float[j] = 0.4
         cache[i] = user_float
 
+@do_profile(follow=[get_number])
 def cache_set(movie_id, user_id, val):
     user = cache[user_id]
-    for i in xrange(0, len(user), 2):
+    len_user = len(user)
+    for i in xrange(0, len_user, 2):
         if (user[i] - 1) == movie_id:
-            user[i + 1] = val
-            return
+            if (user[i] - 1) == movie_id:
+                user[i + 1] = val
+                return
     print "Invalid cache set. Exiting.", movie_id, user_id
     traceback.print_exc()
     sys.exit()
 
 def cache_get(movie_id, user_id):
     user = cache[user_id]
-    for i in xrange(0, len(user), 2):
+    len_user = len(user)
+    for i in xrange(0, len_user, 2):
         if (user[i] - 1) == movie_id:
             return user[i + 1]
     print "Invalid cache get. Exiting.", movie_id, user_id
@@ -159,6 +173,7 @@ def predict_rating_t(movie, user):
 # Train! Super critical sector, needs to be heavily optimized.
 # Takes the OBO user_id and movie_id
 # TODO: The Thikonov regularization stuff
+# @do_profile(follow=[get_number])
 def train(movie, user, f):
     user_off = user_ofsts[user]
     movie_avg = movie_avgs[movie]
@@ -185,7 +200,7 @@ def main():
     pass
 
 if __name__ == "__main__":
-    f1, f2 = open('data.npz', 'r'), open('data-mu.npz', 'r')
+    f1 = open('data.npz', 'r')
     um = np.load(f1)
     global um_dta
     um_dta = um["arr_0"]

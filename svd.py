@@ -119,7 +119,7 @@ def cache_init():
             user_float[j] = 0.4
         cache[i] = user_float
 
-def cache_set(user_id, movie_id, val):
+def cache_set(movie_id, user_id, val):
     user = cache[user_id]
     for i in xrange(0, len(user), 2):
         if (user[i] - 1) == movie_id:
@@ -128,7 +128,7 @@ def cache_set(user_id, movie_id, val):
     print "Invalid cache set. Exiting.", user_id, movie_id
     sys.exit()
 
-def cache_get(user_id, movie_id):
+def cache_get(movie_id, user_id):
     user = cache[user_id]
     for i in xrange(0, len(user), 2):
         if (user[i] - 1) == movie_id:
@@ -147,7 +147,7 @@ def cache_get(user_id, movie_id):
 # Should be inlined
 # Takes OBO user_id and movie_id
 def predict_rating_t(movie, user):
-    return cache_get(user, movie)
+    return cache_get(movie, user)
 
 
 # Train! Super critical sector, needs to be heavily optimized.
@@ -170,7 +170,7 @@ def train(movie, user, f):
     movie_features[f][movie] += error * uv_old
     
     # Update cache
-    cache_set(user, movie, cache_get(user, movie) - tmp + user_features[f][user] * movie_features[f][movie])
+    cache_set(movie, user, cache_get(user, movie) - tmp + user_features[f][user] * movie_features[f][movie])
 
 
         

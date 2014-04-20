@@ -121,7 +121,7 @@ def cache_set(user_id, movie_id, val):
             user[i + 1] = val
             break
     print "Invalid cache access. Exiting."
-    exit()
+    sys.exit()
 
 def cache_get(user_id, movie_id):
     user = cache[user_id - 1]
@@ -129,7 +129,7 @@ def cache_get(user_id, movie_id):
         if user[i] == movie_id:
             return user[i + 1]
     print "Invalid cache access. Exiting"
-    exit()
+    sys.exit()
 
 # This version should be used only TRAINING_STARTED is false, i.e. in the 
 # first iteration

@@ -100,6 +100,7 @@ def compute_user_offset(movie_avg):
     return result
 
 # Returns the rating for this (movie, user) pair
+# Both movie and user are OBO
 # TODO: Check this
 def get_rating(movie, user):
     return data[user][2 * (movie - 1) + 1]

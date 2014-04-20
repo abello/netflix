@@ -8,10 +8,10 @@ cdef unordered_map[int, float] cache;
 
 
 def cache_init():
-    cdef int user, len_user, i, j, u, m
+    cdef int user, len_user, j, u, m
 
-    for i in xrange(NUM_USERS):
-        user = um_dta[i]
+    for u in xrange(NUM_USERS):
+        user = um_dta[u]
         len_user = len(user)
 
         # All values OBO
@@ -19,7 +19,5 @@ def cache_init():
             # movie_id
             m = user[j] - 1
 
-            # user_id
-            u = i
             cache[u * NUM_MOVIES + m] = 0.4
     

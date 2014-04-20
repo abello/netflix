@@ -65,8 +65,8 @@ NUM_ITERATIONS = 3
 # TODO: Average of what?
 GLOBAL_AVG = 3.512599976023349
 
-cache = None
-ratings = None
+cache = {}
+ratings = {}
 
 K = 25
 
@@ -135,6 +135,19 @@ def get_rating(movie, user):
 
 
 def cache_init():
+    for i in xrange(NUM_USERS):
+        user = um_dta[i]
+        len_user = len(user)
+
+        # All values OBO
+        for j in range(0, len_user, 2):
+            # movie_id
+            m = user[j] - 1
+
+            # user_id
+            u = i
+            cache[u * NUM_MOVIES + m] = 0.4
+
 
     # Representing cache as coo sparse matrix
     # xs are movies, ys are movies
@@ -170,6 +183,13 @@ def cache_init():
 
 # Init the ratings sparse matrix (very similar to cache)
 def ratings_init():
+        for j in range(0, len_user, 2):
+            # movie_id
+            m = user[j] - 1
+
+            # user_id
+            u = i
+            cache[u * NUM_MOVIES + m] = user[j+1]
 
 #     # Representing ratings as coo sparse matrix
 #     # xs are movies, ys are movies
@@ -218,6 +238,7 @@ def ratings_init():
 
 # @do_profile(follow=[get_number])
 def cache_set(movie_id, user_id, val):
+    cache[user_id * NUM_MOVIES + movie_id] = val
 
 
 
@@ -240,6 +261,7 @@ def cache_set(movie_id, user_id, val):
 #     sys.exit()
 
 def cache_get(movie_id, user_id):
+    return cache[user_id * NUM_MOVIES + movie_id]
 
 
 

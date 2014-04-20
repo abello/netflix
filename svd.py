@@ -3,6 +3,7 @@ import sys
 import traceback
 from line_profiler import LineProfiler
 import time
+from scipy.sparse import coo_matrix, csr_matrix
 
 
 # Dunny declarations, just for globals 
@@ -12,6 +13,11 @@ NUM_USERS = 458293
 
 # Number of movies
 NUM_MOVIES = 17770
+
+# Number of (user, movie) pairs (ie ratings)
+# TODO: Verify this
+NUM_PAIRS = 98291669
+
 
 LEARNING_RATE = 0.001
 
@@ -58,7 +64,8 @@ NUM_ITERATIONS = 3
 # TODO: Average of what?
 GLOBAL_AVG = 3.512599976023349
 
-cache = [None for i in xrange(NUM_USERS)]
+cache = None
+ratings = None
 
 K = 25
 
@@ -115,46 +122,127 @@ def compute_user_offset(movie_avg):
 # Returns the rating for this (movie, user) pair
 # Both movie and user are OBO
 def get_rating(movie, user):
-    tmp = data[user]
-    for i in xrange(0, len(tmp), 2):
-        if (tmp[i] - 1) == movie:
-            return tmp[i + 1]
-    print "Invalid get_rating. Exiting.", user, movie
-    traceback.print_exc()
-    sys.exit()
+    return ratings[movie, user]
+#     tmp = data[user]
+#     for i in xrange(0, len(tmp), 2):
+#         if (tmp[i] - 1) == movie:
+#             return tmp[i + 1]
+#     print "Invalid get_rating. Exiting.", user, movie
+#     traceback.print_exc()
+#     sys.exit()
+
+
 
 def cache_init():
+    # Representing cache as coo sparse matrix
+    # xs are movies, ys are movies
+    global cache
+    n = 0
+
+    # Movies
+    xs = np.array([0 for i in range(NUM_PAIRS)], dtype=np.int16)
+
+    # Users
+    ys = np.array([0 for i in range(NUM_PAIRS)], dtype=np.int32)
+
+    # Cached values
+    vals = np.array([0.4 for i in range(NUM_PAIRS)], dtype=np.float16)
+
     for i in xrange(NUM_USERS):
         user = um_dta[i]
-        # convert to float16 array:
-        user_float = np.array(user, dtype=np.float32)
-        # Initialize the cache for every movie to 0.4
-        for j in xrange(1, len(user_float), 2):
-            user_float[j] = 0.4
-        cache[i] = user_float
+        len_user = len(user)
 
-@do_profile(follow=[get_number])
+        # All values OBO
+        for j in range(0, len_user, 2):
+            # movie_id
+            xs[n] = user[j] - 1
+
+            # user_id
+            ys[n] = i
+
+            n += 1
+
+    tmp = coo_matrix((vals, (xs, ys)), shape=(NUM_MOVIES, NUM_USERS), dtype=np.float16)
+    cache = csr_matrix(tmp, dtype=float16)
+
+
+# Init the ratings sparse matrix (very similar to cache)
+def ratings_init():
+    # Representing ratings as coo sparse matrix
+    # xs are movies, ys are movies
+    global ratings
+    n = 0
+
+    # Movies
+    xs = np.array([0 for i in range(NUM_PAIRS)], dtype=np.int16)
+
+    # Users
+    ys = np.array([0 for i in range(NUM_PAIRS)], dtype=np.int32)
+
+    # Cached values
+    vals = np.array([0 for i in range(NUM_PAIRS)], dtype=np.float16)
+
+    for i in xrange(NUM_USERS):
+        user = um_dta[i]
+        len_user = len(user)
+
+        # All values OBO
+        for j in range(0, len_user, 2):
+            # movie_id
+            xs[n] = user[j] - 1
+
+            # user_id
+            ys[n] = i
+
+            # actual rating
+            vals[n] = user[l+1]
+
+            n += 1
+
+    tmp = coo_matrix((vals, (xs, ys)), shape=(NUM_MOVIES, NUM_USERS), dtype=np.float16)
+    ratings = csr_matrix(tmp, dtype=float16)
+    
+
+
+#     for i in xrange(NUM_USERS):
+#         user = um_dta[i]
+#         # convert to float16 array:
+#         user_float = np.array(user, dtype=np.float32)
+#         # Initialize the cache for every movie to 0.4
+#         for j in xrange(1, len(user_float), 2):
+#             user_float[j] = 0.4
+#         cache[i] = user_float
+
+# @do_profile(follow=[get_number])
 def cache_set(movie_id, user_id, val):
-    user = cache[user_id]
-    len_user = len(user)
-    for i in xrange(0, len_user, 2):
-        if (user[i] - 1) == movie_id:
-            if (user[i] - 1) == movie_id:
-                user[i + 1] = val
-                return
-    print "Invalid cache set. Exiting.", movie_id, user_id
-    traceback.print_exc()
-    sys.exit()
+    # TODO: Remove this once correct
+    if cache[movie_id, user_id] != 0:
+        cache[movie_id, user_id] = val
+    else:
+        print "Invalid cache set. Exiting.", movie_id, user_id
+        sys.exit()
+        
+#     user = cache[user_id]
+#     len_user = len(user)
+#     for i in xrange(0, len_user, 2):
+#         if (user[i] - 1) == movie_id:
+#             if (user[i] - 1) == movie_id:
+#                 user[i + 1] = val
+#                 return
+#     print "Invalid cache set. Exiting.", movie_id, user_id
+#     traceback.print_exc()
+#     sys.exit()
 
 def cache_get(movie_id, user_id):
-    user = cache[user_id]
-    len_user = len(user)
-    for i in xrange(0, len_user, 2):
-        if (user[i] - 1) == movie_id:
-            return user[i + 1]
-    print "Invalid cache get. Exiting.", movie_id, user_id
-    traceback.print_exc()
-    sys.exit()
+    return cache[movie_id, user_id]
+#     user = cache[user_id]
+#     len_user = len(user)
+#     for i in xrange(0, len_user, 2):
+#         if (user[i] - 1) == movie_id:
+#             return user[i + 1]
+#     print "Invalid cache get. Exiting.", movie_id, user_id
+#     traceback.print_exc()
+#     sys.exit()
 
 # This version should be used only TRAINING_STARTED is false, i.e. in the 
 # first iteration
@@ -173,13 +261,13 @@ def predict_rating_t(movie, user):
 # Train! Super critical sector, needs to be heavily optimized.
 # Takes the OBO user_id and movie_id
 # TODO: The Thikonov regularization stuff
-# @do_profile(follow=[get_number])
+@do_profile(follow=[get_number])
 def train(movie, user, f):
     user_off = user_ofsts[user]
     movie_avg = movie_avgs[movie]
 
     # Rating we currently have
-    predicted = predict_rating_t(movie, user)
+    predicted = cache_get(movie, user)
 
     tmp = user_features[f][user] * movie_features[f][movie]
     actual_rating = get_rating(movie, user)
@@ -222,9 +310,17 @@ if __name__ == "__main__":
     user_ofsts = np.load(open("user_ofsts", "r")) 
     print "Loaded user offsets"
 
+
     # Initialize cache
     cache_init()
     print "Initialized cache"
+
+
+    # Initialize ratings
+    cache_init()
+    print "Initialized ratings"
+
+    sys.asdf()
 
     init_features()
     print "Initialized features"

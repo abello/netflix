@@ -10,7 +10,6 @@ ext = [Extension(
 #     include_dirs=[...], # usual stuff
 #     libraries=[...], # ditto
 #     extra_link_args=[...], # if needed
-    cmdclass = {'build_ext': build_ext}
     )]
 
 

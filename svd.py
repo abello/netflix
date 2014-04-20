@@ -116,21 +116,21 @@ def cache_init():
         cache[i] = user_float
 
 def cache_set(user_id, movie_id, val):
-    user = cache[user_id - 1]
+    user = cache[user_id]
     for i in xrange(0, len(user), 2):
-        if user[i] == movie_id:
+        if (user[i] - 1) == movie_id:
             user[i + 1] = val
             break
-    print "Invalid cache access. Exiting."
-    sys.exit()
+    print "Invalid cache set. Exiting."
+    exit()
 
 def cache_get(user_id, movie_id):
-    user = cache[user_id - 1]
+    user = cache[user_id]
     for i in xrange(0, len(user), 2):
-        if user[i] == movie_id:
+        if (user[i] - 1) == movie_id:
             return user[i + 1]
-    print "Invalid cache access. Exiting"
-    sys.exit()
+    print "Invalid cache get. Exiting"
+    exit()
 
 # This version should be used only TRAINING_STARTED is false, i.e. in the 
 # first iteration

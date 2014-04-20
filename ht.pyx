@@ -7,6 +7,12 @@ cdef int NUM_USERS = 458293
 
 cdef int NUM_MOVIES = 17770
 
+# Struct elem that is gonna be stored on each hashtable entry
+cdef struct s_elem:
+    short cache
+    short rating
+ctypedef s_elem elem
+
 # TODO: Use reserve?
 # TODO: Set load factors
 cdef unordered_map[unsigned int, int] cache

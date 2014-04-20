@@ -6,6 +6,7 @@ import time
 from scipy.sparse import coo_matrix, csr_matrix
 import cPickle as cp
 from ht import cache_init, cache_get, cache_set, ratings_get, ratings_set
+from train import train
 
 
 # Dunny declarations, just for globals 
@@ -295,25 +296,25 @@ def predict_rating_t(movie, user):
 # Train! Super critical sector, needs to be heavily optimized.
 # Takes the OBO user_id and movie_id
 # TODO: The Thikonov regularization stuff
-@do_profile(follow=[get_number])
-def train(movie, user, f):
-    user_off = user_ofsts[user]
-    movie_avg = movie_avgs[movie]
-
-    # Rating we currently have
-    predicted = cache_get(movie, user)
-
-    tmp = user_features[f][user] * movie_features[f][movie]
-    actual_rating = ratings_get(movie, user)
-
-    error = LEARNING_RATE * (actual_rating - predicted)
-
-    uv_old = user_features[f][user]
-    user_features[f][user] += error * movie_features[f][movie]
-    movie_features[f][movie] += error * uv_old
-    
-    # Update cache
-    cache_set(movie, user, cache_get(movie, user) - tmp + user_features[f][user] * movie_features[f][movie])
+# @do_profile(follow=[get_number])
+# def train(movie, user, f):
+#     user_off = user_ofsts[user]
+#     movie_avg = movie_avgs[movie]
+# 
+#     # Rating we currently have
+#     predicted = cache_get(movie, user)
+# 
+#     tmp = user_features[f][user] * movie_features[f][movie]
+#     actual_rating = ratings_get(movie, user)
+# 
+#     error = LEARNING_RATE * (actual_rating - predicted)
+# 
+#     uv_old = user_features[f][user]
+#     user_features[f][user] += error * movie_features[f][movie]
+#     movie_features[f][movie] += error * uv_old
+#     
+#     # Update cache
+#     cache_set(movie, user, cache_get(movie, user) - tmp + user_features[f][user] * movie_features[f][movie])
 
 
         
@@ -363,10 +364,12 @@ if __name__ == "__main__":
 
     for i in xrange(NUM_ITERATIONS):
         for f in xrange(NUM_FEATURES):
+            uf = user_features[f]
+            mf = movie_features[f]
             for u in xrange(NUM_USERS):
                 for j in xrange(len(data[u]) / 2):
                     movie = data[u][2 * j] - 1
-                    train(movie, u, f)
+                    train(movie, u, f, user_ofsts, movie_avgs, uf, mf)
         print "Finished iteration %d", i
 
 

@@ -135,73 +135,75 @@ def get_rating(movie, user):
 
 
 def cache_init():
+
     # Representing cache as coo sparse matrix
     # xs are movies, ys are movies
-    global cache
-    n = 0
-
-    # Movies
-    xs = np.array([0 for i in range(NUM_PAIRS)], dtype=np.int16)
-
-    # Users
-    ys = np.array([0 for i in range(NUM_PAIRS)], dtype=np.int32)
-
-    # Cached values
-    vals = np.array([0.4 for i in range(NUM_PAIRS)], dtype=np.float16)
-
-    for i in xrange(NUM_USERS):
-        user = um_dta[i]
-        len_user = len(user)
-
-        # All values OBO
-        for j in range(0, len_user, 2):
-            # movie_id
-            xs[n] = user[j] - 1
-
-            # user_id
-            ys[n] = i
-
-            n += 1
-
-    tmp = coo_matrix((vals, (xs, ys)), shape=(NUM_MOVIES, NUM_USERS), dtype=np.float16)
-    cache = csr_matrix(tmp, dtype=np.float16)
+#     global cache
+#     n = 0
+# 
+#     # Movies
+#     xs = np.array([0 for i in range(NUM_PAIRS)], dtype=np.int16)
+# 
+#     # Users
+#     ys = np.array([0 for i in range(NUM_PAIRS)], dtype=np.int32)
+# 
+#     # Cached values
+#     vals = np.array([0.4 for i in range(NUM_PAIRS)], dtype=np.float16)
+# 
+#     for i in xrange(NUM_USERS):
+#         user = um_dta[i]
+#         len_user = len(user)
+# 
+#         # All values OBO
+#         for j in range(0, len_user, 2):
+#             # movie_id
+#             xs[n] = user[j] - 1
+# 
+#             # user_id
+#             ys[n] = i
+# 
+#             n += 1
+# 
+#     tmp = coo_matrix((vals, (xs, ys)), shape=(NUM_MOVIES, NUM_USERS), dtype=np.float16)
+#     cache = csr_matrix(tmp, dtype=np.float16)
 
 
 # Init the ratings sparse matrix (very similar to cache)
 def ratings_init():
-    # Representing ratings as coo sparse matrix
-    # xs are movies, ys are movies
-    global ratings
-    n = 0
 
-    # Movies
-    xs = np.array([0 for i in range(NUM_PAIRS)], dtype=np.int16)
-
-    # Users
-    ys = np.array([0 for i in range(NUM_PAIRS)], dtype=np.int32)
-
-    # Cached values
-    vals = np.array([0 for i in range(NUM_PAIRS)], dtype=np.float16)
-
-    for i in xrange(NUM_USERS):
-        user = um_dta[i]
-        len_user = len(user)
-
-        # All values OBO
-        for j in range(0, len_user, 2):
-            # movie_id
-            xs[n] = user[j] - 1
-
-            # user_id
-            ys[n] = i
-
-            # actual rating
-            vals[n] = user[j+1]
-
-            n += 1
-
-    tmp = coo_matrix((vals, (xs, ys)), shape=(NUM_MOVIES, NUM_USERS), dtype=np.float16)
-    ratings = csr_matrix(tmp, dtype=np.float16)
+#     # Representing ratings as coo sparse matrix
+#     # xs are movies, ys are movies
+#     global ratings
+#     n = 0
+# 
+#     # Movies
+#     xs = np.array([0 for i in range(NUM_PAIRS)], dtype=np.int16)
+# 
+#     # Users
+#     ys = np.array([0 for i in range(NUM_PAIRS)], dtype=np.int32)
+# 
+#     # Cached values
+#     vals = np.array([0 for i in range(NUM_PAIRS)], dtype=np.float16)
+# 
+#     for i in xrange(NUM_USERS):
+#         user = um_dta[i]
+#         len_user = len(user)
+# 
+#         # All values OBO
+#         for j in range(0, len_user, 2):
+#             # movie_id
+#             xs[n] = user[j] - 1
+# 
+#             # user_id
+#             ys[n] = i
+# 
+#             # actual rating
+#             vals[n] = user[j+1]
+# 
+#             n += 1
+# 
+#     tmp = coo_matrix((vals, (xs, ys)), shape=(NUM_MOVIES, NUM_USERS), dtype=np.float16)
+#     ratings = csr_matrix(tmp, dtype=np.float16)
     
 
 
@@ -216,12 +218,15 @@ def ratings_init():
 
 # @do_profile(follow=[get_number])
 def cache_set(movie_id, user_id, val):
-    # TODO: Remove this once correct
-    if cache[movie_id, user_id] != 0:
-        cache[movie_id, user_id] = val
-    else:
-        print "Invalid cache set. Exiting.", movie_id, user_id
-        sys.exit()
+
+
+
+
+#     if cache[movie_id, user_id] != 0:
+#         cache[movie_id, user_id] = val
+#     else:
+#         print "Invalid cache set. Exiting.", movie_id, user_id
+#         sys.exit()
         
 #     user = cache[user_id]
 #     len_user = len(user)
@@ -235,7 +240,12 @@ def cache_set(movie_id, user_id, val):
 #     sys.exit()
 
 def cache_get(movie_id, user_id):
-    return cache[movie_id, user_id]
+
+
+
+#     return cache[movie_id, user_id]
+
+
 #     user = cache[user_id]
 #     len_user = len(user)
 #     for i in xrange(0, len_user, 2):
@@ -313,14 +323,14 @@ if __name__ == "__main__":
 
 
     # Initialize cache
-    cache = cp.load(open("cache", "r"))
-#     cache_init() 
+#     cache = cp.load(open("cache", "r"))
+    cache_init() 
     print "Loaded cache"
 
 
     # Initialize ratings
-    ratings = cp.load(open("ratings", "r"))
-#     ratings_init()
+#     ratings = cp.load(open("ratings", "r"))
+    ratings_init()
     print "Loaded ratings"
 
     init_features()

@@ -4,8 +4,8 @@ from Cython.Distutils import build_ext
 
 
 ext = Extension(
-    "rectangle", # name of extension
-    ["rectangle.pyx"], # filename of our Pyrex/Cython source
+    "ht", # name of extension
+    ["ht.pyx"], # filename of our Pyrex/Cython source
     language="c++", # this causes Pyrex/Cython to create C++ source
 #     include_dirs=[...], # usual stuff
 #     libraries=[...], # ditto

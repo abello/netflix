@@ -117,7 +117,7 @@ def cache_init():
     for i in xrange(NUM_USERS):
         user = um_dta[i]
         # convert to float16 array:
-        user_float = np.array(user, dtype=np.float16)
+        user_float = np.array(user, dtype=np.float32)
         # Initialize the cache for every movie to 0.4
         for j in xrange(1, len(user_float), 2):
             user_float[j] = 0.4

@@ -4,8 +4,11 @@ import sys
 
 # Dunny declarations, just for globals 
 
-NUM_USERS = 0
-NUM_MOVIES = 0
+# Number of users in all.dta
+NUM_USERS = 458293
+
+# Number of movies
+NUM_MOVIES = 17770
 
 movie_avgs = 0
 user_ofsts = 0
@@ -180,10 +183,6 @@ if __name__ == "__main__":
 #     global mu_dta
 #     mu_dta = mu["arr_0"]
 #     f2.close()
-
-
-    NUM_USERS = np.shape(um_dta)[0]
-    NUM_MOVIES = 17770
 
     print "Loaded from files"
 

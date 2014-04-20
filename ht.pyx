@@ -41,20 +41,19 @@ def cache_init(um_dta):
             cache[u * NUM_MOVIES + m] = <unsigned int> ((c<<16) | (r & 0xffff))
 
 def cache_get(unsigned int movie, unsigned int user):
-    #return cache[user * NUM_MOVIES + movie].cache / 100.0
-    return 1
+    return ((cache[user * NUM_MOVIES + movie]>> 16) & 0xffff) / 100.0
 
 def cache_set(unsigned int movie, unsigned int user, double val):
-    #cache[user * NUM_MOVIES + movie].cache = <unsigned short> (val * 100)
-    return 1
+    cache[user * NUM_MOVIES + movie] = 
 
 def ratings_get(unsigned int movie, unsigned int user):
-    #return cache[user * NUM_MOVIES + movie].rating
-    return 1
+    return cache[user * NUM_MOVIES + movie] & 0xffff
 
-def ratings_set(unsigned int movie, unsigned int user, unsigned char val):
-    return 1
-    #cache[user * NUM_MOVIES + movie].rating = val
+def ratings_set(unsigned int movie, unsigned int user, unsigned short val):
+    unsigned int curr = cache[user * NUM_MOVIES + movie]
+    curr = (curr & 0x0000) | (val 0xffff)
+    cache[user * NUM_MOVIES + movie] = <unsigned int> curr
+
 
 def store_shorts(unsigned short high, unsigned short low):
     return (high << 16) | (low & 0xffff)

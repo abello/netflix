@@ -40,12 +40,12 @@ def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float3
             idx = 0 # index for the compressed array
 
             for movie in xrange(NUM_MOVIES):
-                #start = time.time()
+                start = time.time()
                 num_users = users_per_movie[movie]
+                movie_avg = movie_avgs[movie]
                 for user_idx in xrange(idx, idx + num_users * 2, 2):
                     user = compressed[user_idx] - 1 # Make zero indexed
                     actual_rating = compressed[user_idx + 1]
-                    movie_avg = movie_avgs[movie]
 
                     # Rating we currently have
                     predicted = cache_get(movie, user)
@@ -62,10 +62,10 @@ def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float3
                     cache_set(movie, user, cache_get(movie, user) - tmp + uf[user] * mf[movie])
 
                 idx += num_users * 2
-                #_sum += time.time() - start
-                #_movies += 1
-                #if (user % 1000) == 0:
-                #    print "avg for 1000 movies", _sum/_movies
-                #    _sum = 0
-                #    _movies =0
+                _sum += time.time() - start
+                _movies += 1
+                if (user % 1000) == 0:
+                    print "avg for 1000 movies", _sum/_movies
+                    _sum = 0
+                    _movies =0
         print "Finished iteration %d", i

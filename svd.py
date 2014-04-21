@@ -5,7 +5,7 @@ from line_profiler import LineProfiler
 import time
 from scipy.sparse import coo_matrix, csr_matrix
 import cPickle as cp
-from ht import cache_init, cache_get, cache_set, ratings_get, ratings_set
+from ht import cache_init, cache_get, cache_set
 from train import loop
 
 
@@ -350,7 +350,7 @@ if __name__ == "__main__":
 
     # Initialize cache
 #     cache = cp.load(open("cache", "r"))
-    cache_init(um_dta) 
+    #cache_init(um_dta) 
     print "Initialized cache"
 
 

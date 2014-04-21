@@ -40,10 +40,10 @@ def cache_init(um_dta):
 
             cache[u * NUM_MOVIES + m] = 0.4
 
-def cache_get(unsigned int movie, unsigned int user):
+cdef float cache_get(unsigned int movie, unsigned int user):
     return cache[user * NUM_MOVIES + movie]
 
-def cache_set(unsigned int movie, unsigned int user, float val):
+cdef cache_set(unsigned int movie, unsigned int user, float val):
     cache[user * NUM_MOVIES + movie] = val
 
 #def ratings_get(unsigned int movie, unsigned int user):

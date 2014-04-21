@@ -1,9 +1,9 @@
-#distutils: language = c
-# cython: profile=True
+#distutils: language = c++
+from libcpp.unordered_map cimport unordered_map
+from libc.stdlib cimport malloc, free
 from cython.operator cimport dereference as deref
 import numpy as np
 cimport numpy as np
-from ht import cache_get, cache_set
 import time
 
 # SO and google (and code samples) were used to hack this together
@@ -12,11 +12,52 @@ cdef int NUM_USERS = 458293
 
 cdef int NUM_MOVIES = 17770
 
+# SO and google (and code samples) were used to hack this together
+
 cdef float LEARNING_RATE = 0.001
 
 cdef int NUM_FEATURES = 40
 
 cdef int NUM_ITERATIONS = 3
+
+# Struct elem that is gonna be stored on each hashtable entry
+# TODO: See if we can make this a bitfield
+#cdef packed struct s_elem:
+#    unsigned short cache
+#    unsigned char rating
+#ctypedef s_elem elem
+
+# TODO: Use reserve?
+# TODO: Set load factors
+# TODO: Fix default value (0.0 currently returned)
+cdef unordered_map[unsigned int, float] cache
+
+def cache_init(um_dta):
+    cdef int len_user, j, u, m
+    cdef short c
+
+    #cdef elem *e
+
+    for u in xrange(NUM_USERS):
+        user = um_dta[u]
+        len_user = len(user)
+
+        # All values OBO
+        for j in xrange(0, len_user, 2):
+            #e = <elem *> malloc(sizeof(elem))
+
+            # movie_id
+            m = user[j] - 1
+
+            cache[u * NUM_MOVIES + m] = 0.4
+
+cdef inline float cache_get(unsigned int movie, unsigned int user):
+    return cache[user * NUM_MOVIES + movie]
+
+cdef inline cache_set(unsigned int movie, unsigned int user, float val):
+    cache[user * NUM_MOVIES + movie] = val
+
+
 
 def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, ndim=1] movie_avgs, user_features, movie_features):
     cdef int i, f, user, j
@@ -49,7 +90,7 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                     actual_rating = compressed[user_idx + 1]
 
                     # Rating we currently have
-                    predicted = cache_get(movie, user)
+                    predicted = cache[user * NUM_MOVIES + movie]
 
                     tmp = uf[user] * mf[movie]
 
@@ -60,13 +101,13 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                     mf[movie] += error * uv_old
                     
                     # Update cache
-                    cache_set(movie, user, cache_get(movie, user) - tmp + uf[user] * mf[movie])
+                    cache[user * NUM_MOVIES + movie] = predicted - tmp + uf[user] * mf[movie]
 
                 idx += num_users * 2
                 _sum += time.time() - start
                 _movies += 1
-                if (user % 100) == 0:
-                    print "avg for 100 movies", _sum/_movies
+                if (user % 1000) == 0:
+                    print "avg for 1000 movies", _sum/_movies
                     _sum = 0
                     _movies =0
         print "Finished iteration %d", i

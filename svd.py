@@ -5,7 +5,7 @@ from line_profiler import LineProfiler
 import time
 from scipy.sparse import coo_matrix, csr_matrix
 import cPickle as cp
-from ht import cache_init, cache_get, cache_set
+from train import cache_init
 from train import loop
 
 

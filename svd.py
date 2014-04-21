@@ -364,6 +364,8 @@ if __name__ == "__main__":
 
     data = um_dta
 
+    print "Starting training..."
+
     for i in xrange(NUM_ITERATIONS):
         for f in xrange(NUM_FEATURES):
             uf = user_features[f]

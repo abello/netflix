@@ -1,6 +1,4 @@
 #distutils: language = c++
-from libcpp.unordered_map cimport unordered_map
-from libc.stdlib cimport malloc, free
 from cython.operator cimport dereference as deref
 import numpy as np
 cimport numpy as np
@@ -19,44 +17,6 @@ cdef float LEARNING_RATE = 0.001
 cdef int NUM_FEATURES = 40
 
 cdef int NUM_ITERATIONS = 40
-
-# Struct elem that is gonna be stored on each hashtable entry
-# TODO: See if we can make this a bitfield
-#cdef packed struct s_elem:
-#    unsigned short cache
-#    unsigned char rating
-#ctypedef s_elem elem
-
-# TODO: Use reserve?
-# TODO: Set load factors
-# TODO: Fix default value (0.0 currently returned)
-cdef unordered_map[unsigned int, float] cache
-
-def cache_init(um_dta):
-    cdef int len_user, j, u, m
-    cdef short c
-
-    #cdef elem *e
-
-    for u in xrange(NUM_USERS):
-        user = um_dta[u]
-        len_user = len(user)
-
-        # All values OBO
-        for j in xrange(0, len_user, 2):
-            #e = <elem *> malloc(sizeof(elem))
-
-            # movie_id
-            m = user[j] - 1
-
-            cache[u * NUM_MOVIES + m] = 0.4
-
-cdef inline float cache_get(unsigned int movie, unsigned int user):
-    return cache[user * NUM_MOVIES + movie]
-
-cdef inline cache_set(unsigned int movie, unsigned int user, float val):
-    cache[user * NUM_MOVIES + movie] = val
-
 
 
 def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, ndim=1] movie_avgs, user_features, movie_features):
@@ -105,6 +65,6 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                     compressed[user_idx + 2] = predicted - tmp + uf[user] * mf[movie]
 
                 idx += num_users * 3
-                _sum += time.time() - start
-                _movies += 1
+                #_sum += time.time() - start
+                #_movies += 1
         print "Finished iteration", i, time.time() - start

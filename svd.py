@@ -120,205 +120,6 @@ def compute_user_offset(movie_avg):
         result[i] = sum(ratings) / float(len_user/2)
     return result
 
-# Returns the rating for this (movie, user) pair
-# Both movie and user are OBO
-# def get_rating(movie, user):
-#     return ratings[movie, user]
-#     tmp = data[user]
-#     for i in xrange(0, len(tmp), 2):
-#         if (tmp[i] - 1) == movie:
-#             return tmp[i + 1]
-#     print "Invalid get_rating. Exiting.", user, movie
-#     traceback.print_exc()
-#     sys.exit()
-
-
-
-# def cache_init():
-#     for i in xrange(NUM_USERS):
-#         user = um_dta[i]
-#         len_user = len(user)
-# 
-#         # All values OBO
-#         for j in range(0, len_user, 2):
-#             # movie_id
-#             m = user[j] - 1
-# 
-#             # user_id
-#             u = i
-#             cache[u * NUM_MOVIES + m] = 0.4
-
-
-    # Representing cache as coo sparse matrix
-    # xs are movies, ys are movies
-#     global cache
-#     n = 0
-# 
-#     # Movies
-#     xs = np.array([0 for i in range(NUM_PAIRS)], dtype=np.int16)
-# 
-#     # Users
-#     ys = np.array([0 for i in range(NUM_PAIRS)], dtype=np.int32)
-# 
-#     # Cached values
-#     vals = np.array([0.4 for i in range(NUM_PAIRS)], dtype=np.float16)
-# 
-#     for i in xrange(NUM_USERS):
-#         user = um_dta[i]
-#         len_user = len(user)
-# 
-#         # All values OBO
-#         for j in range(0, len_user, 2):
-#             # movie_id
-#             xs[n] = user[j] - 1
-# 
-#             # user_id
-#             ys[n] = i
-# 
-#             n += 1
-# 
-#     tmp = coo_matrix((vals, (xs, ys)), shape=(NUM_MOVIES, NUM_USERS), dtype=np.float16)
-#     cache = csr_matrix(tmp, dtype=np.float16)
-
-
-# Init the ratings sparse matrix (very similar to cache)
-# def ratings_init():
-#         for j in range(0, len_user, 2):
-#             # movie_id
-#             m = user[j] - 1
-# 
-#             # user_id
-#             u = i
-#             cache[u * NUM_MOVIES + m] = user[j+1]
-
-#     # Representing ratings as coo sparse matrix
-#     # xs are movies, ys are movies
-#     global ratings
-#     n = 0
-# 
-#     # Movies
-#     xs = np.array([0 for i in range(NUM_PAIRS)], dtype=np.int16)
-# 
-#     # Users
-#     ys = np.array([0 for i in range(NUM_PAIRS)], dtype=np.int32)
-# 
-#     # Cached values
-#     vals = np.array([0 for i in range(NUM_PAIRS)], dtype=np.float16)
-# 
-#     for i in xrange(NUM_USERS):
-#         user = um_dta[i]
-#         len_user = len(user)
-# 
-#         # All values OBO
-#         for j in range(0, len_user, 2):
-#             # movie_id
-#             xs[n] = user[j] - 1
-# 
-#             # user_id
-#             ys[n] = i
-# 
-#             # actual rating
-#             vals[n] = user[j+1]
-# 
-#             n += 1
-# 
-#     tmp = coo_matrix((vals, (xs, ys)), shape=(NUM_MOVIES, NUM_USERS), dtype=np.float16)
-#     ratings = csr_matrix(tmp, dtype=np.float16)
-    
-
-
-#     for i in xrange(NUM_USERS):
-#         user = um_dta[i]
-#         # convert to float16 array:
-#         user_float = np.array(user, dtype=np.float32)
-#         # Initialize the cache for every movie to 0.4
-#         for j in xrange(1, len(user_float), 2):
-#             user_float[j] = 0.4
-#         cache[i] = user_float
-
-# @do_profile(follow=[get_number])
-# def cache_set(movie_id, user_id, val):
-#     cache[user_id * NUM_MOVIES + movie_id] = val
-
-
-
-
-#     if cache[movie_id, user_id] != 0:
-#         cache[movie_id, user_id] = val
-#     else:
-#         print "Invalid cache set. Exiting.", movie_id, user_id
-#         sys.exit()
-        
-#     user = cache[user_id]
-#     len_user = len(user)
-#     for i in xrange(0, len_user, 2):
-#         if (user[i] - 1) == movie_id:
-#             if (user[i] - 1) == movie_id:
-#                 user[i + 1] = val
-#                 return
-#     print "Invalid cache set. Exiting.", movie_id, user_id
-#     traceback.print_exc()
-#     sys.exit()
-
-# def cache_get(movie_id, user_id):
-#     return cache[user_id * NUM_MOVIES + movie_id]
-
-
-
-#     return cache[movie_id, user_id]
-
-
-#     user = cache[user_id]
-#     len_user = len(user)
-#     for i in xrange(0, len_user, 2):
-#         if (user[i] - 1) == movie_id:
-#             return user[i + 1]
-#     print "Invalid cache get. Exiting.", movie_id, user_id
-#     traceback.print_exc()
-#     sys.exit()
-
-# This version should be used only TRAINING_STARTED is false, i.e. in the 
-# first iteration
-# Should be inlined
-# def predict_rating_t_0(movie, user, movie_avg, user_off):
-#     return movie_avg[movie - 1] + user_off[user - 1]
-
-
-# (Training version) 
-# Should be inlined
-# Takes OBO user_id and movie_id
-def predict_rating_t(movie, user):
-    return cache_get(movie, user)
-
-
-# Train! Super critical sector, needs to be heavily optimized.
-# Takes the OBO user_id and movie_id
-# TODO: The Thikonov regularization stuff
-# @do_profile(follow=[get_number])
-# def train(movie, user, f):
-#     user_off = user_ofsts[user]
-#     movie_avg = movie_avgs[movie]
-# 
-#     # Rating we currently have
-#     predicted = cache_get(movie, user)
-# 
-#     tmp = user_features[f][user] * movie_features[f][movie]
-#     actual_rating = ratings_get(movie, user)
-# 
-#     error = LEARNING_RATE * (actual_rating - predicted)
-# 
-#     uv_old = user_features[f][user]
-#     user_features[f][user] += error * movie_features[f][movie]
-#     movie_features[f][movie] += error * uv_old
-#     
-#     # Update cache
-#     cache_set(movie, user, cache_get(movie, user) - tmp + user_features[f][user] * movie_features[f][movie])
-
-
-        
-# Cythonize this so it unrolls loops and stuff
-def main():
-    pass
 
 def predict(movie, user):
     # TODO: Optimize this
@@ -336,10 +137,6 @@ if __name__ == "__main__":
     global um_dta
     um_dta = um["arr_0"]
     f1.close()
-#     mu = np.load(f2)
-#     global mu_dta
-#     mu_dta = mu["arr_0"]
-#     f2.close()
 
     print "Loaded from files"
 
@@ -372,20 +169,10 @@ if __name__ == "__main__":
 
     data = um_dta
     del data
+    del um_dta
 
     print "Starting training..."
     loop(user_ofsts, movie_avgs, user_features, movie_features)
     print "Training finished"
-
-#     for i in xrange(NUM_ITERATIONS):
-#         for f in xrange(NUM_FEATURES):
-#             uf = user_features[f]
-#             mf = movie_features[f]
-#             for u in xrange(NUM_USERS):
-#                 for j in xrange(len(data[u]) / 2):
-#                     movie = data[u][2 * j] - 1
-#                     train(movie, u, f, user_ofsts, movie_avgs, uf, mf)
-#         print "Finished iteration %d", i
-
 
 

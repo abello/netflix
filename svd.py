@@ -350,7 +350,7 @@ if __name__ == "__main__":
 
     # Initialize cache
 #     cache = cp.load(open("cache", "r"))
-#     cache_init(um_dta) 
+    cache_init(um_dta) 
     print "Initialized cache"
 
 

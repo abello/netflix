@@ -21,6 +21,7 @@ cdef int NUM_ITERATIONS = 3
 def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, ndim=1] movie_avgs, user_features, movie_features):
     cdef int i, f, user, j
     cdef np.ndarray[np.float32_t, ndim=1] uf, mf
+    cdef np.ndarray[np.int16_t, ndim=1] data_user
     cdef int movie
     cdef float user_off, movie_avg, predicted, tmp
     cdef int actual_rating
@@ -34,12 +35,15 @@ def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float3
             uf = user_features[f]
             mf = movie_features[f]
             for user in xrange(NUM_USERS):
-                start = time.time()
-                len_data_user = len(data[user])/2
+                #start = time.time()
+                data_user = data[user]
+                len_data_user = len(data_user)/2
                 user_off = user_ofsts[user]
 
                 for j in xrange(len_data_user):
-                    movie = data[user][2 * j] - 1
+                    # TODO: Next line is bottleneck
+                    movie = data_user[2 * j] - 1
+                    #actual_rating = data_user[2 * j + 1]
                     movie_avg = movie_avgs[movie]
 
                     # Rating we currently have
@@ -57,10 +61,10 @@ def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float3
                     # Update cache
                     cache_set(movie, user, cache_get(movie, user) - tmp + uf[user] * mf[movie])
 
-                _sum += time.time() - start
-                _users += 1
-                if (user % 1000) == 0:
-                    print "avg for 1000 users", _sum/_users
-                    _sum = 0
-                    _users =0
+                #_sum += time.time() - start
+                #_users += 1
+                #if (user % 1000) == 0:
+                #    print "avg for 1000 users", _sum/_users
+                #    _sum = 0
+                #    _users =0
         print "Finished iteration %d", i

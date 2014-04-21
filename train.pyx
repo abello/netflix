@@ -3,7 +3,7 @@
 from cython.operator cimport dereference as deref
 import numpy as np
 cimport numpy as np
-from ht import cache_get, cache_set, ratings_get
+from ht import cache_get, cache_set
 import time
 
 # SO and google (and code samples) were used to hack this together

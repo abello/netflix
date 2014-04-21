@@ -9,7 +9,7 @@ if __name__ == '__main__':
     # Get rid of the None in the beginning
     mu_dta = np.delete(mu["arr_0"], 0)
     # Count the size of the compressed array:
-    arr = np.array([0 for i in xrange(NUM_MOVIES + 2 * NUM_PAIRS)], dtype=np.int32)
+    arr = np.array([0 for i in xrange(2 * NUM_PAIRS)], dtype=np.int32)
     size_per_movie = np.array([0 for i in xrange(NUM_MOVIES)], dtype=np.int32)
 
     print NUM_MOVIES + NUM_PAIRS
@@ -20,8 +20,6 @@ if __name__ == '__main__':
         movie = i
         pairs = mu_dta[i]
         size_per_movie[i] = len(pairs) / 2
-        arr[arr_idx] = movie + 1 # make it 1-indexed like the movie
-        arr_idx += 1
         for v in pairs:
             try:
                 arr[arr_idx] = v

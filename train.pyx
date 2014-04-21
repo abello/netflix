@@ -21,6 +21,7 @@ cdef int NUM_ITERATIONS = 3
 def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, ndim=1] movie_avgs, user_features, movie_features):
     cdef int i, f, user, j
     cdef np.ndarray[np.float32_t, ndim=1] uf, mf
+    cdef np.ndarray[np.int32_t, ndim=1] compressed, users_per_movie
     cdef int movie
     cdef float user_off, movie_avg, predicted, tmp
     cdef int actual_rating
@@ -29,17 +30,20 @@ def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float3
     cdef int _users = 0
     cdef float _sum = 0
 
+    compressed = np.load('compressed_arr.npy')
+    users_per_movie = np.load('users_per_movie.npy')
+
     for i in xrange(NUM_ITERATIONS):
         for f in xrange(NUM_FEATURES):
             uf = user_features[f]
             mf = movie_features[f]
-            for user in xrange(NUM_USERS):
-                start = time.time()
-                len_data_user = len(data[user])/2
-                user_off = user_ofsts[user]
-
-                for j in xrange(len_data_user):
-                    movie = data[user][2 * j] - 1
+            idx = 0 # index for the compressed array
+            for movie in xrange(NUM_MOVIES):
+                #start = time.time()
+                num_users = users_per_movie[movie]
+                for user_idx in xrange(idx, idx + num_users * 2, 2):
+                    user = compressed[user_idx] - 1 # Make zero indexed
+                    actual_rating = compressed[user_idx + 1]
                     movie_avg = movie_avgs[movie]
 
                     # Rating we currently have
@@ -56,11 +60,11 @@ def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float3
                     
                     # Update cache
                     cache_set(movie, user, cache_get(movie, user) - tmp + uf[user] * mf[movie])
-
-                _sum += time.time() - start
-                _users += 1
-                if (user % 1000) == 0:
-                    print "avg for 1000 users", _sum/_users
-                    _sum = 0
-                    _users =0
+                idx += num_users * 2
+                #_sum += time.time() - start
+                #_users += 1
+                #if (user % 1000) == 0:
+                #    print "avg for 1000 users", _sum/_users
+                #    _sum = 0
+                #    _users =0
         print "Finished iteration %d", i

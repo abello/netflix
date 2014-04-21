@@ -56,9 +56,14 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                     tmp = uf[user] * mf[movie]
 
                     error = LEARNING_RATE * (actual_rating - predicted)
+#                     if error > 100:
+#                         print error
 
                     uv_old = uf[user]
                     uf[user] += error * mf[movie]
+#                     if np.isinf(uf[user]):
+#                         print error, mf[movie], uv_old
+#                         np.afww()
                     mf[movie] += error * uv_old
                     
                     # Update cache
@@ -67,4 +72,5 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                 idx += num_users * 3
                 #_sum += time.time() - start
                 #_movies += 1
-        print "Finished iteration", i, time.time() - start
+        print "Finished iteration", i, " in", int(time.time() - start), "seconds"
+        print user_features[1]

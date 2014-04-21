@@ -5,7 +5,6 @@ from line_profiler import LineProfiler
 import time
 from scipy.sparse import coo_matrix, csr_matrix
 import cPickle as cp
-from train import cache_init
 from train import loop
 
 
@@ -132,13 +131,13 @@ def predict(movie, user):
         
 
 if __name__ == "__main__":
-    f1 = open('data.npz', 'r')
-    um = np.load(f1)
-    global um_dta
-    um_dta = um["arr_0"]
-    f1.close()
-
-    print "Loaded from files"
+#     f1 = open('data.npz', 'r')
+#     um = np.load(f1)
+#     global um_dta
+#     um_dta = um["arr_0"]
+#     f1.close()
+# 
+#     print "Loaded from files"
 
 
 #     movie_avgs = compute_avg(mu_dta, True)
@@ -156,7 +155,7 @@ if __name__ == "__main__":
     # Initialize cache
 #     cache = cp.load(open("cache", "r"))
     #cache_init(um_dta) 
-    print "Initialized cache"
+#     print "Initialized cache"
 
 
     # Initialize ratings
@@ -167,9 +166,9 @@ if __name__ == "__main__":
     init_features()
     print "Initialized features"
 
-    data = um_dta
-    del data
-    del um_dta
+#     data = um_dta
+#     del data
+#     del um_dta
 
     print "Starting training..."
     loop(user_ofsts, movie_avgs, user_features, movie_features)

@@ -322,6 +322,18 @@ def predict_rating_t(movie, user):
 def main():
     pass
 
+def predict(movie, user):
+    uf = user_features[user]
+    mf = movie_features[movies]
+
+    result = 0.0
+
+    for i in range(NUM_FEATURES):
+        result += uf[i] * mf[i]
+
+    return result
+        
+
 if __name__ == "__main__":
     f1 = open('data.npz', 'r')
     um = np.load(f1)

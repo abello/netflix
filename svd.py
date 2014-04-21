@@ -24,6 +24,8 @@ NUM_PAIRS = 98291669
 
 LEARNING_RATE = 0.001
 
+NUM_FEATURES = 40
+
 movie_avgs = 0
 user_ofsts = 0
 
@@ -59,10 +61,6 @@ def get_number():
 # EDN profiling stuff
 
 
-
-NUM_FEATURES = 40
-
-NUM_ITERATIONS = 3
 
 # TODO: Average of what?
 GLOBAL_AVG = 3.512599976023349
@@ -323,13 +321,11 @@ def main():
     pass
 
 def predict(movie, user):
-    uf = user_features[user]
-    mf = movie_features[movies]
-
+    # TODO: Optimize this
     result = 0.0
 
     for i in range(NUM_FEATURES):
-        result += uf[i] * mf[i]
+        result += user_features[i][user] * movie_features[i][movie]
 
     return result
         

@@ -18,7 +18,7 @@ cdef float LEARNING_RATE = 0.001
 
 cdef int NUM_FEATURES = 40
 
-cdef int NUM_ITERATIONS = 3
+cdef int NUM_ITERATIONS = 40
 
 # Struct elem that is gonna be stored on each hashtable entry
 # TODO: See if we can make this a bitfield

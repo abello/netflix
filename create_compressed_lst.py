@@ -20,7 +20,7 @@ if __name__ == '__main__':
         movie = i
         pairs = mu_dta[i]
         size_per_movie[i] = len(pairs) / 2
-        arr[arr_idx] = movie
+        arr[arr_idx] = movie + 1 # make it 1-indexed like the movie
         arr_idx += 1
         for v in pairs:
             try:

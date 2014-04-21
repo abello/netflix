@@ -62,7 +62,8 @@ cdef inline cache_set(unsigned int movie, unsigned int user, float val):
 def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, ndim=1] movie_avgs, user_features, movie_features):
     cdef int i, f, user, j
     cdef np.ndarray[np.float32_t, ndim=1] uf, mf
-    cdef np.ndarray[np.int32_t, ndim=1] compressed, users_per_movie
+    cdef np.ndarray[np.float32_t, ndim=1] compressed
+    cdef np.ndarray[np.int32_t, ndim=1] users_per_movie
     cdef int movie
     cdef float user_off, movie_avg, predicted, tmp
     cdef int actual_rating
@@ -86,8 +87,8 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                 movie_avg = movie_avgs[movie]
                 u_bound = idx + num_users * 3
                 for user_idx in xrange(idx, u_bound, 3):
-                    user = compressed[user_idx] - 1 # Make zero indexed
-                    actual_rating = compressed[user_idx + 1]
+                    user = int(compressed[user_idx]) - 1 # Make zero indexed
+                    actual_rating = int(compressed[user_idx + 1])
 
                     # Rating we currently have
                     predicted = compressed[user_idx + 2]

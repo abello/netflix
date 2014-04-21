@@ -9,7 +9,7 @@ if __name__ == '__main__':
     # Get rid of the None in the beginning
     mu_dta = np.delete(mu["arr_0"], 0)
     # Count the size of the compressed array:
-    arr = np.array([0 for i in xrange(3 * NUM_PAIRS)], dtype=np.int32)
+    arr = np.array([0 for i in xrange(3 * NUM_PAIRS)], dtype=np.float32)
     size_per_movie = np.array([0 for i in xrange(NUM_MOVIES)], dtype=np.int32)
 
     print NUM_MOVIES + NUM_PAIRS

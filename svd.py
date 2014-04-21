@@ -6,6 +6,7 @@ import time
 from scipy.sparse import coo_matrix, csr_matrix
 import cPickle as cp
 from ht import cache_init, cache_get, cache_set, ratings_get, ratings_set
+from train import loop
 
 
 # Dunny declarations, just for globals 
@@ -85,8 +86,8 @@ def init_features():
     global movie_features
 
     for f in xrange(NUM_FEATURES):
-        user_features[f] = np.array([0.1 for i in xrange(NUM_USERS)], dtype=np.float16)
-        movie_features[f] = np.array([0.1 for i in xrange(NUM_MOVIES)], dtype=np.float16)
+        user_features[f] = np.array([0.1 for i in xrange(NUM_USERS)], dtype=np.float32)
+        movie_features[f] = np.array([0.1 for i in xrange(NUM_MOVIES)], dtype=np.float32)
 
 # Takes either mu or um numpy array (from data.npz or data-mu.npz), returns a
 # list of lists, index being movie/user index, value being movie avg or user 
@@ -295,25 +296,25 @@ def predict_rating_t(movie, user):
 # Train! Super critical sector, needs to be heavily optimized.
 # Takes the OBO user_id and movie_id
 # TODO: The Thikonov regularization stuff
-@do_profile(follow=[get_number])
-def train(movie, user, f):
-    user_off = user_ofsts[user]
-    movie_avg = movie_avgs[movie]
-
-    # Rating we currently have
-    predicted = cache_get(movie, user)
-
-    tmp = user_features[f][user] * movie_features[f][movie]
-    actual_rating = ratings_get(movie, user)
-
-    error = LEARNING_RATE * (actual_rating - predicted)
-
-    uv_old = user_features[f][user]
-    user_features[f][user] += error * movie_features[f][movie]
-    movie_features[f][movie] += error * uv_old
-    
-    # Update cache
-    cache_set(movie, user, cache_get(movie, user) - tmp + user_features[f][user] * movie_features[f][movie])
+# @do_profile(follow=[get_number])
+# def train(movie, user, f):
+#     user_off = user_ofsts[user]
+#     movie_avg = movie_avgs[movie]
+# 
+#     # Rating we currently have
+#     predicted = cache_get(movie, user)
+# 
+#     tmp = user_features[f][user] * movie_features[f][movie]
+#     actual_rating = ratings_get(movie, user)
+# 
+#     error = LEARNING_RATE * (actual_rating - predicted)
+# 
+#     uv_old = user_features[f][user]
+#     user_features[f][user] += error * movie_features[f][movie]
+#     movie_features[f][movie] += error * uv_old
+#     
+#     # Update cache
+#     cache_set(movie, user, cache_get(movie, user) - tmp + user_features[f][user] * movie_features[f][movie])
 
 
         
@@ -337,17 +338,19 @@ if __name__ == "__main__":
 
 #     movie_avgs = compute_avg(mu_dta, True)
     movie_avgs = np.load(open("movie_avgs", "r"))
+    movie_avgs = np.array(movie_avgs, dtype=np.float32)
     # Shouldn't need this after this point
     print "Loaded movie averages"
 
 #     user_ofsts = compute_user_offset(movie_avgs)
     user_ofsts = np.load(open("user_ofsts", "r")) 
+    user_ofsts = np.array(user_ofsts, dtype=np.float32)
     print "Loaded user offsets"
 
 
     # Initialize cache
 #     cache = cp.load(open("cache", "r"))
-    cache_init(um_dta) 
+#     cache_init(um_dta) 
     print "Initialized cache"
 
 
@@ -361,13 +364,19 @@ if __name__ == "__main__":
 
     data = um_dta
 
-    for i in xrange(NUM_ITERATIONS):
-        for f in xrange(NUM_FEATURES):
-            for u in xrange(NUM_USERS):
-                for j in xrange(len(data[u]) / 2):
-                    movie = data[u][2 * j] - 1
-                    train(movie, u, f)
-        print "Finished iteration %d", i
+    print "Starting training..."
+    loop(data, user_ofsts, movie_avgs, user_features, movie_features)
+    print "Training finished"
+
+#     for i in xrange(NUM_ITERATIONS):
+#         for f in xrange(NUM_FEATURES):
+#             uf = user_features[f]
+#             mf = movie_features[f]
+#             for u in xrange(NUM_USERS):
+#                 for j in xrange(len(data[u]) / 2):
+#                     movie = data[u][2 * j] - 1
+#                     train(movie, u, f, user_ofsts, movie_avgs, uf, mf)
+#         print "Finished iteration %d", i
 
 
 

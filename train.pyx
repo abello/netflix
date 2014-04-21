@@ -27,7 +27,7 @@ def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float3
     cdef int actual_rating
     cdef float error, uv_old
     cdef int len_data_user
-    cdef int _users = 0
+    cdef int _movies = 0
     cdef float _sum = 0
 
     compressed = np.load('compressed_arr.npy')
@@ -63,9 +63,9 @@ def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float3
 
                 idx += num_users * 2
                 #_sum += time.time() - start
-                #_users += 1
+                #_movies += 1
                 #if (user % 1000) == 0:
-                #    print "avg for 1000 users", _sum/_users
+                #    print "avg for 1000 movies", _sum/_movies
                 #    _sum = 0
-                #    _users =0
+                #    _movies =0
         print "Finished iteration %d", i

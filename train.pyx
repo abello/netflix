@@ -18,7 +18,7 @@ cdef int NUM_FEATURES = 40
 
 cdef int NUM_ITERATIONS = 3
 
-def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, ndim=1] movie_avgs, user_features, movie_features):
+def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, ndim=1] movie_avgs, user_features, movie_features):
     cdef int i, f, user, j
     cdef np.ndarray[np.float32_t, ndim=1] uf, mf
     cdef np.ndarray[np.int32_t, ndim=1] compressed, users_per_movie
@@ -26,7 +26,6 @@ def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float3
     cdef float user_off, movie_avg, predicted, tmp
     cdef int actual_rating
     cdef float error, uv_old
-    cdef int len_data_user
     cdef int _movies = 0
     cdef float _sum = 0
     cdef int u_bound, num_users, idx, user_idx
@@ -66,8 +65,8 @@ def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float3
                 idx += num_users * 2
                 _sum += time.time() - start
                 _movies += 1
-                if (user % 1000) == 0:
-                    print "avg for 1000 movies", _sum/_movies
+                if (user % 100) == 0:
+                    print "avg for 100 movies", _sum/_movies
                     _sum = 0
                     _movies =0
         print "Finished iteration %d", i

@@ -363,9 +363,10 @@ if __name__ == "__main__":
     print "Initialized features"
 
     data = um_dta
+    del data
 
     print "Starting training..."
-    loop(data, user_ofsts, movie_avgs, user_features, movie_features)
+    loop(user_ofsts, movie_avgs, user_features, movie_features)
     print "Training finished"
 
 #     for i in xrange(NUM_ITERATIONS):

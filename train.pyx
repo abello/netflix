@@ -51,7 +51,6 @@ def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float3
                     predicted = cache_get(movie, user)
 
                     tmp = uf[user] * mf[movie]
-                    actual_rating = ratings_get(movie, user)
 
                     error = LEARNING_RATE * (actual_rating - predicted)
 

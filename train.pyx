@@ -52,5 +52,3 @@ def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float3
                     # Update cache
                     cache_set(movie, user, cache_get(movie, user) - tmp + uf[user] * mf[movie])
         print "Finished iteration %d", i
-
-cdef train(

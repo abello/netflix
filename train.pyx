@@ -29,6 +29,7 @@ def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float3
     cdef int len_data_user
     cdef int _movies = 0
     cdef float _sum = 0
+    cdef int u_bound, idx, user_idx
 
     compressed = np.load('compressed_arr.npy')
     users_per_movie = np.load('users_per_movie.npy')
@@ -43,7 +44,8 @@ def loop(data, np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float3
                 start = time.time()
                 num_users = users_per_movie[movie]
                 movie_avg = movie_avgs[movie]
-                for user_idx in xrange(idx, idx + num_users * 2, 2):
+                u_bound = idx + num_users * 2
+                for user_idx in xrange(idx, u_bound, 2):
                     user = compressed[user_idx] - 1 # Make zero indexed
                     actual_rating = compressed[user_idx + 1]
 

@@ -84,13 +84,13 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                 start = time.time()
                 num_users = users_per_movie[movie]
                 movie_avg = movie_avgs[movie]
-                u_bound = idx + num_users * 2
-                for user_idx in xrange(idx, u_bound, 2):
+                u_bound = idx + num_users * 3
+                for user_idx in xrange(idx, u_bound, 3):
                     user = compressed[user_idx] - 1 # Make zero indexed
                     actual_rating = compressed[user_idx + 1]
 
                     # Rating we currently have
-                    predicted = cache[user * NUM_MOVIES + movie]
+                    predicted = compressed[user_idx + 2]
 
                     tmp = uf[user] * mf[movie]
 
@@ -101,9 +101,9 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                     mf[movie] += error * uv_old
                     
                     # Update cache
-                    cache[user * NUM_MOVIES + movie] = predicted - tmp + uf[user] * mf[movie]
+                    compressed[user_idx + 2] = predicted - tmp + uf[user] * mf[movie]
 
-                idx += num_users * 2
+                idx += num_users * 3
                 _sum += time.time() - start
                 _movies += 1
                 if (user % 1000) == 0:

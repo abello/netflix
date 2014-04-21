@@ -11,7 +11,7 @@ ext = [Extension(
 #     include_dirs=[...], # usual stuff
 #     libraries=[...], # ditto
 #     extra_link_args=[...], # if needed
-    ),
+    ##),
     Extension(
         "train", # name of extension
         ["train.pyx"], # filename of our Pyrex/Cython source

@@ -9,7 +9,7 @@ if __name__ == '__main__':
     # Get rid of the None in the beginning
     mu_dta = np.delete(mu["arr_0"], 0)
     # Count the size of the compressed array:
-    arr = np.array([0 for i in xrange(2 * NUM_PAIRS)], dtype=np.int32)
+    arr = np.array([0 for i in xrange(3 * NUM_PAIRS)], dtype=np.int32)
     size_per_movie = np.array([0 for i in xrange(NUM_MOVIES)], dtype=np.int32)
 
     print NUM_MOVIES + NUM_PAIRS
@@ -20,13 +20,13 @@ if __name__ == '__main__':
         movie = i
         pairs = mu_dta[i]
         size_per_movie[i] = len(pairs) / 2
-        for v in pairs:
-            try:
-                arr[arr_idx] = v
-            except IndexError:
-                print arr_idx
-                exit() 
-            arr_idx += 1
+        for j in xrange(0, len(pairs), 2):
+            user = pairs[j]
+            rating = pairs[j + 1]
+            arr[arr_idx] = user
+            arr[arr_idx + 1] = rating
+            arr[arr_idx + 2] = 0.4 # set initial cache value
+            arr_idx += 3
 
     print arr, NUM_MOVIES + NUM_PAIRS
     # Now save these arrays

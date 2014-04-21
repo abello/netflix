@@ -87,8 +87,8 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                 movie_avg = movie_avgs[movie]
                 u_bound = idx + num_users * 3
                 for user_idx in xrange(idx, u_bound, 3):
-                    user = int(compressed[user_idx]) - 1 # Make zero indexed
-                    actual_rating = int(compressed[user_idx + 1])
+                    user = (<int> (compressed[user_idx])) - 1 # Make zero indexed
+                    actual_rating = <int> (compressed[user_idx + 1])
 
                     # Rating we currently have
                     predicted = compressed[user_idx + 2]

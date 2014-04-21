@@ -6,7 +6,7 @@ import time
 from scipy.sparse import coo_matrix, csr_matrix
 import cPickle as cp
 from ht import cache_init, cache_get, cache_set, ratings_get, ratings_set
-from train import train
+from train import loop
 
 
 # Dunny declarations, just for globals 
@@ -365,16 +365,18 @@ if __name__ == "__main__":
     data = um_dta
 
     print "Starting training..."
+    loop(data, user_ofsts, movie_avgs, user_features, movie_features)
+    print "Training finished"
 
-    for i in xrange(NUM_ITERATIONS):
-        for f in xrange(NUM_FEATURES):
-            uf = user_features[f]
-            mf = movie_features[f]
-            for u in xrange(NUM_USERS):
-                for j in xrange(len(data[u]) / 2):
-                    movie = data[u][2 * j] - 1
-                    train(movie, u, f, user_ofsts, movie_avgs, uf, mf)
-        print "Finished iteration %d", i
+#     for i in xrange(NUM_ITERATIONS):
+#         for f in xrange(NUM_FEATURES):
+#             uf = user_features[f]
+#             mf = movie_features[f]
+#             for u in xrange(NUM_USERS):
+#                 for j in xrange(len(data[u]) / 2):
+#                     movie = data[u][2 * j] - 1
+#                     train(movie, u, f, user_ofsts, movie_avgs, uf, mf)
+#         print "Finished iteration %d", i
 
 
 

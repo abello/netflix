@@ -76,13 +76,13 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
     users_per_movie = np.load('users_per_movie.npy')
 
     for i in xrange(NUM_ITERATIONS):
+        start = time.time()
         for f in xrange(NUM_FEATURES):
             uf = user_features[f]
             mf = movie_features[f]
             idx = 0 # index for the compressed array
 
             for movie in xrange(NUM_MOVIES):
-                start = time.time()
                 num_users = users_per_movie[movie]
                 movie_avg = movie_avgs[movie]
                 u_bound = idx + num_users * 3
@@ -107,8 +107,4 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                 idx += num_users * 3
                 _sum += time.time() - start
                 _movies += 1
-                if (user % 1000) == 0:
-                    print "avg for 1000 movies", _sum/_movies
-                    _sum = 0
-                    _movies =0
-        print "Finished iteration %d", i
+        print "Finished iteration", i, time.time() - start

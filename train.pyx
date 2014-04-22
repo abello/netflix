@@ -103,8 +103,13 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
         print "Finished iteration", i, " in", int(time.time() - start), "seconds"
 #         print user_features[1]
 
+
 # Gets OBO ids
-cpdef float predict(int movie, int user, np.ndarray[np.float32_t, ndim=1] uf, np.ndarray[np.float32_t, ndim=1] mf):
+# @cython.boundscheck(False)
+# @cython.wraparound(False)
+# @cython.nonecheck(False)
+# @cython.overflowcheck(False)
+cdef inline float predict(int movie, int user, np.ndarray[np.float32_t, ndim=1] uf, np.ndarray[np.float32_t, ndim=1] mf):
     cdef int i
     cdef float result = 0.0
 

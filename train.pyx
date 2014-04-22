@@ -16,9 +16,9 @@ cdef int NUM_MOVIES = 17770
 
 cdef float LEARNING_RATE = 0.01
 
-cdef int NUM_FEATURES = 10
+cdef int NUM_FEATURES = 40
 
-cdef int NUM_ITERATIONS = 40
+cdef int NUM_ITERATIONS = 10
 
 
 # @cython.boundscheck(False)

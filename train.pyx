@@ -13,9 +13,9 @@ cdef int NUM_MOVIES = 17770
 
 # SO and google (and code samples) were used to hack this together
 
-cdef float LEARNING_RATE = 0.001
+cdef float LEARNING_RATE = 0.01
 
-cdef int NUM_FEATURES = 40
+cdef int NUM_FEATURES = 10
 
 cdef int NUM_ITERATIONS = 40
 
@@ -55,6 +55,13 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
 
                     # Rating we currently have
                     predicted = compressed[user_idx + 2]
+                    
+                    # The below adjustment was made after consulting: http://www.timelydevelopment.com/demos/NetflixPrize.aspx
+
+                    if predicted > 5.0:
+                        predicted = 5.0
+                    elif predicted < 1.0:
+                        predicted = 1.0
 
                     error = LEARNING_RATE * (actual_rating - predicted)
 

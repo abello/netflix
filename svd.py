@@ -120,6 +120,7 @@ def compute_user_offset(movie_avg):
     return result
 
 
+# Gets OBO ids
 def predict(movie, user):
     # TODO: Optimize this
     result = 0.0
@@ -128,6 +129,13 @@ def predict(movie, user):
         result += user_features[i][user] * movie_features[i][movie]
 
     return result
+
+def output():
+    output = open('output.dta', 'w+')
+    with open('qual.dta', 'r') as qual:
+        for line in qual:
+            user_id, movie_id, time = [int(v) for v in line.split()]
+            output.write(str(predict(movie_id, user_id)) + "\n")
         
 
 if __name__ == "__main__":

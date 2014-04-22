@@ -65,11 +65,7 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                     error = actual_rating - predicted
 
                     uv_old = uf[user * NUM_FEATURES + f]
-                    try:
-                        mv_old = mf[movie * NUM_FEATURES + f]
-                    except Exception, e:
-                        print movie, f
-                        sys.exit()
+                    mv_old = mf[movie * NUM_FEATURES + f]
 
 #                     if np.isnan(uv_old) or np.isnan(mv_old):
 #                         print uv_old, mv_old, error, predicted

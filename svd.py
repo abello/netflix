@@ -81,7 +81,7 @@ def init_features():
     global uf
     global mf
     uf = np.array([0.2738612 for i in xrange(NUM_USERS * NUM_FEATURES)], dtype=np.float32)
-    um = np.array([0.2738612  for i in xrange(NUM_MOVIES * NUM_FEATURES)], dtype=np.float32)
+    mf = np.array([0.2738612  for i in xrange(NUM_MOVIES * NUM_FEATURES)], dtype=np.float32)
 
 # Takes either mu or um numpy array (from data.npz or data-mu.npz), returns a
 # list of lists, index being movie/user index, value being movie avg or user 

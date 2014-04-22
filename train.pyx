@@ -56,13 +56,6 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
 
                     # Rating we currently have
                     predicted = compressed[user_idx + 2]
-                    
-                    # The below adjustment was made after consulting: http://www.timelydevelopment.com/demos/NetflixPrize.aspx
-
-                    if predicted > 5.0:
-                        predicted = 5.0
-                    elif predicted < 1.0:
-                        predicted = 1.0
 
                     error = LEARNING_RATE * (actual_rating - predicted)
 
@@ -80,10 +73,14 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                     # compressed[user_idx + 2] = predicted - tmp + uf[user] * mf[movie]
 
                     rating = predicted - tmp + (uv_old + error * mv_old) * (mv_old + error * uv_old)
+
+
+                    # The below adjustment was made after consulting: http://www.timelydevelopment.com/demos/NetflixPrize.aspx
                     if rating > 5:
                         rating = 5
-                    if rating < 1:
+                    elif rating < 1:
                         rating = 1
+
                     compressed[user_idx + 2] = rating
 
                 idx += num_users * 3

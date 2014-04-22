@@ -83,8 +83,9 @@ def init_features():
     global movie_features
 
     for f in xrange(NUM_FEATURES):
-        user_features[f] = np.array([0.1 for i in xrange(NUM_USERS)], dtype=np.float32)
-        movie_features[f] = np.array([0.1 for i in xrange(NUM_MOVIES)], dtype=np.float32)
+        # Set to sqrt(3/40)
+        user_features[f] = np.array([0.2738612 for i in xrange(NUM_USERS)], dtype=np.float32)
+        movie_features[f] = np.array([0.2738612 for i in xrange(NUM_MOVIES)], dtype=np.float32)
 
 # Takes either mu or um numpy array (from data.npz or data-mu.npz), returns a
 # list of lists, index being movie/user index, value being movie avg or user 

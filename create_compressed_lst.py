@@ -25,7 +25,7 @@ if __name__ == '__main__':
             rating = pairs[j + 1]
             arr[arr_idx] = user
             arr[arr_idx + 1] = rating
-            arr[arr_idx + 2] = 0.4 # set initial cache value
+            arr[arr_idx + 2] = 3.0 # Initial cache value
             arr_idx += 3
 
     print arr, NUM_MOVIES + NUM_PAIRS

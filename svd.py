@@ -5,7 +5,7 @@ from line_profiler import LineProfiler
 import time
 from scipy.sparse import coo_matrix, csr_matrix
 import cPickle as cp
-from train import loop
+from train import loop, predict
 
 
 # Dunny declarations, just for globals 
@@ -21,12 +21,16 @@ NUM_MOVIES = 17770
 NUM_PAIRS = 98291669
 
 
-LEARNING_RATE = 0.001
-
-NUM_FEATURES = 40
+# LEARNING_RATE = 0.001
+# 
+# HAS TO BE CHANGED IN BOTH TRAIN AND SVD
+NUM_FEATURES = 10
 
 movie_avgs = 0
 user_ofsts = 0
+
+uf = None
+mf = None
 
 # Profiling stuff from https://zapier.com/engineering/profiling-python-boss/
 def timef(f):
@@ -71,21 +75,13 @@ K = 25
 
 TRAINING_STARTED = False
 
-# User features and movie features globals
-user_features = [None for i in xrange(NUM_FEATURES)]
-
-movie_features = [None for i in xrange(NUM_FEATURES)]
-
 
 # Initializes the feature vectors
 def init_features():
-    global user_features
-    global movie_features
-
-    for f in xrange(NUM_FEATURES):
-        # Set to sqrt(3/40)
-        user_features[f] = np.array([0.2738612 for i in xrange(NUM_USERS)], dtype=np.float32)
-        movie_features[f] = np.array([0.2738612 for i in xrange(NUM_MOVIES)], dtype=np.float32)
+    global uf
+    global mf
+    uf = np.array([0.2738612 for i in xrange(NUM_USERS * NUM_FEATURES)], dtype=np.float32)
+    um = np.array([0.2738612  for i in xrange(NUM_MOVIES * NUM_FEATURES)], dtype=np.float32)
 
 # Takes either mu or um numpy array (from data.npz or data-mu.npz), returns a
 # list of lists, index being movie/user index, value being movie avg or user 
@@ -121,20 +117,6 @@ def compute_user_offset(movie_avg):
     return result
 
 
-# Gets OBO ids
-def predict(movie, user):
-    # TODO: Optimize this
-    result = 0.0
-
-    for i in range(NUM_FEATURES):
-        result += user_features[i][user] * movie_features[i][movie]
-
-    if result > 5:
-        result = 5
-    elif result < 1:
-        result = 1
-
-    return result
 
 def output():
     output = open('output.dta', 'w+')
@@ -185,7 +167,7 @@ if __name__ == "__main__":
 #     del um_dta
 
     print "Starting training..."
-    loop(user_ofsts, movie_avgs, user_features, movie_features)
+    loop(user_ofsts, movie_avgs, uf, mf)
     print "Training finished"
 
 

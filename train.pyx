@@ -16,6 +16,7 @@ cdef int NUM_MOVIES = 17770
 
 cdef float LEARNING_RATE = 0.04
 
+# HAS TO BE CHANGED IN BOTH TRAIN AND SVD
 cdef int NUM_FEATURES = 10
 
 cdef int NUM_ITERATIONS = 50
@@ -28,9 +29,8 @@ cdef float K = 0.015
 # @cython.wraparound(False)
 # @cython.nonecheck(False)
 # @cython.overflowcheck(False)
-def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, ndim=1] movie_avgs, user_features, movie_features):
+def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, ndim=1] movie_avgs, np.ndarray[np.float32_t, ndim=1] uf, np.ndarray[np.float32_t, ndim=1] mf):
     cdef int i, f, user, j
-    cdef np.ndarray[np.float32_t, ndim=1] uf, mf
     cdef np.ndarray[np.float32_t, ndim=1] compressed
     cdef np.ndarray[np.int32_t, ndim=1] users_per_movie
     cdef int movie
@@ -47,8 +47,6 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
     for i in xrange(NUM_ITERATIONS):
         start = time.time()
         for f in xrange(NUM_FEATURES):
-            uf = user_features[f]
-            mf = movie_features[f]
             idx = 0 # index for the compressed array
 
             for movie in xrange(NUM_MOVIES):
@@ -65,8 +63,8 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
 
                     error = actual_rating - predicted
 
-                    uv_old = uf[user]
-                    mv_old = mf[movie]
+                    uv_old = uf[user * NUM_FEATURES + f]
+                    mv_old = mf[movie * NUM_FEATURES + f]
 
 #                     if np.isnan(uv_old) or np.isnan(mv_old):
 #                         print uv_old, mv_old, error, predicted
@@ -75,8 +73,8 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
 #                     uf[user] += error * mv_old
 #                     mf[movie] += error * uv_old
                     # Cross train, as in TD article
-                    uf[user] += LEARNING_RATE * (error * mv_old - K * uv_old)
-                    mf[movie] += LEARNING_RATE * (error * uv_old - K * mv_old)
+                    uf[user * NUM_FEATURES + f] += LEARNING_RATE * (error * mv_old - K * uv_old)
+                    mf[movie * NUM_FEATURES + f] += LEARNING_RATE * (error * uv_old - K * mv_old)
                     
                     # Update cache
                     # compressed[user_idx + 2] = predicted - tmp + uf[user] * mf[movie]
@@ -97,3 +95,18 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                 #_movies += 1
         print "Finished iteration", i, " in", int(time.time() - start), "seconds"
 #         print user_features[1]
+
+# Gets OBO ids
+def predict(int movie, int user, np.ndarray[np.float32_t, ndim=1] uf, np.ndarray[np.float32_t, ndim=1] mf):
+    cdef int i
+    cdef float result = 0.0
+
+    for i in range(NUM_FEATURES):
+        result += uf[user * NUM_FEATURES + i] * mf[movie * NUM_FEATURES + i]
+
+    if result > 5.0:
+        result = 5.0
+    elif result < 1.0:
+        result = 1.0
+
+    return result

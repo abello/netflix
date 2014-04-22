@@ -67,9 +67,7 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                     uv_old = uf[user * NUM_FEATURES + f]
                     mv_old = mf[movie * NUM_FEATURES + f]
 
-#                     if np.isnan(uv_old) or np.isnan(mv_old):
-#                         print uv_old, mv_old, error, predicted
-                    tmp = uv_old * mv_old
+#                     tmp = uv_old * mv_old
 
 #                     uf[user] += error * mv_old
 #                     mf[movie] += error * uv_old
@@ -80,31 +78,40 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                     # Update cache
                     # compressed[user_idx + 2] = predicted - tmp + uf[user] * mf[movie]
 
-                    rating = predicted - tmp + (uv_old + error * mv_old) * (mv_old + error * uv_old)
+#                     rating = predicted - tmp + (uv_old + error * mv_old) * (mv_old + error * uv_old)
 
 
-                    # The below adjustment was made after consulting: http://www.timelydevelopment.com/demos/NetflixPrize.aspx
-                    if rating > 5:
-                        rating = 5
-                    elif rating < 1:
-                        rating = 1
 
-                    compressed[user_idx + 2] = rating
 
                 idx += num_users * 3
                 #_sum += time.time() - start
                 #_movies += 1
+
+            # Finished training feature here, update cache
+            for movie in xrange(NUM_MOVIES):
+                idx = 0
+                num_users = users_per_movie[movie]
+                u_bound = idx + num_users * 3
+                u_bound = idx + num_users * 3
+                for user_idx in xrange(idx, u_bound, 3):
+                    user = (<int> (compressed[user_idx])) - 1 # Make zero indexed
+
+                    # Update cache
+                    compressed[user_idx + 2] = predict(movie, user, uf, mf)
+
+
         print "Finished iteration", i, " in", int(time.time() - start), "seconds"
 #         print user_features[1]
 
 # Gets OBO ids
-def predict(int movie, int user, np.ndarray[np.float32_t, ndim=1] uf, np.ndarray[np.float32_t, ndim=1] mf):
+cpdef float predict(int movie, int user, np.ndarray[np.float32_t, ndim=1] uf, np.ndarray[np.float32_t, ndim=1] mf):
     cdef int i
     cdef float result = 0.0
 
     for i in range(NUM_FEATURES):
         result += uf[user * NUM_FEATURES + i] * mf[movie * NUM_FEATURES + i]
 
+    # The below adjustment was made after consulting: http://www.timelydevelopment.com/demos/NetflixPrize.aspx
     if result > 5.0:
         result = 5.0
     elif result < 1.0:

@@ -4,6 +4,7 @@ from cython.operator cimport dereference as deref
 import numpy as np
 cimport numpy as np
 import time
+from random import random
 
 # SO and google (and code samples) were used to hack this together
 
@@ -27,7 +28,7 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
     cdef np.ndarray[np.float32_t, ndim=1] compressed
     cdef np.ndarray[np.int32_t, ndim=1] users_per_movie
     cdef int movie
-    cdef float user_off, movie_avg, predicted, tmp
+    cdef float user_off, movie_avg, predicted, tmp, rating
     cdef int actual_rating
     cdef float error, uv_old, mv_old
     cdef int _movies = 0
@@ -71,7 +72,12 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                     # Update cache
                     # compressed[user_idx + 2] = predicted - tmp + uf[user] * mf[movie]
 
-                    compressed[user_idx + 2] = predicted - tmp + (uv_old + error * mv_old) * (mv_old + error * uv_old)
+                    rating = predicted - tmp + (uv_old + error * mv_old) * (mv_old + error * uv_old)
+                    if rating > 5:
+                        rating = 5
+                    if rating < 1:
+                        rating = 1
+                    compressed[user_idx + 2] = rating
 
                 idx += num_users * 3
                 #_sum += time.time() - start

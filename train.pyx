@@ -92,7 +92,6 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                 idx = 0
                 num_users = users_per_movie[movie]
                 u_bound = idx + num_users * 3
-                u_bound = idx + num_users * 3
                 for user_idx in xrange(idx, u_bound, 3):
                     user = (<int> (compressed[user_idx])) - 1 # Make zero indexed
 

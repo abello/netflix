@@ -14,11 +14,14 @@ cdef int NUM_MOVIES = 17770
 
 # SO and google (and code samples) were used to hack this together
 
-cdef float LEARNING_RATE = 0.01
+cdef float LEARNING_RATE = 0.04
 
-cdef int NUM_FEATURES = 40
+cdef int NUM_FEATURES = 10
 
-cdef int NUM_ITERATIONS = 10
+cdef int NUM_ITERATIONS = 50
+
+# Regularization parameter, as in TD article
+cdef float K = 0.015
 
 
 # @cython.boundscheck(False)
@@ -69,11 +72,11 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
 #                         print uv_old, mv_old, error, predicted
                     tmp = uv_old * mv_old
 
-                    uf[user] += error * mv_old
-#                     if np.isinf(uf[user]):
-#                         print error, mf[movie], uv_old
-#                         np.afww()
-                    mf[movie] += error * uv_old
+#                     uf[user] += error * mv_old
+#                     mf[movie] += error * uv_old
+                    # Cross train, as in TD article
+                    uf[user] += LEARNING_RATE * (error * mv_old - K * uv_old)
+                    mf[movie] += LEARNING_RATE * (error * uv_old - K * mv_old)
                     
                     # Update cache
                     # compressed[user_idx + 2] = predicted - tmp + uf[user] * mf[movie]

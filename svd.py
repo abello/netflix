@@ -128,6 +128,11 @@ def predict(movie, user):
     for i in range(NUM_FEATURES):
         result += user_features[i][user] * movie_features[i][movie]
 
+    if result > 5:
+        result = 5
+    elif result < 1:
+        result = 1
+
     return result
 
 def output():
@@ -135,7 +140,7 @@ def output():
     with open('qual.dta', 'r') as qual:
         for line in qual:
             user_id, movie_id, time = [int(v) for v in line.split()]
-            output.write(str(predict(movie_id, user_id)) + "\n")
+            output.write(str(predict(movie_id - 1, user_id - 1)) + "\n")
         
 
 if __name__ == "__main__":

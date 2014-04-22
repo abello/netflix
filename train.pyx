@@ -29,7 +29,7 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
     cdef int movie
     cdef float user_off, movie_avg, predicted, tmp
     cdef int actual_rating
-    cdef float error, uv_old
+    cdef float error, uv_old, mv_old
     cdef int _movies = 0
     cdef float _sum = 0
     cdef int u_bound, num_users, idx, user_idx
@@ -48,6 +48,7 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                 num_users = users_per_movie[movie]
                 movie_avg = movie_avgs[movie]
                 u_bound = idx + num_users * 3
+                
                 for user_idx in xrange(idx, u_bound, 3):
                     user = (<int> (compressed[user_idx])) - 1 # Make zero indexed
                     actual_rating = <int> (compressed[user_idx + 1])
@@ -55,24 +56,25 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                     # Rating we currently have
                     predicted = compressed[user_idx + 2]
 
-                    tmp = uf[user] * mf[movie]
-
                     error = LEARNING_RATE * (actual_rating - predicted)
-#                     if error > 100:
-#                         print error
 
                     uv_old = uf[user]
-                    uf[user] += error * mf[movie]
+                    mv_old = mf[movie]
+                    tmp = uv_old * mv_old
+
+                    uf[user] += error * mv_old
 #                     if np.isinf(uf[user]):
 #                         print error, mf[movie], uv_old
 #                         np.afww()
                     mf[movie] += error * uv_old
                     
                     # Update cache
-                    compressed[user_idx + 2] = predicted - tmp + uf[user] * mf[movie]
+                    # compressed[user_idx + 2] = predicted - tmp + uf[user] * mf[movie]
+
+                    compressed[user_idx + 2] = predicted - tmp + (uv_old + error * mv_old) * (mv_old + error * uv_old)
 
                 idx += num_users * 3
                 #_sum += time.time() - start
                 #_movies += 1
         print "Finished iteration", i, " in", int(time.time() - start), "seconds"
-        print user_features[1]
+#         print user_features[1]

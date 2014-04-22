@@ -63,7 +63,7 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                     # Rating we currently have
                     predicted = compressed[user_idx + 2]
 
-                    error = LEARNING_RATE * (actual_rating - predicted)
+                    error = actual_rating - predicted
 
                     uv_old = uf[user]
                     mv_old = mf[movie]

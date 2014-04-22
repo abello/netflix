@@ -22,6 +22,9 @@ cdef int NUM_ITERATIONS = 10
 
 
 # @cython.boundscheck(False)
+# @cython.wraparound(False)
+# @cython.nonecheck(False)
+# @cython.overflowcheck(False)
 def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, ndim=1] movie_avgs, user_features, movie_features):
     cdef int i, f, user, j
     cdef np.ndarray[np.float32_t, ndim=1] uf, mf
@@ -61,6 +64,9 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
 
                     uv_old = uf[user]
                     mv_old = mf[movie]
+
+#                     if np.isnan(uv_old) or np.isnan(mv_old):
+#                         print uv_old, mv_old, error, predicted
                     tmp = uv_old * mv_old
 
                     uf[user] += error * mv_old

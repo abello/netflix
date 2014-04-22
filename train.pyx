@@ -1,4 +1,5 @@
-#distutils: language = c++
+#distutils: language = c
+cimport cython
 from cython.operator cimport dereference as deref
 import numpy as np
 cimport numpy as np
@@ -19,6 +20,7 @@ cdef int NUM_FEATURES = 40
 cdef int NUM_ITERATIONS = 40
 
 
+# @cython.boundscheck(False)
 def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, ndim=1] movie_avgs, user_features, movie_features):
     cdef int i, f, user, j
     cdef np.ndarray[np.float32_t, ndim=1] uf, mf

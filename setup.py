@@ -2,12 +2,14 @@ from distutils.core import setup
 from distutils.extension import Extension 
 from Cython.Distutils import build_ext
 
+# Setup file modified from some cython docs on the internet
+
 
 ext = [
     Extension(
         "train", # name of extension
         ["train.pyx"], # filename of our Pyrex/Cython source
-        language="c++", # this causes Pyrex/Cython to create C++ source
+        language="c", # this causes Pyrex/Cython to create C source
     extra_compile_args=["-std=c++11"],
 #         extra_compile_args=["-std=c++11"],
     #     include_dirs=[...], # usual stuff

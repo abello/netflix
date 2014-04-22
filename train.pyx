@@ -20,7 +20,7 @@ cdef float LEARNING_RATE = 0.04
 # HAS TO BE CHANGED IN BOTH TRAIN AND SVD
 cdef int NUM_FEATURES = 10
 
-cdef int NUM_ITERATIONS = 50
+cdef int NUM_ITERATIONS = 30
 
 # Regularization parameter, as in TD article
 cdef float K = 0.015
@@ -41,6 +41,10 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
     cdef int _movies = 0
     cdef float _sum = 0
     cdef int u_bound, num_users, idx, user_idx
+    
+    # Cache update stuff
+    cdef int _i
+    cdef float _result
 
     compressed = np.load('compressed_arr.npy')
     users_per_movie = np.load('users_per_movie.npy')
@@ -96,7 +100,19 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                     user = (<int> (compressed[user_idx])) - 1 # Make zero indexed
 
                     # Update cache
-                    compressed[user_idx + 2] = predict(movie, user, uf, mf)
+                    _result = 0.0
+                    for _i in xrange(NUM_FEATURES):
+                        result += uf[user * NUM_FEATURES + _i] * mf[movie * NUM_FEATURES + _i]
+                        
+                    if _result > 5.0:
+                        _result = 5.0
+                    elif _result < 1.0:
+                        _result = 1.0
+                        
+                    compressed[user_idx + 2] = _result
+
+                idx += num_users * 3
+                        
 
 
         print "Finished iteration", i, " in", int(time.time() - start), "seconds"

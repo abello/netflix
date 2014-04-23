@@ -102,7 +102,7 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                     # Update cache
                     _result = 0.0
                     for _i in xrange(NUM_FEATURES):
-                        result += uf[user * NUM_FEATURES + _i] * mf[movie * NUM_FEATURES + _i]
+                        _result += uf[user * NUM_FEATURES + _i] * mf[movie * NUM_FEATURES + _i]
                         
                     if _result > 5.0:
                         _result = 5.0

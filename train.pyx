@@ -20,7 +20,7 @@ cdef float LEARNING_RATE = 0.04
 # HAS TO BE CHANGED IN BOTH TRAIN AND SVD
 cdef int NUM_FEATURES = 5
 
-cdef int NUM_ITERATIONS = 20
+cdef int NUM_ITERATIONS = 2
 
 # Regularization parameter, as in TD article
 cdef float K = 0.0
@@ -78,7 +78,7 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                     # Cross train, as in TD article
                     uf[user * NUM_FEATURES + f] += LEARNING_RATE * (error * mv_old - K * uv_old)
                     mf[movie * NUM_FEATURES + f] += LEARNING_RATE * (error * uv_old - K * mv_old)
-                    
+
                     # Update cache
                     # compressed[user_idx + 2] = predicted - tmp + uf[user] * mf[movie]
 
@@ -116,6 +116,7 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
 
 
         print "Finished iteration", i, " in", int(time.time() - start), "seconds"
+        print uf, mf
 
 
 # Gets OBO ids

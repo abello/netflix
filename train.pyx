@@ -18,12 +18,12 @@ cdef int NUM_MOVIES = 17770
 cdef float LEARNING_RATE = 0.04
 
 # HAS TO BE CHANGED IN BOTH TRAIN AND SVD
-cdef int NUM_FEATURES = 10
+cdef int NUM_FEATURES = 5
 
-cdef int NUM_ITERATIONS = 50
+cdef int NUM_ITERATIONS = 20
 
 # Regularization parameter, as in TD article
-cdef float K = 0.015
+cdef float K = 0.0
 
 
 # @cython.boundscheck(False)
@@ -49,9 +49,9 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
     compressed = np.load('compressed_arr.npy')
     users_per_movie = np.load('users_per_movie.npy')
 
-    for i in xrange(NUM_ITERATIONS):
+    for f in xrange(NUM_FEATURES):
         start = time.time()
-        for f in xrange(NUM_FEATURES):
+        for i in xrange(NUM_ITERATIONS):
             idx = 0 # index for the compressed array
 
             for movie in xrange(NUM_MOVIES):
@@ -91,27 +91,27 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                 #_sum += time.time() - start
                 #_movies += 1
 
-            # Finished training feature here, update cache
-            for movie in xrange(NUM_MOVIES):
-                idx = 0
-                num_users = users_per_movie[movie]
-                u_bound = idx + num_users * 3
-                for user_idx in xrange(idx, u_bound, 3):
-                    user = (<int> (compressed[user_idx])) - 1 # Make zero indexed
+        # Finished training feature here, update cache
+        for movie in xrange(NUM_MOVIES):
+            idx = 0
+            num_users = users_per_movie[movie]
+            u_bound = idx + num_users * 3
+            for user_idx in xrange(idx, u_bound, 3):
+                user = (<int> (compressed[user_idx])) - 1 # Make zero indexed
 
-                    # Update cache
-                    _result = 0.0
-                    for _i in xrange(NUM_FEATURES):
-                        _result += uf[user * NUM_FEATURES + _i] * mf[movie * NUM_FEATURES + _i]
-                        
-                    if _result > 5.0:
-                        _result = 5.0
-                    elif _result < 1.0:
-                        _result = 1.0
-                        
-                    compressed[user_idx + 2] = _result
+                # Update cache
+                _result = 0.0
+                for _i in xrange(NUM_FEATURES):
+                    _result += uf[user * NUM_FEATURES + _i] * mf[movie * NUM_FEATURES + _i]
+                    
+                if _result > 5.0:
+                    _result = 5.0
+                elif _result < 1.0:
+                    _result = 1.0
+                    
+                compressed[user_idx + 2] = _result
 
-                idx += num_users * 3
+            idx += num_users * 3
                         
 
 

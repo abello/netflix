@@ -123,7 +123,7 @@ def output():
     with open('qual.dta', 'r') as qual:
         for line in qual:
             user_id, movie_id, time = [int(v) for v in line.split()]
-            output.write(str(predict(movie_id - 1, user_id - 1)) + "\n")
+            output.write(str(predict(movie_id - 1, user_id - 1, uf, mf)) + "\n")
         
 
 if __name__ == "__main__":

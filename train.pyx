@@ -20,7 +20,7 @@ cdef float LEARNING_RATE = 0.04
 # HAS TO BE CHANGED IN BOTH TRAIN AND SVD
 cdef int NUM_FEATURES = 10
 
-cdef int NUM_ITERATIONS = 30
+cdef int NUM_ITERATIONS = 50
 
 # Regularization parameter, as in TD article
 cdef float K = 0.015

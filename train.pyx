@@ -7,13 +7,11 @@ import time
 from random import random
 import sys
 
-# SO and google (and code samples) were used to hack this together
+# SO and google (and code samples) were used to hack cython together
 
 cdef int NUM_USERS = 458293
 
 cdef int NUM_MOVIES = 17770
-
-# SO and google (and code samples) were used to hack this together
 
 cdef float LEARNING_RATE = 0.04
 
@@ -49,6 +47,8 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
     compressed = np.load('compressed_arr.npy')
     users_per_movie = np.load('users_per_movie.npy')
 
+    # Train all features one by one, for NUM_ITERATIONS each.
+
     for f in xrange(NUM_FEATURES):
         start = time.time()
         for i in xrange(NUM_ITERATIONS):
@@ -60,7 +60,10 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                 u_bound = idx + num_users * 3
                 
                 for user_idx in xrange(idx, u_bound, 3):
+                    # 0-indexed user id
                     user = (<int> (compressed[user_idx])) - 1 # Make zero indexed
+
+                    # Actual rating from the data set (fixed)
                     actual_rating = <int> (compressed[user_idx + 1])
 
                     # Rating we currently have
@@ -68,6 +71,7 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
 
                     error = actual_rating - predicted
 
+                    # Old values we have for the movie and user features
                     uv_old = uf[user * NUM_FEATURES + f]
                     mv_old = mf[movie * NUM_FEATURES + f]
 
@@ -75,6 +79,7 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
 
 #                     uf[user] += error * mv_old
 #                     mf[movie] += error * uv_old
+
                     # Cross train, as in TD article
                     uf[user * NUM_FEATURES + f] += LEARNING_RATE * (error * mv_old - K * uv_old)
                     mf[movie * NUM_FEATURES + f] += LEARNING_RATE * (error * uv_old - K * mv_old)
@@ -91,15 +96,16 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                 #_sum += time.time() - start
                 #_movies += 1
 
-        # Finished training feature here, update cache
+        # Finished training feature here, update cache (using the TD article approach)
         for movie in xrange(NUM_MOVIES):
             idx = 0
             num_users = users_per_movie[movie]
             u_bound = idx + num_users * 3
             for user_idx in xrange(idx, u_bound, 3):
+                # 0-indexed user id
                 user = (<int> (compressed[user_idx])) - 1 # Make zero indexed
 
-                # Update cache
+                # Calculate the dot product and update cache
                 _result = 0.0
                 for _i in xrange(NUM_FEATURES):
                     _result += uf[user * NUM_FEATURES + _i] * mf[movie * NUM_FEATURES + _i]

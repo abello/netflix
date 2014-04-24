@@ -56,7 +56,7 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
 
             for movie in xrange(NUM_MOVIES):
                 num_users = users_per_movie[movie]
-                movie_avg = movie_avgs[movie]
+#                movie_avg = movie_avgs[movie]
                 u_bound = idx + num_users * 3
                 
                 for user_idx in xrange(idx, u_bound, 3):
@@ -65,11 +65,25 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
 
                     # Rating we currently have
                     predicted = compressed[user_idx + 2]
-
-                    error = actual_rating - predicted
+                    if (predicted <= 0):
+                        predicted = 1.0
 
                     uv_old = uf[user * NUM_FEATURES + f]
                     mv_old = mf[movie * NUM_FEATURES + f]
+
+                    predicted += uv_old * mv_old
+                    if predicted > 5.0:
+                        predicted = 5.0
+                    if predicted < 1.0:
+                        predicted = 1.0
+
+                    predicted += (NUM_FEATURES - f - 1) * (0.1 * 0.1)
+                    if predicted > 5.0:
+                        predicted = 5.0
+                    if predicted < 1.0:
+                        predicted = 1.0
+
+                    error = actual_rating - predicted
 
 #                     tmp = uv_old * mv_old
 
@@ -100,9 +114,10 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                 user = (<int> (compressed[user_idx])) - 1 # Make zero indexed
 
                 # Update cache
-                _result = 0.0
-                for _i in xrange(NUM_FEATURES):
-                    _result += uf[user * NUM_FEATURES + _i] * mf[movie * NUM_FEATURES + _i]
+                _result = compressed[user_idx + 2] 
+                if _result <= 0:
+                    _result = 1.0
+                _result += uf[user * NUM_FEATURES + f] * mf[movie * NUM_FEATURES + f]
                     
                 if _result > 5.0:
                     _result = 5.0

@@ -18,7 +18,7 @@ cdef float LEARNING_RATE = 0.04
 # HAS TO BE CHANGED IN BOTH TRAIN AND SVD
 cdef int NUM_FEATURES = 5
 
-cdef int NUM_ITERATIONS = 2
+cdef int NUM_ITERATIONS = 40
 
 # Regularization parameter, as in TD article
 cdef float K = 0.0
@@ -133,7 +133,7 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
 
 
         print "Finished iteration", i, " in", int(time.time() - start), "seconds"
-        print uf, mf
+#         print uf, mf
 
 
 # Gets OBO ids

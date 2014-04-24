@@ -75,13 +75,8 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                     uv_old = uf[user * NUM_FEATURES + f]
                     mv_old = mf[movie * NUM_FEATURES + f]
 
-                    predicted += uv_old * mv_old
-                    if predicted > 5.0:
-                        predicted = 5.0
-                    if predicted < 1.0:
-                        predicted = 1.0
+                    predicted += uv_old * mv_old + (NUM_FEATURES - f - 1) * (0.1 * 0.1)
 
-                    predicted += (NUM_FEATURES - f - 1) * (0.1 * 0.1)
                     if predicted > 5.0:
                         predicted = 5.0
                     if predicted < 1.0:
@@ -121,7 +116,8 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
 
                 # Update cache
                 _result = compressed[user_idx + 2] 
-                if _result <= 0:
+
+                if _result <= 0.0:
                     _result = 1.0
                 _result += uf[user * NUM_FEATURES + f] * mf[movie * NUM_FEATURES + f]
                     

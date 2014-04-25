@@ -9,9 +9,9 @@
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
 #define NUM_RATINGS 98291669
-#define NUM_FEATURES 5
+#define NUM_FEATURES 7
 #define MAX_CHARS_PER_LINE 30
-#define MIN_EPOCHS 80 
+#define MIN_EPOCHS 120
 #define MIN_IMPROVEMENT 0.00007
 #define LRATE 0.001
 #define K 0.015
@@ -61,7 +61,7 @@ void SVD::loadData() {
     char c_line[MAX_CHARS_PER_LINE];
     int userId;
     int movieId;
-//     int time;
+    int time;
     int rating;
     int i = 0;
     ifstream trainingDta ("train.dta"); 

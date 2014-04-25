@@ -71,7 +71,7 @@ void SVD::loadData() {
     int time;
     int rating;
     int i = 0;
-    ifstream trainingDta ("../um/train.dta"); 
+    ifstream trainingDta ("../processed_data/train.dta"); 
     if (trainingDta.fail()) {
         cout << "train.dta: Open failed.\n";
         exit(-1);
@@ -101,7 +101,7 @@ void SVD::computeBaselines() {
     double ratingSum = 0.0;
     double offSum = 0.0; // Sum of offsets for a user;
     Rating *ratingPtr;
-    ifstream trainingDtaMu("../mu/train-mu.dta");
+    ifstream trainingDtaMu("../processed_data/train-mu.dta");
     if (trainingDtaMu.fail()) {
         cout << "train-mu: Open failed.\n";
         exit(-1);
@@ -192,7 +192,7 @@ inline double SVD::predictRating(short movieId, int userId, int feature, double 
 
 
     if (sum > 5) {
-        sum = 5;
+        sum = 4;
     }
     else if (sum < 1) {
         sum = 1;

@@ -73,7 +73,7 @@ void SVD::loadData() {
     int i = 0;
     ifstream trainingDta ("../um/train.dta"); 
     if (trainingDta.fail()) {
-        cout << "Open failed.";
+        cout << "train.dta: Open failed.\n";
         exit(-1);
     }
     while (getline(trainingDta, line)) {
@@ -103,7 +103,7 @@ void SVD::computeBaselines() {
     Rating *ratingPtr;
     ifstream trainingDtaMu("../mu/train-mu.dta");
     if (trainingDtaMu.fail()) {
-        cout << "Open failed.";
+        cout << "train-mu: Open failed.\n";
         exit(-1);
     }
     // Compute movie averages.
@@ -226,7 +226,7 @@ void SVD::output() {
     ifstream qual ("../processed_data/qual.dta");
     ofstream out ("output.dta", ios::trunc); 
     if (qual.fail() || out.fail()) {
-        cout << "Open failed.";
+        cout << "qual.dta: Open failed.\n";
         exit(-1);
     }
     while (getline(qual, line)) {

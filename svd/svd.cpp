@@ -9,12 +9,13 @@
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
 #define NUM_RATINGS 98291669
-#define NUM_FEATURES 40
+#define NUM_FEATURES 5
 #define MAX_CHARS_PER_LINE 30
-#define MIN_EPOCHS 150
+#define MIN_EPOCHS 20
+#define MAX_EPOCHS 20
 #define MIN_IMPROVEMENT 0.00007
-#define LRATE 0.001
-#define K 0.015
+#define LRATE 0.0005
+#define K 0
 #define CACHE_INIT 0.1
 
 
@@ -91,7 +92,7 @@ void SVD::run() {
     rmse = 2.0;
     for (f = 0; f < NUM_FEATURES; f++) {
         cout << "Computing feature " << f << ".\n";
-        for (e = 0; (e < MIN_EPOCHS) || (rmse <= rmse_last - MIN_IMPROVEMENT); e++) {
+        for (e = 0; ((e < MIN_EPOCHS)  || (rmse <= rmse_last - MIN_IMPROVEMENT)) && (e < MAX_EPOCHS); e++) {
             cout << rmse << '\n';
             rmse_last = rmse;
             sq = 0;

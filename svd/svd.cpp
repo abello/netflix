@@ -30,18 +30,18 @@ struct Rating {
     int userId;
     short movieId;
     short rating;
-    float cache;
+    double cache;
 };
 
 class SVD {
 private:
-    float movieAvgs[NUM_MOVIES];
-    float userOffsets[NUM_USERS];
-    float userFeatures[NUM_FEATURES][NUM_USERS];
-    float movieFeatures[NUM_FEATURES][NUM_MOVIES];
+    double movieAvgs[NUM_MOVIES];
+    double userOffsets[NUM_USERS];
+    double userFeatures[NUM_FEATURES][NUM_USERS];
+    double movieFeatures[NUM_FEATURES][NUM_MOVIES];
     Rating ratings[NUM_RATINGS];
-    float predictRating(short movieId, int userId, int feature, float cached, bool addTrailing);
-    float predictRating(short movieId, int userId); 
+    double predictRating(short movieId, int userId, int feature, double cached, bool addTrailing);
+    double predictRating(short movieId, int userId); 
 public:
     SVD();
     ~SVD() { };
@@ -55,10 +55,10 @@ SVD::SVD() {
     int f, j, k;
     for (f = 0; f < NUM_FEATURES; f++) {
         for (j = 0; j < NUM_USERS; j++) {
-            userFeatures[f][j] = (float) CACHE_INIT;
+            userFeatures[f][j] = CACHE_INIT;
         }
         for (k = 0; k < NUM_MOVIES; k++) {
-            movieFeatures[f][k] = (float) CACHE_INIT;
+            movieFeatures[f][k] = CACHE_INIT;
         }
     }
 }
@@ -118,7 +118,7 @@ void SVD::computeBaselines() {
             ratingSum += 1.0 * rating;
         }
         else {
-            movieAvgs[cur] = (float) (GLOBAL_AVG * K_MOVIE + ratingSum) / (K_MOVIE + curCount);
+            movieAvgs[cur] = (GLOBAL_AVG * K_MOVIE + ratingSum) / (K_MOVIE + curCount);
             curCount = 1; // Counting the current new movie;
             ratingSum = (1.0) * rating;
             cur = iter;
@@ -139,7 +139,7 @@ void SVD::computeBaselines() {
             curCount++;
         }
         else { 
-            userOffsets[cur] = (float) (GLOBAL_OFF_AVG * K_MOVIE + offSum) / (K_MOVIE + curCount);
+            userOffsets[cur] = (GLOBAL_OFF_AVG * K_MOVIE + offSum) / (K_MOVIE + curCount);
             offSum = (1.0 * ratingPtr->rating) - movieAvgs[movieId];
             curCount = 1;
         }
@@ -150,7 +150,7 @@ void SVD::run() {
     int f, e, i, userId;
     double sq, rmse, rmse_last, err, p;
     short movieId;
-    float cf, mf;
+    double cf, mf;
     Rating *rating;
 
     rmse_last = 0;
@@ -171,8 +171,8 @@ void SVD::run() {
                 cf = userFeatures[f][userId];
                 mf = movieFeatures[f][movieId];
 
-                userFeatures[f][userId] += (float) (LRATE * (err * mf - K * cf));
-                movieFeatures[f][movieId] += (float) (LRATE * (err * cf - K * mf));
+                userFeatures[f][userId] += (LRATE * (err * mf - K * cf));
+                movieFeatures[f][movieId] += (LRATE * (err * cf - K * mf));
             }
             rmse = sqrt(sq/NUM_RATINGS);
         }
@@ -183,7 +183,7 @@ void SVD::run() {
     }
 }
 
-inline float SVD::predictRating(short movieId, int userId, int feature, float cached, bool addTrailing) {
+inline double SVD::predictRating(short movieId, int userId, int feature, double cached, bool addTrailing) {
     double sum = (cached > 0) ? cached : (movieAvgs[movieId] + userOffsets[userId]);
     sum += userFeatures[feature][userId] * movieFeatures[feature][movieId];
     if (addTrailing) {
@@ -201,7 +201,7 @@ inline float SVD::predictRating(short movieId, int userId, int feature, float ca
     return sum;
 }
 
-inline float SVD::predictRating(short movieId, int userId) {
+inline double SVD::predictRating(short movieId, int userId) {
     int f;
     double sum = 0;
     for (f = 0; f < NUM_FEATURES; f++) {

@@ -9,7 +9,7 @@
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
 #define NUM_RATINGS 98291669
-#define NUM_FEATURES 7
+#define NUM_FEATURES 10 
 #define MAX_CHARS_PER_LINE 30
 #define MIN_EPOCHS 10
 #define MAX_EPOCHS 20
@@ -142,6 +142,7 @@ void SVD::computeBaselines() {
             userOffsets[cur] = (float) (GLOBAL_OFF_AVG * K_MOVIE + offSum) / (K_MOVIE + curCount);
             offSum = (1.0 * ratingPtr->rating) - movieAvgs[movieId];
             curCount = 1;
+            cur = iter;
         }
     }
 }
@@ -223,7 +224,7 @@ void SVD::output() {
     int userId;
     int movieId;
     double rating;
-    ifstream qual ("../processed_data/qual.dta");
+    ifstream qual ("qual.dta");
     ofstream out ("output.dta", ios::trunc); 
     if (qual.fail() || out.fail()) {
         cout << "Open failed.";

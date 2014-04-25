@@ -14,9 +14,12 @@
 #define MIN_EPOCHS 10
 #define MAX_EPOCHS 20
 #define MIN_IMPROVEMENT 0.00007
-#define LRATE 0.001
-#define K 0.015
+#define LRATE 0.0008
+#define K_MOVIE 25
+#define K 0.01
 #define CACHE_INIT 0.1
+#define GLOBAL_AVG 3.512599976023349
+#define GLOBAL_OFF_AVG 0.0481786328365
 
 
 // Created using this article and some code: http://www.timelydevelopment.com/demos/NetflixPrize.aspx
@@ -32,6 +35,8 @@ struct Rating {
 
 class SVD {
 private:
+    float movieAvgs[NUM_MOVIES];
+    float userOffsets[NUM_USERS];
     float userFeatures[NUM_FEATURES][NUM_USERS];
     float movieFeatures[NUM_FEATURES][NUM_MOVIES];
     Rating ratings[NUM_RATINGS];
@@ -41,6 +46,7 @@ public:
     SVD();
     ~SVD() { };
     void loadData();
+    void computeBaselines();
     void run();
     void output();
 };
@@ -65,7 +71,11 @@ void SVD::loadData() {
     int time;
     int rating;
     int i = 0;
-    ifstream trainingDta ("../processed_data/train.dta"); 
+    ifstream trainingDta ("um/train.dta"); 
+    if (trainingDta.fail()) {
+        cout << "Open failed.";
+        exit(-1);
+    }
     while (getline(trainingDta, line)) {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1; // sub 1 for zero indexed
@@ -79,6 +89,61 @@ void SVD::loadData() {
         i++;
     }
     trainingDta.close();
+}
+
+void SVD::computeBaselines() {
+    string line;
+    char c_line[MAX_CHARS_PER_LINE];
+    int cur = 0;
+    int iter = 0;
+    int curCount = 0;
+    int userId, time, rating, i, movieId;
+    double ratingSum = 0.0;
+    double offSum = 0.0; // Sum of offsets for a user;
+    Rating *ratingPtr;
+    ifstream trainingDtaMu("mu/train-mu.dta");
+    if (trainingDtaMu.fail()) {
+        cout << "Open failed.";
+        exit(-1);
+    }
+    // Compute movie averages.
+    while (getline(trainingDtaMu, line)) {
+        memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
+        userId = atoi(strtok(c_line, " ")) - 1;
+        iter = atoi(strtok(NULL, " ")) - 1;
+        time = atoi(strtok(NULL, " "));
+        rating = atoi(strtok(NULL, " "));
+        if (iter == cur) {
+            curCount++;
+            ratingSum += 1.0 * rating;
+        }
+        else {
+            movieAvgs[cur] = (float) (GLOBAL_AVG * K_MOVIE + ratingSum) / (K_MOVIE + curCount);
+            curCount = 1; // Counting the current new movie;
+            ratingSum = (1.0) * rating;
+            cur = iter;
+        }
+    }
+    trainingDtaMu.close();
+
+    cur = 0;
+    iter = 0;
+    curCount = 0;
+    // Compute user offsets
+    for (i = 0; i < NUM_RATINGS; i++) {
+        ratingPtr = ratings + i;
+        iter = ratingPtr->userId;
+        movieId = ratingPtr->movieId;
+        if (iter == cur) {
+            offSum += (1.0 * ratingPtr->rating) - movieAvgs[movieId]; 
+            curCount++;
+        }
+        else { 
+            userOffsets[cur] = (float) (GLOBAL_OFF_AVG * K_MOVIE + offSum) / (K_MOVIE + curCount);
+            offSum = (1.0 * ratingPtr->rating) - movieAvgs[movieId];
+            curCount = 1;
+        }
+    }
 }
 
 void SVD::run() {
@@ -119,7 +184,7 @@ void SVD::run() {
 }
 
 inline float SVD::predictRating(short movieId, int userId, int feature, float cached, bool addTrailing) {
-    double sum = (cached > 0) ? cached : 1;
+    double sum = (cached > 0) ? cached : (movieAvgs[movieId] + userOffsets[userId]);
     sum += userFeatures[feature][userId] * movieFeatures[feature][movieId];
     if (addTrailing) {
         sum += (NUM_FEATURES - feature - 1) * (CACHE_INIT * CACHE_INIT);
@@ -160,6 +225,10 @@ void SVD::output() {
     double rating;
     ifstream qual ("../processed_data/qual.dta");
     ofstream out ("output.dta", ios::trunc); 
+    if (qual.fail() || out.fail()) {
+        cout << "Open failed.";
+        exit(-1);
+    }
     while (getline(qual, line)) {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1;
@@ -172,6 +241,7 @@ void SVD::output() {
 int main() {
     SVD *svd = new SVD();
     svd->loadData();
+    svd->computeBaselines();
     svd->run();
     svd->output();
     cout << "SVD completed.\n";

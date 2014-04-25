@@ -25,7 +25,7 @@ using namespace std;
 struct Rating {
     int userId;
     short movieId;
-    int rating;
+    short rating;
     float cache;
 };
 
@@ -110,12 +110,12 @@ void SVD::run() {
         }
         for (i = 0; i < NUM_RATINGS; i++) {
             rating = ratings + i;
-            rating->cache = (float) predictRating(rating->movieId, rating->userId, f, rating->cache, false);
+            rating->cache = predictRating(rating->movieId, rating->userId, f, rating->cache, false);
         }
     }
 }
 
-double SVD::predictRating(short movieId, int userId, int feature, float cached, bool addTrailing) {
+inline float SVD::predictRating(short movieId, int userId, int feature, float cached, bool addTrailing) {
     double sum = (cached > 0) ? cached : 1;
     sum += userFeatures[feature][userId] * movieFeatures[feature][movieId];
     if (sum > 5) sum = 5;
@@ -128,7 +128,7 @@ double SVD::predictRating(short movieId, int userId, int feature, float cached, 
     return sum;
 }
 
-double SVD::predictRating(short movieId, int userId) {
+inline float SVD::predictRating(short movieId, int userId) {
     int f;
     double sum = 0;
     for (f = 0; f < NUM_FEATURES; f++) {

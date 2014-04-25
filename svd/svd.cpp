@@ -159,7 +159,6 @@ void SVD::run() {
     for (f = 0; f < NUM_FEATURES; f++) {
         cout << "Computing feature " << f << ".\n";
         for (e = 0; ((e < MIN_EPOCHS)  || (rmse <= rmse_last - MIN_IMPROVEMENT)) && (e < MAX_EPOCHS); e++) {
-            cout << rmse << '\n';
             rmse_last = rmse;
             sq = 0;
             for (i = 0; i < NUM_RATINGS; i++) {
@@ -186,6 +185,9 @@ void SVD::run() {
 
 inline double SVD::predictRating(short movieId, int userId, int feature, double cached, bool addTrailing) {
     double sum = (cached > 0) ? cached : (movieAvgs[movieId] + userOffsets[userId]);
+    if (cached == 0) {
+        cout << (movieAvgs[movieId] + userOffsets[userId]) << '\n';
+    }
     sum += userFeatures[feature][userId] * movieFeatures[feature][movieId];
     if (addTrailing) {
         sum += (NUM_FEATURES - feature - 1) * (CACHE_INIT * CACHE_INIT);

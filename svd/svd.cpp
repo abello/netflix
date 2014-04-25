@@ -163,7 +163,7 @@ void SVD::output() {
     while (getline(qual, line)) {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1;
-        movieId = atoi(strtok(NULL, " ")) - 1;
+        movieId = (short) atoi(strtok(NULL, " ")) - 1;
         rating = predictRating(movieId, userId);
         out << rating << '\n';
     }

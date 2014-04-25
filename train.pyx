@@ -13,15 +13,15 @@ cdef int NUM_USERS = 458293
 
 cdef int NUM_MOVIES = 17770
 
-cdef float LEARNING_RATE = 0.04
+cdef float LEARNING_RATE = 0.01
 
 # HAS TO BE CHANGED IN BOTH TRAIN AND SVD
 cdef int NUM_FEATURES = 5
 
-cdef int NUM_ITERATIONS = 2
+cdef int NUM_ITERATIONS = 5 
 
 # Regularization parameter, as in TD article
-cdef float K = 0.0
+cdef float K = 0.015
 
 
 # @cython.boundscheck(False)
@@ -68,21 +68,21 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
 
                     # Rating we currently have
                     predicted = compressed[user_idx + 2]
-                    if (predicted <= 0):
-                        predicted = 1.0
+                    #if (predicted <= 0):
+                    #    predicted = 1.0
 
                     # Old values we have for the movie and user features
                     uv_old = uf[user * NUM_FEATURES + f]
                     mv_old = mf[movie * NUM_FEATURES + f]
 
-                    predicted += uv_old * mv_old + (NUM_FEATURES - f - 1) * (0.1 * 0.1)
-
+                    predicted += uv_old * mv_old + (NUM_FEATURES - f - 1) * (0.1 * 0.1) 
+                    print (NUM_FEATURES - f - 1) * (0.1 * 0.1)
                     if predicted > 5.0:
                         predicted = 5.0
                     if predicted < 1.0:
                         predicted = 1.0
 
-                    error = actual_rating - predicted
+                    error = (<float> actual_rating) - predicted
 
 #                     tmp = uv_old * mv_old
 
@@ -117,8 +117,8 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
                 # Update cache
                 _result = compressed[user_idx + 2] 
 
-                if _result <= 0.0:
-                    _result = 1.0
+                #if _result <= 0.0:
+                #    _result = 1.0
                 _result += uf[user * NUM_FEATURES + f] * mf[movie * NUM_FEATURES + f]
                     
                 if _result > 5.0:
@@ -133,7 +133,6 @@ def loop(np.ndarray[np.float32_t, ndim=1] user_ofsts, np.ndarray[np.float32_t, n
 
 
         print "Finished iteration", i, " in", int(time.time() - start), "seconds"
-        print uf, mf
 
 
 # Gets OBO ids

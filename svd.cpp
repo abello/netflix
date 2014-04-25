@@ -9,10 +9,10 @@
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
 #define NUM_RATINGS 98291669
-#define NUM_FEATURES 40
+#define NUM_FEATURES 5
 #define MAX_CHARS_PER_LINE 30
-#define MIN_EPOCHS 30 
-#define MIN_IMPROVEMENT 0.0001
+#define MIN_EPOCHS 80 
+#define MIN_IMPROVEMENT 0.00007
 #define LRATE 0.001
 #define K 0.015
 #define CACHE_INIT 0.1
@@ -132,8 +132,7 @@ double SVD::predictRating(short movieId, int userId) {
     int f;
     double sum = 0;
     for (f = 0; f < NUM_FEATURES; f++) {
-        sum += userFeatures[f][userId];
-        sum += movieFeatures[f][movieId];
+        sum += userFeatures[f][userId] * movieFeatures[f][movieId];
         if (sum > 5) sum = 5;
         if (sum < 1) sum = 1;
     }

@@ -71,7 +71,7 @@ void SVD::loadData() {
     int time;
     int rating;
     int i = 0;
-    ifstream trainingDta ("um/train.dta"); 
+    ifstream trainingDta ("../um/train.dta"); 
     if (trainingDta.fail()) {
         cout << "Open failed.";
         exit(-1);
@@ -101,7 +101,7 @@ void SVD::computeBaselines() {
     double ratingSum = 0.0;
     double offSum = 0.0; // Sum of offsets for a user;
     Rating *ratingPtr;
-    ifstream trainingDtaMu("mu/train-mu.dta");
+    ifstream trainingDtaMu("../mu/train-mu.dta");
     if (trainingDtaMu.fail()) {
         cout << "Open failed.";
         exit(-1);

@@ -34,8 +34,8 @@ private:
     float userFeatures[NUM_FEATURES][NUM_USERS];
     float movieFeatures[NUM_FEATURES][NUM_MOVIES];
     Rating ratings[NUM_RATINGS];
-    double predictRating(short movieId, int userId, int feature, float cached, bool addTrailing);
-    double predictRating(short movieId, int userId); 
+    float predictRating(short movieId, int userId, int feature, float cached, bool addTrailing);
+    float predictRating(short movieId, int userId); 
 public:
     SVD();
     ~SVD() { };
@@ -61,7 +61,7 @@ void SVD::loadData() {
     char c_line[MAX_CHARS_PER_LINE];
     int userId;
     int movieId;
-    int time;
+//     int time;
     int rating;
     int i = 0;
     ifstream trainingDta ("train.dta"); 
@@ -86,6 +86,8 @@ void SVD::run() {
     short movieId;
     float cf, mf;
     Rating *rating;
+
+    rmse_last = 0;
     rmse = 2.0;
     for (f = 0; f < NUM_FEATURES; f++) {
         cout << "Computing feature " << f << ".\n";

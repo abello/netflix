@@ -120,13 +120,18 @@ void SVD::run() {
 inline float SVD::predictRating(short movieId, int userId, int feature, float cached, bool addTrailing) {
     double sum = (cached > 0) ? cached : 1;
     sum += userFeatures[feature][userId] * movieFeatures[feature][movieId];
-    if (sum > 5) sum = 5;
-    if (sum < 1) sum = 1;
     if (addTrailing) {
         sum += (NUM_FEATURES - feature - 1) * (CACHE_INIT * CACHE_INIT);
-        if (sum > 5) sum = 4;
-        if (sum < 1) sum = 1;
     }
+
+
+    if (sum > 5) {
+        sum = 5;
+    }
+    else if (sum < 1) {
+        sum = 1;
+    }
+
     return sum;
 }
 

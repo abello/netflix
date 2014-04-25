@@ -142,6 +142,7 @@ void SVD::computeBaselines() {
             userOffsets[cur] = (GLOBAL_OFF_AVG * K_MOVIE + offSum) / (K_MOVIE + curCount);
             offSum = (1.0 * ratingPtr->rating) - movieAvgs[movieId];
             curCount = 1;
+            cur = iter;
         }
     }
 }

@@ -64,7 +64,7 @@ void SVD::loadData() {
     int time;
     int rating;
     int i = 0;
-    ifstream trainingDta ("train.dta"); 
+    ifstream trainingDta ("../processed_data/train.dta"); 
     while (getline(trainingDta, line)) {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1; // sub 1 for zero indexed
@@ -92,7 +92,7 @@ void SVD::run() {
     for (f = 0; f < NUM_FEATURES; f++) {
         cout << "Computing feature " << f << ".\n";
         for (e = 0; (e < MIN_EPOCHS) || (rmse <= rmse_last - MIN_IMPROVEMENT); e++) {
-            cout << rmse_last - rmse << '\n';
+            cout << rmse << '\n';
             rmse_last = rmse;
             sq = 0;
             for (i = 0; i < NUM_RATINGS; i++) {
@@ -147,7 +147,7 @@ void SVD::output() {
     int userId;
     int movieId;
     double rating;
-    ifstream qual ("qual.dta");
+    ifstream qual ("../processed_data/qual.dta");
     ofstream out ("output.dta", ios::trunc); 
     while (getline(qual, line)) {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);

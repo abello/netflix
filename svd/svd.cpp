@@ -10,9 +10,9 @@
 #define NUM_MOVIES 17770
 #define NUM_RATINGS 98291669
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 10
-#define MIN_EPOCHS 5
-#define MAX_EPOCHS 20
+#define NUM_FEATURES 4 
+#define MIN_EPOCHS 5 
+#define MAX_EPOCHS 6 
 #define MIN_IMPROVEMENT 0.00007
 #define LRATE 0.0008
 #define K_MOVIE 25
@@ -49,6 +49,7 @@ public:
     void computeBaselines();
     void run();
     void output();
+    void save();
 };
 
 SVD::SVD() {
@@ -240,12 +241,36 @@ void SVD::output() {
     }
 }
 
+/* Save the calculated features and other parameters. */
+void SVD::save() {
+    int i, j;
+    ofstream saved("features.svd", ios::trunc);
+    if (saved.fail()) {
+        cout << "features.svd: Open failed.\n";
+        exit(-1);
+    }
+    for (i = 0; i < NUM_USERS; i++) {
+        for (j = 0; j < NUM_FEATURES; j++) {
+            saved << userFeatures[j][i] << ' ';
+        }
+        saved << '\n';
+    }
+    for (i = 0; i < NUM_MOVIES; i++) {
+        for (j = 0; j < NUM_FEATURES; j++) {
+            saved << movieFeatures[j][i] << ' ';
+        }
+        saved << '\n';
+    }
+    saved.close();
+}
+
 int main() {
     SVD *svd = new SVD();
     svd->loadData();
     svd->computeBaselines();
     svd->run();
     svd->output();
+    svd->save();
     cout << "SVD completed.\n";
 
     return 0;

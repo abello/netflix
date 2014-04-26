@@ -10,13 +10,13 @@
 #define NUM_MOVIES 17770
 #define NUM_RATINGS 98291669
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 10
-#define MIN_EPOCHS 5
-#define MAX_EPOCHS 20
+#define NUM_FEATURES 64
+#define MIN_EPOCHS 120
+#define MAX_EPOCHS 200
 #define MIN_IMPROVEMENT 0.00007
-#define LRATE 0.0008
+#define LRATE 0.001
 #define K_MOVIE 25
-#define K 0.01
+#define K 0.015
 #define CACHE_INIT 0.1
 #define GLOBAL_AVG 3.512599976023349
 #define GLOBAL_OFF_AVG 0.0481786328365
@@ -226,7 +226,7 @@ void SVD::output() {
     int movieId;
     double rating;
     ifstream qual ("../processed_data/qual.dta");
-    ofstream out ("output.dta", ios::trunc); 
+    ofstream out ("output-article.dta", ios::trunc); 
     if (qual.fail() || out.fail()) {
         cout << "qual.dta: Open failed.\n";
         exit(-1);

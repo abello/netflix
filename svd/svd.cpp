@@ -9,10 +9,11 @@
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
 #define NUM_RATINGS 98291669
+#define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 80 
-#define MIN_EPOCHS 120
-#define MAX_EPOCHS 200
+#define NUM_FEATURES 3 
+#define MIN_EPOCHS 3 
+#define MAX_EPOCHS 4 
 #define MIN_IMPROVEMENT 0.00007
 #define LRATE 0.001
 #define K_MOVIE 25
@@ -40,8 +41,11 @@ private:
     double userFeatures[NUM_FEATURES][NUM_USERS];
     double movieFeatures[NUM_FEATURES][NUM_MOVIES];
     Rating ratings[NUM_RATINGS];
+//     ofstream rmseOut;
+//     ifstream probe;
     double predictRating(short movieId, int userId, int feature, double cached, bool addTrailing);
-    double predictRating(short movieId, int userId); 
+    double predictRating(short movieId, int userId, int numFeats); 
+    void outputRMSE(short numFeats);
 public:
     SVD();
     ~SVD() { };
@@ -52,7 +56,9 @@ public:
     void save();
 };
 
-SVD::SVD() {
+SVD::SVD() 
+//     : rmseOut("rmseOut.txt", ios::trunc), probe("../processed_data/probe.dta")
+{
     int f, j, k;
     for (f = 0; f < NUM_FEATURES; f++) {
         for (j = 0; j < NUM_USERS; j++) {
@@ -178,6 +184,7 @@ void SVD::run() {
             }
             rmse = sqrt(sq/NUM_RATINGS);
         }
+        outputRMSE(f);
         for (i = 0; i < NUM_RATINGS; i++) {
             rating = ratings + i;
             rating->cache = predictRating(rating->movieId, rating->userId, f, rating->cache, false);
@@ -204,10 +211,10 @@ inline double SVD::predictRating(short movieId, int userId, int feature, double 
     return sum;
 }
 
-inline double SVD::predictRating(short movieId, int userId) {
+inline double SVD::predictRating(short movieId, int userId, int numFeats) {
     int f;
     double sum = 0;
-    for (f = 0; f < NUM_FEATURES; f++) {
+    for (f = 0; f < numFeats; f++) {
         sum += userFeatures[f][userId] * movieFeatures[f][movieId];
     }
 
@@ -218,6 +225,35 @@ inline double SVD::predictRating(short movieId, int userId) {
         sum = 1;
     }
     return sum;
+}
+
+/* Generate out of sample RMSE for the current number of features, then
+   write this to a rmseOut. */
+void SVD::outputRMSE(short numFeats) {
+    string line;
+    char c_line[MAX_CHARS_PER_LINE];
+    int userId, movieId, time;
+    double predicted, actual; // ratings
+    double err, sq, rmse;
+    ofstream rmseOut("rmseOut.txt", ios::app);
+    ifstream probe("../processed_data/probe.dta");
+    if (!rmseOut.is_open() || !probe.is_open()) {
+        cout << "Files for RMSE output: Open failed.\n";
+        exit(-1);
+    }
+    sq = 0;
+    while (getline(probe, line)) {
+        memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
+        userId = atoi(strtok(c_line, " ")) -1;
+        movieId = atoi(strtok(NULL, " ")) - 1;
+        time = atoi(strtok(NULL, " "));
+        actual = (double) atoi(strtok(NULL, " "));
+        predicted = predictRating(movieId, userId, numFeats);
+        err = actual - predicted;
+        sq += err * err;
+    }
+    rmse = sqrt(sq/NUM_PROBE_RATINGS);
+    rmseOut << rmse << '\n';
 }
 
 void SVD::output() {
@@ -236,7 +272,7 @@ void SVD::output() {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1;
         movieId = (short) atoi(strtok(NULL, " ")) - 1;
-        rating = predictRating(movieId, userId);
+        rating = predictRating(movieId, userId, NUM_FEATURES);
         out << rating << '\n';
     }
 }

@@ -290,7 +290,11 @@ void SVD::outputRMSE(short numFeats) {
     double predicted, actual; // ratings
     double err, sq, rmse;
     stringstream fname;
-    fname << "rmseOut-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
+#ifdef ONEBYONE
+    fname << "rmseOut-OBO-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
+#else
+    fname << "rmseOut-ALL-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
+#endif
     ofstream rmseOut(fname.str().c_str(), ios::app);
     ifstream probe("../processed_data/probe.dta");
     if (!rmseOut.is_open() || !probe.is_open()) {
@@ -319,7 +323,11 @@ void SVD::output() {
     int movieId;
     double rating;
     stringstream fname;
-    fname << "output-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
+#ifdef ONEBYONE
+    fname << "output-OBO-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
+#else
+    fname << "output-ALL-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
+#endif
 
     ifstream qual ("../processed_data/qual.dta");
     ofstream out (fname.str().c_str(), ios::trunc); 
@@ -340,7 +348,11 @@ void SVD::output() {
 void SVD::save() {
     int i, j;
     stringstream fname;
-    fname << "features-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
+#ifdef ONEBYONE
+    fname << "features-OBO-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
+#else
+    fname << "features-ALL-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
+#endif
     ofstream saved(fname.str().c_str(), ios::trunc);
     if (saved.fail()) {
         cout << "features.svd: Open failed.\n";

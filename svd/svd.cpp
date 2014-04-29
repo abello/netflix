@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <string.h>
+#include <sstream>
 #include <stdio.h>
 #include <cstdlib>
 
@@ -11,9 +12,9 @@
 #define NUM_RATINGS 98291669
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 50 
-#define MIN_EPOCHS 120 
-#define MAX_EPOCHS 140 
+#define NUM_FEATURES 50
+#define MIN_EPOCHS 120
+#define MAX_EPOCHS 140
 #define MIN_IMPROVEMENT 0.00007
 #define LRATE 0.001
 #define K_MOVIE 25
@@ -262,8 +263,11 @@ void SVD::output() {
     int userId;
     int movieId;
     double rating;
+    stringstream fname;
+    fname << "output-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
+
     ifstream qual ("../processed_data/qual.dta");
-    ofstream out ("output-article.dta", ios::trunc); 
+    ofstream out (fname.str().c_str(), ios::trunc); 
     if (qual.fail() || out.fail()) {
         cout << "qual.dta: Open failed.\n";
         exit(-1);

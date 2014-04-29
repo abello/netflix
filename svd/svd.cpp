@@ -158,7 +158,7 @@ void SVD::run() {
     int f, e, i, userId;
     double sq, rmse, rmse_last, err, p;
     short movieId;
-    double cf, mf;
+    double uf, mf;
     Rating *rating;
 
     rmse_last = 0;
@@ -176,11 +176,11 @@ void SVD::run() {
                 p = predictRating(movieId, userId, f, rating->cache, true);
                 err = (1.0 * rating->rating - p); 
                 sq += err * err;
-                cf = userFeatures[f][userId];
+                uf = userFeatures[f][userId];
                 mf = movieFeatures[f][movieId];
 
-                userFeatures[f][userId] += (LRATE * (err * mf - K * cf));
-                movieFeatures[f][movieId] += (LRATE * (err * cf - K * mf));
+                userFeatures[f][userId] += (LRATE * (err * mf - K * uf));
+                movieFeatures[f][movieId] += (LRATE * (err * uf - K * mf));
             }
             rmse = sqrt(sq/NUM_RATINGS);
         }

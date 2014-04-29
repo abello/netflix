@@ -13,10 +13,10 @@
 #define NUM_RATINGS 98291669
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 50
-#define MIN_EPOCHS 120
-#define MAX_EPOCHS 140
-#define MIN_IMPROVEMENT 0.00007
+#define NUM_FEATURES 40
+#define MIN_EPOCHS 140
+#define MAX_EPOCHS 200
+#define MIN_IMPROVEMENT 0.00009
 #define LRATE 0.001
 #define K_MOVIE 25
 #define K 0.015
@@ -24,8 +24,11 @@
 #define GLOBAL_AVG 3.512599976023349
 #define GLOBAL_OFF_AVG 0.0481786328365
 
-// Whether to calculate and save out of sample RMSE
-#define RMSEOUT 0
+// calculate and save out of sample RMSE
+// #define RMSEOUT
+
+// Whether to traine features one by one or not
+// #define ONEBYONE 
 
 
 // Created using this article and some code: http://www.timelydevelopment.com/demos/NetflixPrize.aspx
@@ -65,11 +68,14 @@ SVD::SVD()
 //     : rmseOut("rmseOut.txt", ios::trunc), probe("../processed_data/probe.dta")
 {
     int f, j, k;
+//     srand(time(NULL));
     for (f = 0; f < NUM_FEATURES; f++) {
         for (j = 0; j < NUM_USERS; j++) {
+//             userFeatures[f][j] = ((rand() % 201) - 100) / 1000.0;
             userFeatures[f][j] = FEAT_INIT;
         }
         for (k = 0; k < NUM_MOVIES; k++) {
+//             movieFeatures[f][k] = ((rand() % 201) - 100) / 1000.0;
             movieFeatures[f][k] = FEAT_INIT;
         }
     }
@@ -168,6 +174,8 @@ void SVD::run() {
 
     rmse_last = 0;
     rmse = 2.0;
+
+#ifdef ONEBYONE
     for (f = 0; f < NUM_FEATURES; f++) {
         cout << "Computing feature " << f << ".\n";
         for (e = 0; ((e < MIN_EPOCHS)  || (rmse <= rmse_last - MIN_IMPROVEMENT)) && (e < MAX_EPOCHS); e++) {
@@ -197,6 +205,45 @@ void SVD::run() {
             rating->cache = predictRating(rating->movieId, rating->userId, f, rating->cache, false);
         }
     }
+#endif // ONEBYONE
+
+
+#ifndef ONEBYONE
+    for (e = 0; ((e < MIN_EPOCHS)  || (rmse <= rmse_last - MIN_IMPROVEMENT)) && (e < MAX_EPOCHS); e++) {
+        for (f = 0; f < NUM_FEATURES; f++) {
+            cout << "Computing feature " << f << ".\n";
+            cout << rmse_last << "\n";
+            rmse_last = rmse;
+            sq = 0;
+            for (i = 0; i < NUM_RATINGS; i++) {
+                rating = ratings + i;
+                movieId = rating->movieId;
+                userId = rating->userId;
+                p = predictRating(movieId, userId, f, rating->cache, true);
+                err = (1.0 * rating->rating - p); 
+                sq += err * err;
+                uf = userFeatures[f][userId];
+                mf = movieFeatures[f][movieId];
+
+                userFeatures[f][userId] += (LRATE * (err * mf - K * uf));
+                movieFeatures[f][movieId] += (LRATE * (err * uf - K * mf));
+            }
+            rmse = sqrt(sq/NUM_RATINGS);
+
+            // Update cache for this feature
+            for (i = 0; i < NUM_RATINGS; i++) {
+                rating = ratings + i;
+                rating->cache = predictRating(rating->movieId, rating->userId, f, rating->cache, false);
+            }
+        }
+#ifdef RMSEOUT
+        outputRMSE(f);
+#endif
+    }
+
+#endif // ONEBYONE
+
+
 }
 
 inline double SVD::predictRating(short movieId, int userId, int feature, double cached, bool addTrailing) {

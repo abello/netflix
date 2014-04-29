@@ -6,6 +6,7 @@
 #include <sstream>
 #include <stdio.h>
 #include <cstdlib>
+#include <time.h>
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
@@ -19,9 +20,12 @@
 #define LRATE 0.001
 #define K_MOVIE 25
 #define K 0.015
-#define CACHE_INIT 0.1
+#define FEAT_INIT 0.1
 #define GLOBAL_AVG 3.512599976023349
 #define GLOBAL_OFF_AVG 0.0481786328365
+
+// Whether to calculate and save out of sample RMSE
+#define RMSEOUT 0
 
 
 // Created using this article and some code: http://www.timelydevelopment.com/demos/NetflixPrize.aspx
@@ -63,10 +67,10 @@ SVD::SVD()
     int f, j, k;
     for (f = 0; f < NUM_FEATURES; f++) {
         for (j = 0; j < NUM_USERS; j++) {
-            userFeatures[f][j] = CACHE_INIT;
+            userFeatures[f][j] = FEAT_INIT;
         }
         for (k = 0; k < NUM_MOVIES; k++) {
-            movieFeatures[f][k] = CACHE_INIT;
+            movieFeatures[f][k] = FEAT_INIT;
         }
     }
 }
@@ -185,7 +189,9 @@ void SVD::run() {
             }
             rmse = sqrt(sq/NUM_RATINGS);
         }
+#ifdef RMSEOUT
         outputRMSE(f);
+#endif
         for (i = 0; i < NUM_RATINGS; i++) {
             rating = ratings + i;
             rating->cache = predictRating(rating->movieId, rating->userId, f, rating->cache, false);
@@ -198,7 +204,7 @@ inline double SVD::predictRating(short movieId, int userId, int feature, double 
 
     sum += userFeatures[feature][userId] * movieFeatures[feature][movieId];
     if (addTrailing) {
-        sum += (NUM_FEATURES - feature - 1) * (CACHE_INIT * CACHE_INIT);
+        sum += (NUM_FEATURES - feature - 1) * (FEAT_INIT * FEAT_INIT);
     }
 
 
@@ -236,7 +242,9 @@ void SVD::outputRMSE(short numFeats) {
     int userId, movieId, time;
     double predicted, actual; // ratings
     double err, sq, rmse;
-    ofstream rmseOut("rmseOut.txt", ios::app);
+    stringstream fname;
+    fname << "rmseOut-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
+    ofstream rmseOut(fname.str().c_str(), ios::app);
     ifstream probe("../processed_data/probe.dta");
     if (!rmseOut.is_open() || !probe.is_open()) {
         cout << "Files for RMSE output: Open failed.\n";
@@ -284,7 +292,9 @@ void SVD::output() {
 /* Save the calculated features and other parameters. */
 void SVD::save() {
     int i, j;
-    ofstream saved("features.svd", ios::trunc);
+    stringstream fname;
+    fname << "features-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
+    ofstream saved(fname.str().c_str(), ios::trunc);
     if (saved.fail()) {
         cout << "features.svd: Open failed.\n";
         exit(-1);

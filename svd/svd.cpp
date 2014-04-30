@@ -15,9 +15,9 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 80
-#define MIN_EPOCHS 150
-#define MAX_EPOCHS 230
+#define NUM_FEATURES 30
+#define MIN_EPOCHS 120
+#define MAX_EPOCHS 180
 #define MIN_IMPROVEMENT 0.0001
 #define LRATE 0.001
 #define K_MOVIE 25
@@ -206,6 +206,9 @@ void SVD::run() {
             }
             rmse = sqrt(sq/NUM_RATINGS);
         }
+
+        // TODO: Implement second/third chance
+
 #ifdef RMSEOUT
         outputRMSE(f);
 #endif

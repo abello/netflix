@@ -11,18 +11,18 @@
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
 #define NUM_RATINGS 98291669
-#define NUM_PROBE_RATINGS 1374739
-#define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 40
-#define MIN_EPOCHS 120
-#define MAX_EPOCHS 200
-#define MIN_IMPROVEMENT 0.00009
-#define LRATE 0.001
-#define K_MOVIE 25
-#define K 0.015
-#define FEAT_INIT 0.1
 #define GLOBAL_AVG 3.512599976023349
 #define GLOBAL_OFF_AVG 0.0481786328365
+#define NUM_PROBE_RATINGS 1374739
+#define MAX_CHARS_PER_LINE 30
+#define NUM_FEATURES 60
+#define MIN_EPOCHS 120
+#define MAX_EPOCHS 170
+#define MIN_IMPROVEMENT 0.0001
+#define LRATE 0.001
+#define K_MOVIE 25
+#define K 0.02
+#define FEAT_INIT GLOBAL_AVG/NUM_FEATURES
 
 // calculate and save out of sample RMSE
 // #define RMSEOUT
@@ -55,6 +55,7 @@ private:
     double predictRating(short movieId, int userId, int feature, double cached, bool addTrailing);
     double predictRating(short movieId, int userId); 
     void outputRMSE(short numFeats);
+    stringstream mdata;
 public:
     SVD();
     ~SVD() { };
@@ -69,6 +70,12 @@ SVD::SVD()
 //     : rmseOut("rmseOut.txt", ios::trunc), probe("../processed_data/probe.dta")
 {
     int f, j, k;
+#ifdef ONEBYONE
+    mdata << "-OBO-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE;
+#else
+    mdata << "-ALL-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE;
+
+#endif
 //     srand(time(NULL));
     for (f = 0; f < NUM_FEATURES; f++) {
         for (j = 0; j < NUM_USERS; j++) {
@@ -287,9 +294,9 @@ void SVD::outputRMSE(short numFeats) {
     double err, sq, rmse;
     stringstream fname;
 #ifdef ONEBYONE
-    fname << "rmseOut-OBO-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
+    fname << "rmseOut-OBO" << mdata;
 #else
-    fname << "rmseOut-ALL-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
+    fname << "rmseOut-ALL-F=" << mdata;
 #endif
     ofstream rmseOut(fname.str().c_str(), ios::app);
     ifstream probe("../processed_data/probe.dta");
@@ -319,11 +326,7 @@ void SVD::output() {
     int movieId;
     double rating;
     stringstream fname;
-#ifdef ONEBYONE
-    fname << "output-OBO-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
-#else
-    fname << "output-ALL-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
-#endif
+    fname << "output" << mdata;
 
     ifstream qual ("../processed_data/qual.dta");
     ofstream out (fname.str().c_str(), ios::trunc); 
@@ -344,11 +347,8 @@ void SVD::output() {
 void SVD::save() {
     int i, j;
     stringstream fname;
-#ifdef ONEBYONE
-    fname << "features-OBO-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
-#else
-    fname << "features-ALL-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS;
-#endif
+    fname << "features" << mdata;
+
     ofstream saved(fname.str().c_str(), ios::trunc);
     if (saved.fail()) {
         cout << "features.svd: Open failed.\n";

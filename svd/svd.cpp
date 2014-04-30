@@ -15,9 +15,9 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 4
-#define MIN_EPOCHS 1
-#define MAX_EPOCHS 2
+#define NUM_FEATURES 80
+#define MIN_EPOCHS 150
+#define MAX_EPOCHS 230
 #define MIN_IMPROVEMENT 0.0001
 #define LRATE 0.001
 #define K_MOVIE 25
@@ -323,7 +323,7 @@ void SVD::output() {
     int movieId;
     double rating;
     stringstream fname;
-    fname << "output" << mdata.str();
+    fname << "../results/output" << mdata.str();
 
     ifstream qual ("../processed_data/qual.dta");
     ofstream out (fname.str().c_str(), ios::trunc); 
@@ -344,7 +344,7 @@ void SVD::output() {
 void SVD::save() {
     int i, j;
     stringstream fname;
-    fname << "features" << mdata.str();
+    fname << "../results/features" << mdata.str();
 
     ofstream saved(fname.str().c_str(), ios::trunc);
     if (saved.fail()) {
@@ -372,7 +372,7 @@ void SVD::probe() {
     char c_line[MAX_CHARS_PER_LINE];
     stringstream fname;
     int userId, movieId, time;
-    fname << "probe" << mdata.str();
+    fname << "../results/probe" << mdata.str();
 
     ofstream saved(fname.str().c_str(), ios::trunc);
     ifstream p("../processed_data/probe.dta");

@@ -15,9 +15,9 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 60
-#define MIN_EPOCHS 120
-#define MAX_EPOCHS 170
+#define NUM_FEATURES 4
+#define MIN_EPOCHS 1
+#define MAX_EPOCHS 2
 #define MIN_IMPROVEMENT 0.0001
 #define LRATE 0.001
 #define K_MOVIE 25
@@ -64,6 +64,7 @@ public:
     void run();
     void output();
     void save();
+    void probe();
 };
 
 SVD::SVD() 
@@ -293,11 +294,7 @@ void SVD::outputRMSE(short numFeats) {
     double predicted, actual; // ratings
     double err, sq, rmse;
     stringstream fname;
-#ifdef ONEBYONE
-    fname << "rmseOut-OBO" << mdata;
-#else
-    fname << "rmseOut-ALL-F=" << mdata;
-#endif
+    fname << "rmseOut" << mdata.str();
     ofstream rmseOut(fname.str().c_str(), ios::app);
     ifstream probe("../processed_data/probe.dta");
     if (!rmseOut.is_open() || !probe.is_open()) {
@@ -326,7 +323,7 @@ void SVD::output() {
     int movieId;
     double rating;
     stringstream fname;
-    fname << "output" << mdata;
+    fname << "output" << mdata.str();
 
     ifstream qual ("../processed_data/qual.dta");
     ofstream out (fname.str().c_str(), ios::trunc); 
@@ -347,7 +344,7 @@ void SVD::output() {
 void SVD::save() {
     int i, j;
     stringstream fname;
-    fname << "features" << mdata;
+    fname << "features" << mdata.str();
 
     ofstream saved(fname.str().c_str(), ios::trunc);
     if (saved.fail()) {
@@ -369,13 +366,47 @@ void SVD::save() {
     saved.close();
 }
 
+/* Save the results of the probe */
+void SVD::probe() {
+    string line;
+    char c_line[MAX_CHARS_PER_LINE];
+    stringstream fname;
+    int userId, movieId, time;
+    fname << "probe" << mdata.str();
+
+    ofstream saved(fname.str().c_str(), ios::trunc);
+    ifstream p("../processed_data/probe.dta");
+    if (saved.fail()) {
+        cout << "probe-: Open failed.\n";
+        exit(-1);
+    }
+    if (p.fail()) {
+        cout << "probe.dta-: Open failed.\n";
+        exit(-1);
+    }
+
+    // For each line of probe, parse it and predict rating
+    while (getline(p, line)) {
+        memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
+        userId = atoi(strtok(c_line, " ")) - 1; // sub 1 for zero indexed
+        movieId = atoi(strtok(NULL, " ")) - 1;
+        time = atoi(strtok(NULL, " ")); 
+        
+        saved << predictRating(userId, movieId) << "\n";
+    }
+
+    saved.close();
+    p.close();
+}
+
 int main() {
     SVD *svd = new SVD();
     svd->loadData();
     svd->computeBaselines();
     svd->run();
     svd->output();
-    svd->save();
+//     svd->save();
+    svd->probe();
     cout << "SVD completed.\n";
 
     return 0;

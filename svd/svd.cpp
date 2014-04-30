@@ -28,7 +28,8 @@
 // #define RMSEOUT
 
 // Whether to traine features one by one or not
-// #define ONEBYONE 
+// TODO: All at a time doesn't work, gotta fix cache
+#define ONEBYONE 
 
 
 // Created using this article and some code: http://www.timelydevelopment.com/demos/NetflixPrize.aspx
@@ -209,6 +210,12 @@ void SVD::run() {
 
 
 #ifndef ONEBYONE
+    // Initialize cache
+    for (i = 0; i < NUM_RATINGS; i++) {
+        rating = ratings + i;
+        rating->cache = NUM_FEATURES * FEAT_INIT * FEAT_INIT;
+    }
+
     for (e = 0; ((e < MIN_EPOCHS)  || (rmse <= rmse_last - MIN_IMPROVEMENT)) && (e < MAX_EPOCHS); e++) {
         for (f = 0; f < NUM_FEATURES; f++) {
             cout << "Computing feature " << f << ".\n";
@@ -230,7 +237,7 @@ void SVD::run() {
             }
             rmse = sqrt(sq/NUM_RATINGS);
 
-            // Update cache for this feature
+            // Update cache
             for (i = 0; i < NUM_RATINGS; i++) {
                 rating = ratings + i;
                 rating->cache = predictRating(rating->movieId, rating->userId, f, rating->cache, false);

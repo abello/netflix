@@ -210,11 +210,6 @@ void SVD::run() {
 
 
 #ifndef ONEBYONE
-    // Initialize cache
-    for (i = 0; i < NUM_RATINGS; i++) {
-        rating = ratings + i;
-        rating->cache = NUM_FEATURES * FEAT_INIT * FEAT_INIT;
-    }
 
     for (e = 0; ((e < MIN_EPOCHS)  || (rmse <= rmse_last - MIN_IMPROVEMENT)) && (e < MAX_EPOCHS); e++) {
         for (f = 0; f < NUM_FEATURES; f++) {
@@ -226,7 +221,7 @@ void SVD::run() {
                 rating = ratings + i;
                 movieId = rating->movieId;
                 userId = rating->userId;
-                p = predictRating(movieId, userId, f, rating->cache, true);
+                p = predictRating(movieId, userId, NUM_FEATURES);
                 err = (1.0 * rating->rating - p); 
                 sq += err * err;
                 uf = userFeatures[f][userId];
@@ -236,12 +231,6 @@ void SVD::run() {
                 movieFeatures[f][movieId] += (LRATE * (err * uf - K * mf));
             }
             rmse = sqrt(sq/NUM_RATINGS);
-
-            // Update cache
-            for (i = 0; i < NUM_RATINGS; i++) {
-                rating = ratings + i;
-                rating->cache = predictRating(rating->movieId, rating->userId, f, rating->cache, false);
-            }
         }
 #ifdef RMSEOUT
         outputRMSE(f);

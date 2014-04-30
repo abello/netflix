@@ -14,7 +14,7 @@
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
 #define NUM_FEATURES 40
-#define MIN_EPOCHS 140
+#define MIN_EPOCHS 120
 #define MAX_EPOCHS 200
 #define MIN_IMPROVEMENT 0.00009
 #define LRATE 0.001
@@ -53,7 +53,7 @@ private:
 //     ofstream rmseOut;
 //     ifstream probe;
     double predictRating(short movieId, int userId, int feature, double cached, bool addTrailing);
-    double predictRating(short movieId, int userId, int numFeats); 
+    double predictRating(short movieId, int userId); 
     void outputRMSE(short numFeats);
 public:
     SVD();
@@ -221,7 +221,7 @@ void SVD::run() {
                 rating = ratings + i;
                 movieId = rating->movieId;
                 userId = rating->userId;
-                p = predictRating(movieId, userId, NUM_FEATURES);
+                p = predictRating(movieId, userId);
                 err = (1.0 * rating->rating - p); 
                 sq += err * err;
                 uf = userFeatures[f][userId];
@@ -261,10 +261,10 @@ inline double SVD::predictRating(short movieId, int userId, int feature, double 
     return sum;
 }
 
-inline double SVD::predictRating(short movieId, int userId, int numFeats) {
+inline double SVD::predictRating(short movieId, int userId) {
     int f;
     double sum = 0;
-    for (f = 0; f < numFeats; f++) {
+    for (f = 0; f < NUM_FEATURES; f++) {
         sum += userFeatures[f][userId] * movieFeatures[f][movieId];
     }
 
@@ -304,7 +304,7 @@ void SVD::outputRMSE(short numFeats) {
         movieId = atoi(strtok(NULL, " ")) - 1;
         time = atoi(strtok(NULL, " "));
         actual = (double) atoi(strtok(NULL, " "));
-        predicted = predictRating(movieId, userId, numFeats);
+        predicted = predictRating(movieId, userId);
         err = actual - predicted;
         sq += err * err;
     }
@@ -335,7 +335,7 @@ void SVD::output() {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1;
         movieId = (short) atoi(strtok(NULL, " ")) - 1;
-        rating = predictRating(movieId, userId, NUM_FEATURES);
+        rating = predictRating(movieId, userId);
         out << rating << '\n';
     }
 }

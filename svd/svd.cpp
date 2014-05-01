@@ -81,11 +81,25 @@ SVD::SVD()
 {
     int f, j, k;
 #ifdef ONEBYONE
+
+#ifdef SECOND_CHANCE
+    mdata << "-OBO-SC-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE;
+#else // SECOND CHANCE
     mdata << "-OBO-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE;
+
+#endif // SECOND CHANCE
+
 #else
+#ifdef SECOND_CHANCE
+    mdata << "-ALL-SC-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE;
+#else // SECOND CHANCE
     mdata << "-ALL-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE;
 
-#endif
+#endif // SECOND CHANCE
+
+#endif // ONEBYONE
+
+
 //     srand(time(NULL));
     for (f = 0; f < NUM_FEATURES; f++) {
         for (j = 0; j < NUM_USERS; j++) {

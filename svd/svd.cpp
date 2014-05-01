@@ -15,14 +15,20 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 30
-#define MIN_EPOCHS 120
-#define MAX_EPOCHS 180
+#define NUM_FEATURES 50
+#define MIN_EPOCHS 130
+#define MAX_EPOCHS 190
 #define MIN_IMPROVEMENT 0.0001
 #define LRATE 0.001
 #define K_MOVIE 25
 #define K 0.02
 #define FEAT_INIT GLOBAL_AVG/NUM_FEATURES
+
+// Second chance settings
+#define SC_EPOCHS 7
+#define SC_CHANCES 2
+
+
 
 // calculate and save out of sample RMSE
 // #define RMSEOUT
@@ -30,6 +36,9 @@
 // Whether to traine features one by one or not
 // TODO: All at a time doesn't work, gotta fix cache
 #define ONEBYONE 
+
+// Whether to loop through all features again
+#define SECOND_CHANCE
 
 
 // Created using this article and some code: http://www.timelydevelopment.com/demos/NetflixPrize.aspx
@@ -175,7 +184,7 @@ void SVD::computeBaselines() {
 }
 
 void SVD::run() {
-    int f, e, i, userId;
+    int f, e, i, chances, userId;
     double sq, rmse, rmse_last, err, p;
     short movieId;
     double uf, mf;
@@ -217,6 +226,35 @@ void SVD::run() {
             rating->cache = predictRating(rating->movieId, rating->userId, f, rating->cache, false);
         }
     }
+
+#ifdef SECOND_CHANCE
+
+    for (chances = 0; chances < SC_CHANCES; chances++) {
+        for (f = 0; f < NUM_FEATURES; f++) {
+            cout << "Computing feature " << f << ".\n";
+            for (e = 0; (e < SC_EPOCHS); e++) {
+                cout << rmse_last << "\n";
+                rmse_last = rmse;
+                sq = 0;
+                for (i = 0; i < NUM_RATINGS; i++) {
+                    rating = ratings + i;
+                    movieId = rating->movieId;
+                    userId = rating->userId;
+                    p = predictRating(movieId, userId);
+                    err = (1.0 * rating->rating - p); 
+                    sq += err * err;
+                    uf = userFeatures[f][userId];
+                    mf = movieFeatures[f][movieId];
+
+                    userFeatures[f][userId] += (LRATE * (err * mf - K * uf));
+                    movieFeatures[f][movieId] += (LRATE * (err * uf - K * mf));
+                }
+                rmse = sqrt(sq/NUM_RATINGS);
+            }
+        }
+    }
+#endif //SECOND_CHANCE
+
 #endif // ONEBYONE
 
 
@@ -326,7 +364,7 @@ void SVD::output() {
     int movieId;
     double rating;
     stringstream fname;
-    fname << "../results/output" << mdata.str();
+    fname << "../results/output2" << mdata.str();
 
     ifstream qual ("../processed_data/qual.dta");
     ofstream out (fname.str().c_str(), ios::trunc); 

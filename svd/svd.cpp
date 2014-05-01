@@ -15,9 +15,9 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 50
-#define MIN_EPOCHS 130
-#define MAX_EPOCHS 190
+#define NUM_FEATURES 40
+#define MIN_EPOCHS 120
+#define MAX_EPOCHS 160
 #define MIN_IMPROVEMENT 0.0001
 #define LRATE 0.001
 #define K_MOVIE 25
@@ -25,8 +25,8 @@
 #define FEAT_INIT GLOBAL_AVG/NUM_FEATURES
 
 // Second chance settings
-#define SC_EPOCHS 7
-#define SC_CHANCES 2
+#define SC_EPOCHS 10
+#define SC_CHANCES 3
 
 
 
@@ -83,7 +83,7 @@ SVD::SVD()
 #ifdef ONEBYONE
 
 #ifdef SECOND_CHANCE
-    mdata << "-OBO-SC-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE;
+    mdata << "-OBO-SC-E=" << SC_EPOCHS << "-SCC=" << SC_CHANCES << "-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE;
 #else // SECOND CHANCE
     mdata << "-OBO-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE;
 
@@ -91,7 +91,7 @@ SVD::SVD()
 
 #else
 #ifdef SECOND_CHANCE
-    mdata << "-ALL-SC-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE;
+    mdata << "-ALL-SC-E=" << SC_EPOCHS << "-SCC=" << SC_CHANCES << "-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE;
 #else // SECOND CHANCE
     mdata << "-ALL-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE;
 
@@ -378,7 +378,7 @@ void SVD::output() {
     int movieId;
     double rating;
     stringstream fname;
-    fname << "../results/output2" << mdata.str();
+    fname << "../results/output" << mdata.str();
 
     ifstream qual ("../processed_data/qual.dta");
     ofstream out (fname.str().c_str(), ios::trunc); 

@@ -37,9 +37,6 @@
 // TODO: All at a time doesn't work, gotta fix cache
 #define ONEBYONE 
 
-// Whether to loop through all features again
-#define SECOND_CHANCE
-
 
 // Created using this article and some code: http://www.timelydevelopment.com/demos/NetflixPrize.aspx
 
@@ -82,20 +79,10 @@ SVD::SVD()
     int f, j, k;
 #ifdef ONEBYONE
 
-#ifdef SECOND_CHANCE
-    mdata << "-OBO-SC-E=" << SC_EPOCHS << "-SCC=" << SC_CHANCES << "-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE;
-#else // SECOND CHANCE
-    mdata << "-OBO-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE;
-
-#endif // SECOND CHANCE
+    mdata << "-OBO-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE << "-SC-E=" << SC_EPOCHS << "-SCC=" << SC_CHANCES;
 
 #else
-#ifdef SECOND_CHANCE
-    mdata << "-ALL-SC-E=" << SC_EPOCHS << "-SCC=" << SC_CHANCES << "-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE;
-#else // SECOND CHANCE
-    mdata << "-ALL-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE;
-
-#endif // SECOND CHANCE
+    mdata << "-ALL-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE << "-SC-E=" << SC_EPOCHS << "-SCC=" << SC_CHANCES;
 
 #endif // ONEBYONE
 
@@ -241,8 +228,6 @@ void SVD::run() {
         }
     }
 
-#ifdef SECOND_CHANCE
-
     for (chances = 0; chances < SC_CHANCES; chances++) {
         for (f = 0; f < NUM_FEATURES; f++) {
             cout << "Computing feature " << f << ".\n";
@@ -267,7 +252,6 @@ void SVD::run() {
             }
         }
     }
-#endif //SECOND_CHANCE
 
 #endif // ONEBYONE
 
@@ -444,10 +428,10 @@ void SVD::probe() {
     while (getline(p, line)) {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1; // sub 1 for zero indexed
-        movieId = atoi(strtok(NULL, " ")) - 1;
+        movieId = (short) atoi(strtok(NULL, " ")) - 1;
         time = atoi(strtok(NULL, " ")); 
         
-        saved << predictRating(userId, movieId) << "\n";
+        saved << predictRating(movieId, userId) << "\n";
     }
 
     saved.close();

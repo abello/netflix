@@ -54,8 +54,8 @@ private:
     Rating ratings[NUM_RATINGS];
 //     ofstream rmseOut;
 //     ifstream probe;
-    double predictRating(short movieId, int userId, int feature, double cached, bool addTrailing);
-    double predictRating(short movieId, int userId); 
+    inline double predictRating(short movieId, int userId, int feature, double cached, bool addTrailing);
+    inline double predictRating(short movieId, int userId); 
     void outputRMSE(short numFeats);
     stringstream mdata;
 public:

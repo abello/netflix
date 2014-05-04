@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <cstdlib>
 #include <time.h>
+#include <vector>
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
@@ -16,7 +17,7 @@
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
 
-// Ideas and pseudocode from: http://dmnewbie.blogspot.com/2009/06/calculating-316-million-movie.html
+// Ideas and some pseudocode from: http://dmnewbie.blogspot.com/2009/06/calculating-316-million-movie.html
 
 
 using namespace std;
@@ -38,10 +39,11 @@ struct s_inter {
     float xy; // sum (rating_i * rating_j)
     float xx; // sum (rating_i^2)
     float yy; // sum (rating_j^2)
+    unsigned int n; // Num users who rated both movies
 };
 
 
-class SVD {
+class KNN {
 private:
     // um: for every user, stores (movie, rating) pairs.
     vector<um_pair> um[NUM_USERS];
@@ -49,28 +51,32 @@ private:
     // mu: for every movie, stores (user, rating) pairs.
     vector<mu_pair> mu[NUM_MOVIES];
 
-    // Intermediates for every movie
-    s_inter inter[NUM_MOVIES];
+    // Intermediates for every movie pair
+    s_inter inter[NUM_MOVIES][NUM_MOVIES];
+
+    // Pearson coefficients for every movie pair
+    float P[NUM_MOVIES][NUM_MOVIES];
 
     double predictRating(short movieId, int userId); 
     void outputRMSE(short numFeats);
     stringstream mdata;
 public:
-    SVD();
-    ~SVD() { };
+    KNN();
+    ~KNN() { };
     void loadData();
     void run();
     void output();
     void save();
     void probe();
+    inline float getP(short i, short j);
 };
 
-SVD::SVD() 
+KNN::KNN() 
 {
     mdata << "-KNN-";
 }
 
-void SVD::loadData() {
+void KNN::loadData() {
     string line;
     char c_line[MAX_CHARS_PER_LINE];
     int userId;
@@ -78,8 +84,11 @@ void SVD::loadData() {
     int time;
     int rating;
 
-    int prev_user = 0; // Previously seen user
+    int j;
+
     int i = 0;
+    int last_seen = 0;
+
     ifstream trainingDta ("../processed_data/train.dta"); 
     if (trainingDta.fail()) {
         cout << "train.dta: Open failed.\n";
@@ -92,64 +101,104 @@ void SVD::loadData() {
         time = atoi(strtok(NULL, " ")); 
         rating = (char) atoi(strtok(NULL, " "));
         
-        if (prev_user == userId) {
-            um[i].push_back(s_inter());
-            um[i].movie = movieId;
-            um[i].rating = rating;
-        }
-        else {
+        if (last_seen == userId) {
             i++;
         }
+        else {
+            i = 0;
+            last_seen = userId;
+        }
+
+        um[userId].push_back(um_pair());
+        um[userId][i].movie = movieId;
+        um[userId][i].rating = rating;
     }
     trainingDta.close();
+
+    cout << "Loaded um" << endl;
+
+    i = 0;
+    last_seen = 0;
+
+    // Repeat again, not for mu dta
+    ifstream trainingDtaMu ("../processed_data/train-mu.dta"); 
+    if (trainingDtaMu.fail()) {
+        cout << "train-mu.dta: Open failed.\n";
+        exit(-1);
+    }
+    while (getline(trainingDtaMu, line)) {
+        memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
+        userId = atoi(strtok(c_line, " ")) - 1; // sub 1 for zero indexed
+        movieId = (short) atoi(strtok(NULL, " ")) - 1;
+        time = atoi(strtok(NULL, " ")); 
+        rating = (char) atoi(strtok(NULL, " "));
+
+        if (last_seen == movieId) {
+            i++;
+        }
+        else {
+            i = 0;
+            last_seen = movieId;
+        }
+        
+        mu[movieId].push_back(mu_pair());
+        mu[movieId][i].user = userId;
+        mu[movieId][i].rating = rating;
+    }
+    trainingDtaMu.close();
+    cout << "Loaded mu" << endl;
+
+    // Zero out intermediates
+    for (i = 0; i < NUM_MOVIES; i++) {
+        for (j = 0; j < NUM_MOVIES; j++) {
+            inter[i][j].x = 0;
+
+        }
+    }
+    cout << "Zeroed out intermediates" << endl;
+
 }
 
 
-void SVD::run() {
-    int f, e, i, chances, userId;
-    double sq, rmse, rmse_last, err, p;
+void KNN::run() {
+    int i, j, userId;
+    double rmse, rmse_last;
     short movieId;
-    double uf, mf;
-    Rating *rating;
-
+    s_inter tmp;
+    float x, y, xy, xx, yy;
+    unsigned int n;
+    
     rmse_last = 0;
     rmse = 2.0;
 
-    for (f = 0; f < NUM_FEATURES; f++) {
-        cout << "Computing feature " << f << ".\n";
-        for (e = 0; ((e < MIN_EPOCHS)  || (rmse <= rmse_last - MIN_IMPROVEMENT)) && (e < MAX_EPOCHS); e++) {
-            cout << rmse_last << "\n";
-            rmse_last = rmse;
-            sq = 0;
-            for (i = 0; i < NUM_RATINGS; i++) {
-                rating = ratings + i;
-                movieId = rating->movieId;
-                userId = rating->userId;
-                p = predictRating(movieId, userId, f, rating->cache, true);
-                err = (1.0 * rating->rating - p); 
-                sq += err * err;
-                uf = userFeatures[f][userId];
-                mf = movieFeatures[f][movieId];
+    // Compute intermediates
 
-                userFeatures[f][userId] += (LRATE * (err * mf - K * uf));
-                movieFeatures[f][movieId] += (LRATE * (err * uf - K * mf));
-            }
-            rmse = sqrt(sq/NUM_RATINGS);
-        }
 
-#ifdef RMSEOUT
-        outputRMSE(f);
-#endif
-        for (i = 0; i < NUM_RATINGS; i++) {
-            rating = ratings + i;
-            rating->cache = predictRating(rating->movieId, rating->userId, f, rating->cache, false);
+    // Calculate Pearson coeff. based on: 
+    // https://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient
+    for (i = 0; i < NUM_MOVIES; i++) {
+        for (j = i; j < NUM_MOVIES; j++) {
+            tmp = inter[i][j];
+            x = tmp.x;
+            y = tmp.y;
+            xy = tmp.xy;
+            xx = tmp.xx;
+            yy = tmp.yy;
+            n = tmp.n;
+
+            P[i][j] = (n * xy - x * y) / (sqrt((n - 1) * xx - x*x) * sqrt((n - 1) * yy - (y * y)));
         }
     }
 
-
 }
 
-inline double SVD::predictRating(short movieId, int userId) {
+// Get Pearson coefficient of two movies
+inline float KNN::getP(short i, short j) {
+    // TODO: Symmetry
+    return P[i][j];
+}
+
+inline double KNN::predictRating(short movieId, int userId) {
     // TODO
     double sum = 0;
     return sum;
@@ -157,7 +206,7 @@ inline double SVD::predictRating(short movieId, int userId) {
 
 /* Generate out of sample RMSE for the current number of features, then
    write this to a rmseOut. */
-void SVD::outputRMSE(short numFeats) {
+void KNN::outputRMSE(short numFeats) {
     string line;
     char c_line[MAX_CHARS_PER_LINE];
     int userId, movieId, time;
@@ -186,7 +235,7 @@ void SVD::outputRMSE(short numFeats) {
     rmseOut << rmse << '\n';
 }
 
-void SVD::output() {
+void KNN::output() {
     string line;
     char c_line[MAX_CHARS_PER_LINE];
     int userId;
@@ -211,21 +260,21 @@ void SVD::output() {
 }
 
 /* Save the calculated parameters. */
-void SVD::save() {
+void KNN::save() {
     int i, j;
     stringstream fname;
     fname << "../results/features" << mdata.str();
 
     ofstream saved(fname.str().c_str(), ios::trunc);
     if (saved.fail()) {
-        cout << "features.svd: Open failed.\n";
+        cout << "features.knn: Open failed.\n";
         exit(-1);
     }
     saved.close();
 }
 
 /* Save the results of the probe */
-void SVD::probe() {
+void KNN::probe() {
     string line;
     char c_line[MAX_CHARS_PER_LINE];
     stringstream fname;
@@ -258,13 +307,13 @@ void SVD::probe() {
 }
 
 int main() {
-    SVD *svd = new SVD();
-    svd->loadData();
-    svd->run();
-    svd->output();
-//     svd->save();
-    svd->probe();
-    cout << "SVD completed.\n";
+    KNN *knn = new KNN();
+    knn->loadData();
+    knn->run();
+    knn->output();
+//     knn->save();
+    knn->probe();
+    cout << "KNN completed.\n";
 
     return 0;
 }

@@ -1,9 +1,10 @@
-CFLAGS=-c -O3 -Wall -Winline
+CFLAGS=-c -O3 -Wall -Winline -g
+LDFLAGS=-g
 
 all: knn
 
 svd: knn.o
-	g++ svd.o -o svd
+	g++ $(LDFLAGS) svd.o -o svd
 
 svd.o: knn.cpp
 	g++ $(CFLAGS) knn.cpp

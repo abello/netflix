@@ -51,8 +51,6 @@ private:
     // mu: for every movie, stores (user, rating) pairs.
     vector<mu_pair> mu[NUM_MOVIES];
 
-    // Intermediates for every movie pair
-    s_inter inter[NUM_MOVIES][NUM_MOVIES];
 
     // Pearson coefficients for every movie pair
     float P[NUM_MOVIES][NUM_MOVIES];
@@ -86,7 +84,7 @@ void KNN::loadData() {
 
     int j;
 
-    int i = 0;
+    int i = -1;
     int last_seen = 0;
 
     ifstream trainingDta ("../processed_data/train.dta"); 
@@ -117,7 +115,7 @@ void KNN::loadData() {
 
     cout << "Loaded um" << endl;
 
-    i = 0;
+    i = -1;
     last_seen = 0;
 
     // Repeat again, not for mu dta
@@ -148,51 +146,97 @@ void KNN::loadData() {
     trainingDtaMu.close();
     cout << "Loaded mu" << endl;
 
-    // Zero out intermediates
-    for (i = 0; i < NUM_MOVIES; i++) {
-        for (j = 0; j < NUM_MOVIES; j++) {
-            inter[i][j].x = 0;
-            inter[i][j].y = 0;
-            inter[i][j].xy = 0;
-            inter[i][j].xx = 0;
-            inter[i][j].yy = 0;
-            inter[i][j].n = 0;
-
-        }
-    }
-    cout << "Zeroed out intermediates" << endl;
-
 }
 
 
 void KNN::run() {
-    int i, j, userId;
+    int i, j, u, m, user, z;
     double rmse, rmse_last;
-    short movieId;
-    s_inter tmp;
+    short movie;
     float x, y, xy, xx, yy;
     unsigned int n;
+
+    char rating_i, rating_j;
+
+    // Vector size
+    int size1, size2;
+
+    // Intermediates for every movie pair
+    s_inter tmp[NUM_MOVIES];
     
     rmse_last = 0;
     rmse = 2.0;
 
+
     // Compute intermediates
-
-
-    // Calculate Pearson coeff. based on: 
-    // https://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient
     for (i = 0; i < NUM_MOVIES; i++) {
-        for (j = i; j < NUM_MOVIES; j++) {
-            tmp = inter[i][j];
-            x = tmp.x;
-            y = tmp.y;
-            xy = tmp.xy;
-            xx = tmp.xx;
-            yy = tmp.yy;
-            n = tmp.n;
 
-            P[i][j] = (n * xy - x * y) / (sqrt((n - 1) * xx - x*x) * sqrt((n - 1) * yy - (y * y)));
+        // Zero out intermediates
+        for (z = 0; z < NUM_MOVIES; z++) {
+            tmp[z].x = 0;
+            tmp[z].y = 0;
+            tmp[z].xy = 0;
+            tmp[z].xx = 0;
+            tmp[z].yy = 0;
+            tmp[z].n = 0;
         }
+
+        size1 = mu[i].size();
+
+        if ((i % 100) == 0) {
+            cout << i << endl;
+        }
+
+        // For each user that rated movie i
+        for (u = 0; u < size1; u++) {
+            user = mu[i][u].user;
+
+            size2 = um[user].size();
+            // For each movie j rated by current user
+            for (m = 0; m < size2; m++) {
+                movie = um[user][m].movie; // id of movie j
+
+                // At this point, we know that user rated both movie i AND movie
+                // Thus we can update the pearson coeff for the pair XY
+
+                // Rating of movie i
+                rating_i = mu[i][u].rating;
+
+                // Rating of movie j
+                rating_j = um[user][m].rating;
+
+                // Increment rating of movie i
+                tmp[movie].x += rating_i;
+
+                // Increment rating of movie j
+                tmp[movie].y += rating_j;
+
+                tmp[movie].xy += rating_i * rating_j;
+                tmp[movie].xx += rating_i * rating_i;
+                tmp[movie].yy += rating_j * rating_j;
+
+                // Increment number of viewers of movies i AND j
+                tmp[movie].n += 1;
+            }
+        }
+
+        // Calculate Pearson coeff. based on: 
+        // https://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient
+        for (z = 0; z < NUM_MOVIES; z++) {
+            x = tmp[z].x;
+            y = tmp[z].y;
+            xy = tmp[z].xy;
+            xx = tmp[z].xx;
+            yy = tmp[z].yy;
+            n = tmp[z].n;
+            if (n == 0) {
+                P[i][z] = 0;
+            }
+            else {
+                P[i][z] = (n * xy - x * y) / (sqrt((n - 1) * xx - x*x) * sqrt((n - 1) * yy - (y * y)));
+            }
+        }
+
     }
 
 }
@@ -200,7 +244,8 @@ void KNN::run() {
 // Get Pearson coefficient of two movies
 inline float KNN::getP(short i, short j) {
     // TODO: Symmetry
-    return P[i][j];
+//     return P[i][j];
+    return 1;
 }
 
 inline double KNN::predictRating(short movieId, int userId) {

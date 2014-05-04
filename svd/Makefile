@@ -1,4 +1,4 @@
-CFLAGS=-c -O3 -Wall
+CFLAGS=-c -O3 -Wall -Winline
 
 all: svd
 

@@ -152,6 +152,11 @@ void KNN::loadData() {
     for (i = 0; i < NUM_MOVIES; i++) {
         for (j = 0; j < NUM_MOVIES; j++) {
             inter[i][j].x = 0;
+            inter[i][j].y = 0;
+            inter[i][j].xy = 0;
+            inter[i][j].xx = 0;
+            inter[i][j].yy = 0;
+            inter[i][j].n = 0;
 
         }
     }

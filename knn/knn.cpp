@@ -15,46 +15,43 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 50
-#define MIN_EPOCHS 130
-#define MAX_EPOCHS 180
-#define MIN_IMPROVEMENT 0.0001
-#define LRATE 0.001
-#define K_MOVIE 25
-#define K 0.02
-#define FEAT_INIT GLOBAL_AVG/NUM_FEATURES
 
-// Second chance settings
-#define SC_EPOCHS 10
-#define SC_CHANCES 3
+// Ideas and pseudocode from: http://dmnewbie.blogspot.com/2009/06/calculating-316-million-movie.html
 
-
-
-// calculate and save out of sample RMSE
-// #define RMSEOUT
-
-
-// Created using this article and some code: http://www.timelydevelopment.com/demos/NetflixPrize.aspx
 
 using namespace std;
 
-struct Rating {
-    int userId;
-    short movieId;
-    short rating;
-    double cache;
+struct mu_pair {
+    unsigned int user;
+    unsigned char rating;
 };
+
+struct um_pair {
+    unsigned short movie;
+    unsigned char rating;
+};
+
+// Pearson intermediates, as described in dmnewbie's blog
+struct s_inter {
+    float x; // sum of ratings of movie i
+    float y; // sum of ratings of movie j
+    float xy; // sum (rating_i * rating_j)
+    float xx; // sum (rating_i^2)
+    float yy; // sum (rating_j^2)
+};
+
 
 class SVD {
 private:
-    double movieAvgs[NUM_MOVIES];
-    double userOffsets[NUM_USERS];
-    double userFeatures[NUM_FEATURES][NUM_USERS];
-    double movieFeatures[NUM_FEATURES][NUM_MOVIES];
-    Rating ratings[NUM_RATINGS];
-//     ofstream rmseOut;
-//     ifstream probe;
-    double predictRating(short movieId, int userId, int feature, double cached, bool addTrailing);
+    // um: for every user, stores (movie, rating) pairs.
+    vector<um_pair> um;
+
+    // mu: for every movie, stores (user, rating) pairs.
+    vector<mu_pair> mu;
+
+    // Intermediates for every movie
+    s_inter inter[NUM_MOVIES];
+
     double predictRating(short movieId, int userId); 
     void outputRMSE(short numFeats);
     stringstream mdata;
@@ -62,7 +59,6 @@ public:
     SVD();
     ~SVD() { };
     void loadData();
-    void computeBaselines();
     void run();
     void output();
     void save();
@@ -70,24 +66,8 @@ public:
 };
 
 SVD::SVD() 
-//     : rmseOut("rmseOut.txt", ios::trunc), probe("../processed_data/probe.dta")
 {
-    int f, j, k;
-
-    mdata << "-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE << "-SC-E=" << SC_EPOCHS << "-SCC=" << SC_CHANCES;
-
-
-//     srand(time(NULL));
-    for (f = 0; f < NUM_FEATURES; f++) {
-        for (j = 0; j < NUM_USERS; j++) {
-//             userFeatures[f][j] = ((rand() % 201) - 100) / 1000.0;
-            userFeatures[f][j] = FEAT_INIT;
-        }
-        for (k = 0; k < NUM_MOVIES; k++) {
-//             movieFeatures[f][k] = ((rand() % 201) - 100) / 1000.0;
-            movieFeatures[f][k] = FEAT_INIT;
-        }
-    }
+    mdata << "-KNN-";
 }
 
 void SVD::loadData() {
@@ -118,61 +98,6 @@ void SVD::loadData() {
     trainingDta.close();
 }
 
-void SVD::computeBaselines() {
-    string line;
-    char c_line[MAX_CHARS_PER_LINE];
-    int cur = 0;
-    int iter = 0;
-    int curCount = 0;
-    int userId, time, rating, i, movieId;
-    double ratingSum = 0.0;
-    double offSum = 0.0; // Sum of offsets for a user;
-    Rating *ratingPtr;
-    ifstream trainingDtaMu("../processed_data/train-mu.dta");
-    if (trainingDtaMu.fail()) {
-        cout << "train-mu: Open failed.\n";
-        exit(-1);
-    }
-    // Compute movie averages.
-    while (getline(trainingDtaMu, line)) {
-        memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
-        userId = atoi(strtok(c_line, " ")) - 1;
-        iter = atoi(strtok(NULL, " ")) - 1;
-        time = atoi(strtok(NULL, " "));
-        rating = atoi(strtok(NULL, " "));
-        if (iter == cur) {
-            curCount++;
-            ratingSum += 1.0 * rating;
-        }
-        else {
-            movieAvgs[cur] = (GLOBAL_AVG * K_MOVIE + ratingSum) / (K_MOVIE + curCount);
-            curCount = 1; // Counting the current new movie;
-            ratingSum = (1.0) * rating;
-            cur = iter;
-        }
-    }
-    trainingDtaMu.close();
-
-    cur = 0;
-    iter = 0;
-    curCount = 0;
-    // Compute user offsets
-    for (i = 0; i < NUM_RATINGS; i++) {
-        ratingPtr = ratings + i;
-        iter = ratingPtr->userId;
-        movieId = ratingPtr->movieId;
-        if (iter == cur) {
-            offSum += (1.0 * ratingPtr->rating) - movieAvgs[movieId]; 
-            curCount++;
-        }
-        else { 
-            userOffsets[cur] = (GLOBAL_OFF_AVG * K_MOVIE + offSum) / (K_MOVIE + curCount);
-            offSum = (1.0 * ratingPtr->rating) - movieAvgs[movieId];
-            curCount = 1;
-            cur = iter;
-        }
-    }
-}
 
 void SVD::run() {
     int f, e, i, chances, userId;
@@ -216,67 +141,11 @@ void SVD::run() {
     }
 
 
-    // Second chance
-    for (chances = 0; chances < SC_CHANCES; chances++) {
-        for (f = 0; f < NUM_FEATURES; f++) {
-            cout << "Computing feature " << f << ".\n";
-            for (e = 0; (e < SC_EPOCHS); e++) {
-                cout << rmse_last << "\n";
-                rmse_last = rmse;
-                sq = 0;
-                for (i = 0; i < NUM_RATINGS; i++) {
-                    rating = ratings + i;
-                    movieId = rating->movieId;
-                    userId = rating->userId;
-                    p = predictRating(movieId, userId);
-                    err = (1.0 * rating->rating - p); 
-                    sq += err * err;
-                    uf = userFeatures[f][userId];
-                    mf = movieFeatures[f][movieId];
-
-                    userFeatures[f][userId] += (LRATE * (err * mf - K * uf));
-                    movieFeatures[f][movieId] += (LRATE * (err * uf - K * mf));
-
-                }
-                rmse = sqrt(sq/NUM_RATINGS);
-            }
-        }
-    }
-
-}
-
-inline double SVD::predictRating(short movieId, int userId, int feature, double cached, bool addTrailing) {
-    double sum = cached;
-
-    sum += userFeatures[feature][userId] * movieFeatures[feature][movieId];
-    if (addTrailing) {
-        sum += (NUM_FEATURES - feature - 1) * (FEAT_INIT * FEAT_INIT);
-    }
-
-
-    if (sum > 5) {
-        sum = 5;
-    }
-    else if (sum < 1) {
-        sum = 1;
-    }
-
-    return sum;
 }
 
 inline double SVD::predictRating(short movieId, int userId) {
-    int f;
+    // TODO
     double sum = 0;
-    for (f = 0; f < NUM_FEATURES; f++) {
-        sum += userFeatures[f][userId] * movieFeatures[f][movieId];
-    }
-
-    if (sum > 5) {
-        sum = 5;
-    }
-    else if (sum < 1) {
-        sum = 1;
-    }
     return sum;
 }
 
@@ -335,7 +204,7 @@ void SVD::output() {
     }
 }
 
-/* Save the calculated features and other parameters. */
+/* Save the calculated parameters. */
 void SVD::save() {
     int i, j;
     stringstream fname;
@@ -345,18 +214,6 @@ void SVD::save() {
     if (saved.fail()) {
         cout << "features.svd: Open failed.\n";
         exit(-1);
-    }
-    for (i = 0; i < NUM_USERS; i++) {
-        for (j = 0; j < NUM_FEATURES; j++) {
-            saved << userFeatures[j][i] << ' ';
-        }
-        saved << '\n';
-    }
-    for (i = 0; i < NUM_MOVIES; i++) {
-        for (j = 0; j < NUM_FEATURES; j++) {
-            saved << movieFeatures[j][i] << ' ';
-        }
-        saved << '\n';
     }
     saved.close();
 }
@@ -397,7 +254,6 @@ void SVD::probe() {
 int main() {
     SVD *svd = new SVD();
     svd->loadData();
-    svd->computeBaselines();
     svd->run();
     svd->output();
 //     svd->save();

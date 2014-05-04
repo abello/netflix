@@ -17,6 +17,9 @@
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
 
+// Minimum common neighbors required for decent prediction
+#define MIN_COMMON 16
+
 // Ideas and some pseudocode from: http://dmnewbie.blogspot.com/2009/06/calculating-316-million-movie.html
 
 
@@ -58,6 +61,8 @@ private:
     double predictRating(short movieId, int userId); 
     void outputRMSE(short numFeats);
     stringstream mdata;
+
+    float movieAvg[NUM_MOVIES];
 public:
     KNN();
     ~KNN() { };
@@ -86,6 +91,10 @@ void KNN::loadData() {
 
     int i = -1;
     int last_seen = 0;
+
+    // Used for movie avgs
+    int num_ratings = 0;
+    int avg = 0;
 
     ifstream trainingDta ("../processed_data/train.dta"); 
     if (trainingDta.fail()) {
@@ -131,12 +140,18 @@ void KNN::loadData() {
         time = atoi(strtok(NULL, " ")); 
         rating = (char) atoi(strtok(NULL, " "));
 
+        // If we're still on the same movie
         if (last_seen == movieId) {
             i++;
+            num_ratings += 1;
+            avg += rating;
         }
         else {
             i = 0;
             last_seen = movieId;
+            movieAvgs[movie] = float(avg)/num_ratings
+            num_ratings = 1;
+            avg = rating;
         }
         
         mu[movieId].push_back(mu_pair());
@@ -229,7 +244,7 @@ void KNN::run() {
             xx = tmp[z].xx;
             yy = tmp[z].yy;
             n = tmp[z].n;
-            if (n == 0) {
+            if (n < MIN_COMMON) {
                 P[i][z] = 0;
             }
             else {
@@ -242,13 +257,13 @@ void KNN::run() {
 }
 
 // Get Pearson coefficient of two movies
-inline float KNN::getP(short i, short j) {
+inline float KNN::predictRating(short i, short j) {
     // TODO: Symmetry
 //     return P[i][j];
     return 1;
 }
 
-inline double KNN::predictRating(short movieId, int userId) {
+inline double KNN::predictRating(short movie, int user) {
     // TODO
     double sum = 0;
     return sum;

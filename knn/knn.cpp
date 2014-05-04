@@ -44,10 +44,10 @@ struct s_inter {
 class SVD {
 private:
     // um: for every user, stores (movie, rating) pairs.
-    vector<um_pair> um;
+    vector<um_pair> um[NUM_USERS];
 
     // mu: for every movie, stores (user, rating) pairs.
-    vector<mu_pair> mu;
+    vector<mu_pair> mu[NUM_MOVIES];
 
     // Intermediates for every movie
     s_inter inter[NUM_MOVIES];
@@ -77,6 +77,8 @@ void SVD::loadData() {
     int movieId;
     int time;
     int rating;
+
+    int prev_user = 0; // Previously seen user
     int i = 0;
     ifstream trainingDta ("../processed_data/train.dta"); 
     if (trainingDta.fail()) {
@@ -86,14 +88,18 @@ void SVD::loadData() {
     while (getline(trainingDta, line)) {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1; // sub 1 for zero indexed
-        movieId = atoi(strtok(NULL, " ")) - 1;
+        movieId = (short) atoi(strtok(NULL, " ")) - 1;
         time = atoi(strtok(NULL, " ")); 
-        rating = atoi(strtok(NULL, " "));
-        ratings[i].userId = userId;
-        ratings[i].movieId = (short) movieId;
-        ratings[i].rating = rating;
-        ratings[i].cache = 0.0;
-        i++;
+        rating = (char) atoi(strtok(NULL, " "));
+        
+        if (prev_user == userId) {
+            um[i].push_back(s_inter());
+            um[i].movie = movieId;
+            um[i].rating = rating;
+        }
+        else {
+            i++;
+        }
     }
     trainingDta.close();
 }

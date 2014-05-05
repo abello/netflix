@@ -294,6 +294,7 @@ void KNN::calcP() {
             }
             else {
                 P[i][z].p = (n * xy - x * y) / (sqrt((n - 1) * xx - x*x) * sqrt((n - 1) * yy - (y * y)));
+                P[i][z].common = n;
             }
         }
 
@@ -316,7 +317,9 @@ void KNN::saveP() {
     
     for (i = 0; i < NUM_MOVIES; i++) {
         for (j = i; j < NUM_MOVIES; j++) {
-            pfile << i << " " << j << " " << P[i][j].p << " " << P[i][j].common << endl;
+            if (P[i][j].common != 0) {
+                pfile << i << " " << j << " " << P[i][j].p << " " << P[i][j].common << endl;
+            }
         }
     }
     pfile.close();

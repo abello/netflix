@@ -367,7 +367,9 @@ double KNN::predictRating(unsigned int movie, unsigned int user) {
     // NOTE: making movie and n unsigned ints might make it easier for the compiler
     // to implement branchless min()
     double prediction = 0;
+    double denom = 0;
     double diff;
+    double result;
 
     unsigned int size, i, n;
 
@@ -460,11 +462,25 @@ double KNN::predictRating(unsigned int movie, unsigned int user) {
         if (tmp_pair.pearson < 0) {
             diff = -diff;
         }
-        prediction += tmp_pair.m_avg + diff;
+        prediction += tmp_pair.pearson * (tmp_pair.m_avg + diff);
+        denom += tmp_pair.pearson;
 
     }
 
-    return ((float) prediction) / size;
+    result = ((float) prediction) / denom;
+
+    // If result is nan, return avg
+    if (result != result) {
+        return GLOBAL_AVG;
+    }
+    else if (result < 1) {
+        return 1;
+    }
+    else if (result > 5) {
+        return 5;
+    }
+
+    return result;
 
 }
 

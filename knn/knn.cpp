@@ -23,7 +23,7 @@
 
 
 // Max weight elements to consider when predicting
-#define MAX_W 20
+#define MAX_W 90
 
 // Ideas and some pseudocode from: http://dmnewbie.blogspot.com/2009/06/calculating-316-million-movie.html
 
@@ -108,7 +108,9 @@ public:
     KNN();
     ~KNN() { };
     void loadData();
-    void run();
+    void calcP();
+    void saveP();
+    void loadP();
     void output();
     void save();
     void probe();
@@ -205,7 +207,7 @@ void KNN::loadData() {
 }
 
 
-void KNN::run() {
+void KNN::calcP() {
     int i, j, u, m, user, z;
     double rmse, rmse_last;
     short movie;
@@ -219,6 +221,8 @@ void KNN::run() {
 
     // Intermediates for every movie pair
     s_inter tmp[NUM_MOVIES];
+
+    cout << "Calculating P" << endl;
     
     rmse_last = 0;
     rmse = 2.0;
@@ -294,6 +298,57 @@ void KNN::run() {
         }
 
     }
+
+    cout << "P calculated" << endl;
+
+}
+
+void KNN::saveP() {
+    int i, j;
+
+    cout << "Saving P" << endl;
+
+    ofstream pfile("../processed_data/knn-p", ios::app);
+    if (!pfile.is_open()) {
+        cout << "Files for P output: Open failed.\n";
+        exit(-1);
+    }
+    
+    for (i = 0; i < NUM_MOVIES; i++) {
+        for (j = i; j < NUM_MOVIES; j++) {
+            pfile << i << " " << j << " " << P[i][j].p << " " << P[i][j].common << endl;
+        }
+    }
+    pfile.close();
+    cout << "P saved" << endl;
+}
+
+void KNN::loadP() {
+    int i, j, common;
+    float p;
+    char c_line[MAX_CHARS_PER_LINE];
+    string line;
+
+    cout << "Loading P" << endl;
+
+    ifstream pfile("../processed_data/knn-p", ios::app);
+    if (!pfile.is_open()) {
+        cout << "Files for P output: Open failed.\n";
+        exit(-1);
+    }
+    
+    while (getline(pfile, line)) {
+        memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
+        i = atoi(strtok(c_line, " ")) -1;
+        j = atoi(strtok(NULL, " ")) - 1;
+        p = (float) atof(strtok(NULL, " "));
+        common = atof(strtok(NULL, " "));
+        P[i][j].p = p;
+        P[i][j].common = common;
+    }
+
+    pfile.close();
+    cout << "P loaded" << endl;
 
 }
 
@@ -440,6 +495,9 @@ void KNN::output() {
     int movieId;
     double rating;
     stringstream fname;
+
+    cout << "Generating output" << endl;
+
     fname << "../results/output" << mdata.str();
 
     ifstream qual ("../processed_data/qual.dta");
@@ -455,6 +513,8 @@ void KNN::output() {
         rating = predictRating(movieId, userId);
         out << rating << '\n';
     }
+
+    cout << "Output generated" << endl;
 }
 
 /* Save the calculated parameters. */
@@ -477,6 +537,9 @@ void KNN::probe() {
     char c_line[MAX_CHARS_PER_LINE];
     stringstream fname;
     int userId, movieId, time;
+
+    cout << "Generating probe" << endl;
+
     fname << "../results/probe" << mdata.str();
 
     ofstream saved(fname.str().c_str(), ios::trunc);
@@ -502,12 +565,15 @@ void KNN::probe() {
 
     saved.close();
     p.close();
+
+    cout << "Probe generated" << endl;
 }
 
 int main() {
     KNN *knn = new KNN();
     knn->loadData();
-    knn->run();
+    knn->calcP();
+    knn->saveP();
     knn->output();
 //     knn->save();
     knn->probe();

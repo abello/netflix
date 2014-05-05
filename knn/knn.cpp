@@ -9,6 +9,7 @@
 #include <time.h>
 #include <vector>
 #include <queue>
+#include <cmath>
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
@@ -227,6 +228,8 @@ void KNN::calcP() {
     rmse_last = 0;
     rmse = 2.0;
 
+    float tmp_f;
+
 
     // Compute intermediates
     for (i = 0; i < NUM_MOVIES; i++) {
@@ -293,11 +296,12 @@ void KNN::calcP() {
                 P[i][z].p = 0;
             }
             else {
-                P[i][z].p = (n * xy - x * y) / (sqrt((n - 1) * xx - x*x) * sqrt((n - 1) * yy - (y * y)));
+                tmp_f = (n * xy - x * y) / (sqrt((n - 1) * xx - x*x) * sqrt((n - 1) * yy - (y * y)));
                 // Test for NaN
-                if (P[i][z].p != P[i][z].p) {
-                    P[i][z] = 0;
+                if (tmp_f != tmp_f) {
+                    tmp_f = 0.0;
                 }
+                P[i][z].p = tmp_f;
                 P[i][z].common = n;
             }
         }
@@ -346,8 +350,8 @@ void KNN::loadP() {
     
     while (getline(pfile, line)) {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
-        i = atoi(strtok(c_line, " ")) -1;
-        j = atoi(strtok(NULL, " ")) - 1;
+        i = atoi(strtok(c_line, " "));
+        j = atoi(strtok(NULL, " "));
         p = (float) atof(strtok(NULL, " "));
         common = atof(strtok(NULL, " "));
         P[i][j].p = p;
@@ -579,8 +583,9 @@ void KNN::probe() {
 int main() {
     KNN *knn = new KNN();
     knn->loadData();
-    knn->calcP();
-    knn->saveP();
+//     knn->calcP();
+//     knn->saveP();
+    knn->loadP();
     knn->output();
 //     knn->save();
     knn->probe();

@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <time.h>
 #include <vector>
+#include <queue>
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
@@ -19,6 +20,10 @@
 
 // Minimum common neighbors required for decent prediction
 #define MIN_COMMON 16
+
+
+// Max weight elements to consider when predicting
+#define MAX_W 20
 
 // Ideas and some pseudocode from: http://dmnewbie.blogspot.com/2009/06/calculating-316-million-movie.html
 
@@ -46,6 +51,40 @@ struct s_inter {
 };
 
 
+// To be stored in P
+struct s_pear {
+    float p;
+    unsigned int common;
+};
+
+
+// Used during prediction
+// As per the blogpost
+struct s_neighbors {
+    // Num users who watched both m and n
+    unsigned int common;
+
+    // Avg rating of m, n
+    float m_avg;
+    float n_avg;
+
+    // Rating of n
+    float n_rating;
+
+    // Pearson coeff
+    float pearson;
+
+    float p_lower;
+    float weight;
+};
+
+// Comparison operator for booleans
+int operator<(const s_neighbors &a, const s_neighbors &b) {
+    return a.weight > b.weight;
+}
+
+
+
 class KNN {
 private:
     // um: for every user, stores (movie, rating) pairs.
@@ -56,9 +95,11 @@ private:
 
 
     // Pearson coefficients for every movie pair
-    float P[NUM_MOVIES][NUM_MOVIES];
+    // When accessing P[i][j], it must always be the case that:
+    // i <= j (symmetry is assumed)
+    s_pear P[NUM_MOVIES][NUM_MOVIES];
 
-    double predictRating(short movieId, int userId); 
+    double predictRating(unsigned int movie, unsigned int user);
     void outputRMSE(short numFeats);
     stringstream mdata;
 
@@ -149,7 +190,7 @@ void KNN::loadData() {
         else {
             i = 0;
             last_seen = movieId;
-            movieAvgs[movie] = float(avg)/num_ratings
+            movieAvg[movieId] = float(avg)/num_ratings;
             num_ratings = 1;
             avg = rating;
         }
@@ -244,11 +285,11 @@ void KNN::run() {
             xx = tmp[z].xx;
             yy = tmp[z].yy;
             n = tmp[z].n;
-            if (n < MIN_COMMON) {
-                P[i][z] = 0;
+            if (n == 0) {
+                P[i][z].p = 0;
             }
             else {
-                P[i][z] = (n * xy - x * y) / (sqrt((n - 1) * xx - x*x) * sqrt((n - 1) * yy - (y * y)));
+                P[i][z].p = (n * xy - x * y) / (sqrt((n - 1) * xx - x*x) * sqrt((n - 1) * yy - (y * y)));
             }
         }
 
@@ -256,17 +297,109 @@ void KNN::run() {
 
 }
 
-// Get Pearson coefficient of two movies
-inline float KNN::predictRating(short i, short j) {
-    // TODO: Symmetry
-//     return P[i][j];
-    return 1;
-}
+double KNN::predictRating(unsigned int movie, unsigned int user) {
+    // NOTE: making movie and n unsigned ints might make it easier for the compiler
+    // to implement branchless min()
+    double prediction = 0;
+    double diff;
 
-inline double KNN::predictRating(short movie, int user) {
-    // TODO
-    double sum = 0;
-    return sum;
+    unsigned int size, i, n;
+
+    s_pear tmp;
+
+    s_neighbors neighbors[NUM_MOVIES];
+
+    priority_queue<s_neighbors> q;
+    
+    s_neighbors tmp_pair;
+
+    float p_lower, pearson;
+
+    int common_users;
+
+    // Len neighbors
+    int j = 0;
+    
+    // For each movie rated by user
+    size = um[user].size();
+    
+    for (i = 0; i < size; i++) {
+        n = um[user][i].movie; // n: movie watched by user
+
+        tmp = P[min(movie, n)][max(movie, n)];
+        common_users = tmp.common;
+
+        // If movie and m2 have >= MIN_COMMON viewers
+        if (common_users >= MIN_COMMON) {
+            neighbors[j].common = common_users;
+            neighbors[j].m_avg = movieAvg[movie];
+            neighbors[j].n_avg = movieAvg[n];
+
+            neighbors[j].n_rating = um[user][i].rating;
+
+            pearson = tmp.p;
+            neighbors[j].pearson = pearson;
+
+            // Fisher and inverse-fisher transform (from wikipedia)
+            p_lower = tanh(atanh(pearson) - 1.96 / sqrt(common_users - 3));
+            neighbors[j].p_lower = p_lower;
+            neighbors[j].weight = p_lower * p_lower * log(common_users);
+            j++;
+        }
+
+    }
+
+    // Add the dummy element described in the blog
+    neighbors[j].common = 0;
+    neighbors[j].m_avg = movieAvg[movie];
+    neighbors[j].n_avg = 0;
+
+    neighbors[j].n_rating = 0;
+
+    neighbors[j].pearson = 0;
+
+    neighbors[j].p_lower = 0;
+    neighbors[j].weight = log(MIN_COMMON);
+    j++;
+
+
+
+    // At this point we have an array of neighbors, length j. Let's find the
+    // MAX_W elements of the array using 
+
+    // For each movie-pair in neighbors
+    for (i = 0; i < j; i++) {
+        // If there is place in queue, just push it
+        if (q.size() <= MAX_W) {
+            q.push(neighbors[i]);
+        }
+
+        // Else, push it only if this pair has a higher weight than the top
+        // (smallest in top-MAX_W).
+        // Remove the current top first
+        else {
+            if (q.top().weight < neighbors[i].weight) {
+                q.pop();
+                q.push(neighbors[i]);
+            }
+        }
+    }
+
+    // Now we can go ahead and calculate rating
+    size = q.size();
+    for (i = 0; i < size; i++) {
+        tmp_pair = q.top();
+        q.pop();
+        diff = tmp_pair.n_rating - tmp_pair.n_avg;
+        if (tmp_pair.pearson < 0) {
+            diff = -diff;
+        }
+        prediction += tmp_pair.m_avg + diff;
+
+    }
+
+    return ((float) prediction) / size;
+
 }
 
 /* Generate out of sample RMSE for the current number of features, then

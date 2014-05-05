@@ -294,6 +294,10 @@ void KNN::calcP() {
             }
             else {
                 P[i][z].p = (n * xy - x * y) / (sqrt((n - 1) * xx - x*x) * sqrt((n - 1) * yy - (y * y)));
+                // Test for NaN
+                if (P[i][z].p != P[i][z].p) {
+                    P[i][z] = 0;
+                }
                 P[i][z].common = n;
             }
         }

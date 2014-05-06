@@ -335,22 +335,21 @@ void SVD::output() {
     int userId;
     int movieId;
     double rating;
-//     stringstream fname;
-//     fname << "../results/output" << mdata.str();
+    stringstream fname;
+    fname << "../results/output" << mdata.str();
 
     ifstream qual ("../processed_data/qual.dta");
-    ofstream output("output.dta", ios::trunc);
-//     ofstream out (fname.str().c_str(), ios::trunc); 
-//     if (qual.fail() || out.fail()) {
-//         cout << "qual.dta: Open failed.\n";
-//         exit(-1);
-//     }
+    ofstream out (fname.str().c_str(), ios::trunc); 
+    if (qual.fail() || out.fail()) {
+        cout << "qual.dta: Open failed.\n";
+        exit(-1);
+    }
     while (getline(qual, line)) {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1;
         movieId = (short) atoi(strtok(NULL, " ")) - 1;
         rating = predictRating(movieId, userId);
-        output << rating << '\n';
+        out << rating << '\n';
     }
 }
 

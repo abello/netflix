@@ -10,23 +10,25 @@
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
-#define NUM_RATINGS 98291669
+//#define NUM_RATINGS 98291669
+#define NUM_RATINGS 99666408
 #define GLOBAL_AVG 3.512599976023349
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 80
-#define MIN_EPOCHS 130
-#define MAX_EPOCHS 180
+#define NUM_FEATURES 50 
+#define MIN_EPOCHS 120
+#define MAX_EPOCHS 140 
 #define MIN_IMPROVEMENT 0.0001
 #define LRATE 0.001
 #define K_MOVIE 25
 #define K 0.02
-#define FEAT_INIT GLOBAL_AVG/NUM_FEATURES
+//#define FEAT_INIT GLOBAL_AVG/NUM_FEATURES
+#define FEAT_INIT 0.1
 
 // Second chance settings
-#define SC_EPOCHS 10
-#define SC_CHANCES 3
+#define SC_EPOCHS 0 
+#define SC_CHANCES 0
 
 
 
@@ -62,6 +64,7 @@ public:
     SVD();
     ~SVD() { };
     void loadData();
+    void initCache();
     void computeBaselines();
     void run();
     void output();
@@ -98,7 +101,7 @@ void SVD::loadData() {
     int time;
     int rating;
     int i = 0;
-    ifstream trainingDta ("../processed_data/train.dta"); 
+    ifstream trainingDta ("../processed_data/train-with-probe.dta"); 
     if (trainingDta.fail()) {
         cout << "train.dta: Open failed.\n";
         exit(-1);
@@ -112,10 +115,18 @@ void SVD::loadData() {
         ratings[i].userId = userId;
         ratings[i].movieId = (short) movieId;
         ratings[i].rating = rating;
-        ratings[i].cache = 0.0;
+        ratings[i].cache = 0.0; // set to 0 temporarily.
         i++;
     }
     trainingDta.close();
+}
+
+void SVD::initCache() {
+    Rating *r;
+    for (int i = 0; i < NUM_RATINGS; i++) {
+        r = ratings + i;
+        r->cache = movieAvgs[r->movieId] + userOffsets[r->userId];
+    }
 }
 
 void SVD::computeBaselines() {
@@ -129,6 +140,7 @@ void SVD::computeBaselines() {
     double offSum = 0.0; // Sum of offsets for a user;
     Rating *ratingPtr;
     ifstream trainingDtaMu("../processed_data/train-mu.dta");
+    cout << "computing baselines." << endl;
     if (trainingDtaMu.fail()) {
         cout << "train-mu: Open failed.\n";
         exit(-1);
@@ -153,6 +165,8 @@ void SVD::computeBaselines() {
     }
     trainingDtaMu.close();
 
+    cout << "movie averages computed." << endl;
+
     cur = 0;
     iter = 0;
     curCount = 0;
@@ -172,6 +186,8 @@ void SVD::computeBaselines() {
             cur = iter;
         }
     }
+
+    cout << "user offsets computed." << endl;
 }
 
 void SVD::run() {
@@ -215,34 +231,34 @@ void SVD::run() {
         }
     }
 
-
-    // Second chance
-    for (chances = 0; chances < SC_CHANCES; chances++) {
-        for (f = 0; f < NUM_FEATURES; f++) {
-            cout << "Computing feature " << f << ".\n";
-            for (e = 0; (e < SC_EPOCHS); e++) {
-                cout << rmse_last << "\n";
-                rmse_last = rmse;
-                sq = 0;
-                for (i = 0; i < NUM_RATINGS; i++) {
-                    rating = ratings + i;
-                    movieId = rating->movieId;
-                    userId = rating->userId;
-                    p = predictRating(movieId, userId);
-                    err = (1.0 * rating->rating - p); 
-                    sq += err * err;
-                    uf = userFeatures[f][userId];
-                    mf = movieFeatures[f][movieId];
-
-                    userFeatures[f][userId] += (LRATE * (err * mf - K * uf));
-                    movieFeatures[f][movieId] += (LRATE * (err * uf - K * mf));
-
-                }
-                rmse = sqrt(sq/NUM_RATINGS);
-            }
-        }
-    }
-
+// 
+//     // Second chance
+//     for (chances = 0; chances < SC_CHANCES; chances++) {
+//         for (f = 0; f < NUM_FEATURES; f++) {
+//             cout << "Computing feature " << f << ".\n";
+//             for (e = 0; (e < SC_EPOCHS); e++) {
+//                 cout << rmse_last << "\n";
+//                 rmse_last = rmse;
+//                 sq = 0;
+//                 for (i = 0; i < NUM_RATINGS; i++) {
+//                     rating = ratings + i;
+//                     movieId = rating->movieId;
+//                     userId = rating->userId;
+//                     p = predictRating(movieId, userId);
+//                     err = (1.0 * rating->rating - p); 
+//                     sq += err * err;
+//                     uf = userFeatures[f][userId];
+//                     mf = movieFeatures[f][movieId];
+// 
+//                     userFeatures[f][userId] += (LRATE * (err * mf - K * uf));
+//                     movieFeatures[f][movieId] += (LRATE * (err * uf - K * mf));
+// 
+//                 }
+//                 rmse = sqrt(sq/NUM_RATINGS);
+//             }
+//         }
+//     }
+// 
 }
 
 inline double SVD::predictRating(short movieId, int userId, int feature, double cached, bool addTrailing) {
@@ -270,6 +286,8 @@ inline double SVD::predictRating(short movieId, int userId) {
     for (f = 0; f < NUM_FEATURES; f++) {
         sum += userFeatures[f][userId] * movieFeatures[f][movieId];
     }
+
+    sum += movieAvgs[movieId] + userOffsets[userId];
 
     if (sum > 5) {
         sum = 5;
@@ -317,21 +335,22 @@ void SVD::output() {
     int userId;
     int movieId;
     double rating;
-    stringstream fname;
-    fname << "../results/output" << mdata.str();
+//     stringstream fname;
+//     fname << "../results/output" << mdata.str();
 
     ifstream qual ("../processed_data/qual.dta");
-    ofstream out (fname.str().c_str(), ios::trunc); 
-    if (qual.fail() || out.fail()) {
-        cout << "qual.dta: Open failed.\n";
-        exit(-1);
-    }
+    ofstream output("output.dta", ios::trunc);
+//     ofstream out (fname.str().c_str(), ios::trunc); 
+//     if (qual.fail() || out.fail()) {
+//         cout << "qual.dta: Open failed.\n";
+//         exit(-1);
+//     }
     while (getline(qual, line)) {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1;
         movieId = (short) atoi(strtok(NULL, " ")) - 1;
         rating = predictRating(movieId, userId);
-        out << rating << '\n';
+        output << rating << '\n';
     }
 }
 
@@ -398,10 +417,11 @@ int main() {
     SVD *svd = new SVD();
     svd->loadData();
     svd->computeBaselines();
+    svd->initCache();
     svd->run();
     svd->output();
 //     svd->save();
-    svd->probe();
+//     svd->probe();
     cout << "SVD completed.\n";
 
     return 0;

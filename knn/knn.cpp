@@ -24,7 +24,7 @@
 
 
 // Max weight elements to consider when predicting
-#define MAX_W 90
+#define MAX_W 40
 
 // Ideas and some pseudocode from: http://dmnewbie.blogspot.com/2009/06/calculating-316-million-movie.html
 
@@ -354,7 +354,12 @@ void KNN::loadP() {
         j = atoi(strtok(NULL, " "));
         p = (float) atof(strtok(NULL, " "));
         common = atof(strtok(NULL, " "));
-        P[i][j].p = p;
+        if (isinf(p)) {
+            P[i][j].p = 0;
+        }
+        else {
+            P[i][j].p = p;
+        }
         P[i][j].common = common;
     }
 
@@ -438,7 +443,7 @@ double KNN::predictRating(unsigned int movie, unsigned int user) {
     // For each movie-pair in neighbors
     for (i = 0; i < j; i++) {
         // If there is place in queue, just push it
-        if (q.size() <= MAX_W) {
+        if (q.size() < MAX_W) {
             q.push(neighbors[i]);
         }
 

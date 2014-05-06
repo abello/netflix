@@ -101,7 +101,7 @@ void SVD::loadData() {
     int time;
     int rating;
     int i = 0;
-    ifstream trainingDta ("../processed_data/train-with-probe.dta"); 
+    ifstream trainingDta ("../processed_data/train+probe.dta"); 
     if (trainingDta.fail()) {
         cout << "train.dta: Open failed.\n";
         exit(-1);
@@ -287,7 +287,7 @@ inline double SVD::predictRating(short movieId, int userId) {
         sum += userFeatures[f][userId] * movieFeatures[f][movieId];
     }
 
-    sum += movieAvgs[movieId] + userOffsets[userId];
+//     sum += movieAvgs[movieId] + userOffsets[userId];
 
     if (sum > 5) {
         sum = 5;
@@ -417,7 +417,7 @@ int main() {
     SVD *svd = new SVD();
     svd->loadData();
     svd->computeBaselines();
-    svd->initCache();
+//     svd->initCache();
     svd->run();
     svd->output();
 //     svd->save();

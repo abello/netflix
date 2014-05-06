@@ -231,34 +231,34 @@ void SVD::run() {
         }
     }
 
-// 
-//     // Second chance
-//     for (chances = 0; chances < SC_CHANCES; chances++) {
-//         for (f = 0; f < NUM_FEATURES; f++) {
-//             cout << "Computing feature " << f << ".\n";
-//             for (e = 0; (e < SC_EPOCHS); e++) {
-//                 cout << rmse_last << "\n";
-//                 rmse_last = rmse;
-//                 sq = 0;
-//                 for (i = 0; i < NUM_RATINGS; i++) {
-//                     rating = ratings + i;
-//                     movieId = rating->movieId;
-//                     userId = rating->userId;
-//                     p = predictRating(movieId, userId);
-//                     err = (1.0 * rating->rating - p); 
-//                     sq += err * err;
-//                     uf = userFeatures[f][userId];
-//                     mf = movieFeatures[f][movieId];
-// 
-//                     userFeatures[f][userId] += (LRATE * (err * mf - K * uf));
-//                     movieFeatures[f][movieId] += (LRATE * (err * uf - K * mf));
-// 
-//                 }
-//                 rmse = sqrt(sq/NUM_RATINGS);
-//             }
-//         }
-//     }
-// 
+
+    // Second chance
+    for (chances = 0; chances < SC_CHANCES; chances++) {
+        for (f = 0; f < NUM_FEATURES; f++) {
+            cout << "Computing feature " << f << ".\n";
+            for (e = 0; (e < SC_EPOCHS); e++) {
+                cout << rmse_last << "\n";
+                rmse_last = rmse;
+                sq = 0;
+                for (i = 0; i < NUM_RATINGS; i++) {
+                    rating = ratings + i;
+                    movieId = rating->movieId;
+                    userId = rating->userId;
+                    p = predictRating(movieId, userId);
+                    err = (1.0 * rating->rating - p); 
+                    sq += err * err;
+                    uf = userFeatures[f][userId];
+                    mf = movieFeatures[f][movieId];
+
+                    userFeatures[f][userId] += (LRATE * (err * mf - K * uf));
+                    movieFeatures[f][movieId] += (LRATE * (err * uf - K * mf));
+
+                }
+                rmse = sqrt(sq/NUM_RATINGS);
+            }
+        }
+    }
+
 }
 
 inline double SVD::predictRating(short movieId, int userId, int feature, double cached, bool addTrailing) {

@@ -337,7 +337,7 @@ void SVD::output() {
     int movieId;
     double rating;
     stringstream fname;
-    fname << "../processed_data/output" << mdata.str();
+    fname << "../results/output" << mdata.str();
 
     ifstream qual ("../processed_data/qual.dta");
     ofstream out (fname.str().c_str(), ios::trunc); 

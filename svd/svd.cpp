@@ -268,7 +268,7 @@ inline double SVD::predictRating(short movieId, int userId, int feature, double 
     if (addTrailing) {
         sum += (NUM_FEATURES - feature - 1) * (FEAT_INIT * FEAT_INIT);
     }
-/*
+
 
     if (sum > 5) {
         sum = 5;
@@ -276,7 +276,7 @@ inline double SVD::predictRating(short movieId, int userId, int feature, double 
     else if (sum < 1) {
         sum = 1;
     }
-*/
+
     return sum;
 }
 
@@ -288,14 +288,14 @@ inline double SVD::predictRating(short movieId, int userId) {
     }
 
 //     sum += movieAvgs[movieId] + userOffsets[userId];
-/*
+
     if (sum > 5) {
         sum = 5;
     }
     else if (sum < 1) {
         sum = 1;
     }
-*/
+
     return sum;
 }
 

@@ -43,7 +43,7 @@ using namespace std;
 struct Rating {
     int userId;
     short movieId;
-    float rating;
+    short rating;
     double cache;
 };
 
@@ -114,7 +114,7 @@ void SVD::loadData() {
         rating = atoi(strtok(NULL, " "));
         ratings[i].userId = userId;
         ratings[i].movieId = (short) movieId;
-        ratings[i].rating = rating - (movieAvgs[movieId] + userOffsets[userId]);
+        ratings[i].rating = rating;
         ratings[i].cache = 0.0; // set to 0 temporarily.
         i++;
     }
@@ -270,12 +270,12 @@ inline double SVD::predictRating(short movieId, int userId, int feature, double 
     }
 
 
-//     if (sum > 5) {
-//         sum = 5;
-//     }
-//     else if (sum < 1) {
-//         sum = 1;
-//     }
+    if (sum > 5) {
+        sum = 5;
+    }
+    else if (sum < 1) {
+        sum = 1;
+    }
 
     return sum;
 }
@@ -295,7 +295,6 @@ inline double SVD::predictRating(short movieId, int userId) {
     else if (sum < 1) {
         sum = 1;
     }
-
     return sum;
 }
 
@@ -350,7 +349,7 @@ void SVD::output() {
         userId = atoi(strtok(c_line, " ")) - 1;
         movieId = (short) atoi(strtok(NULL, " ")) - 1;
         rating = predictRating(movieId, userId);
-        out << (rating + movieAvgs[movieId] + userOffsets[userId]) << '\n';
+        out << rating << '\n';
     }
 }
 
@@ -415,8 +414,8 @@ void SVD::probe() {
 
 int main() {
     SVD *svd = new SVD();
-    svd->computeBaselines();
     svd->loadData();
+    svd->computeBaselines();
 //     svd->initCache();
     svd->run();
     svd->output();

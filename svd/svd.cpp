@@ -43,7 +43,7 @@ using namespace std;
 struct Rating {
     int userId;
     short movieId;
-    short rating;
+    float rating;
     double cache;
 };
 
@@ -84,11 +84,11 @@ SVD::SVD()
     for (f = 0; f < NUM_FEATURES; f++) {
         for (j = 0; j < NUM_USERS; j++) {
 //             userFeatures[f][j] = ((rand() % 201) - 100) / 1000.0;
-            userFeatures[f][j] = FEAT_INIT;
+            userFeatures[f][j] = rand() / (float)RAND_MAX * 0.2 - 0.1;//FEAT_INIT;
         }
         for (k = 0; k < NUM_MOVIES; k++) {
 //             movieFeatures[f][k] = ((rand() % 201) - 100) / 1000.0;
-            movieFeatures[f][k] = FEAT_INIT;
+            movieFeatures[f][k] = rand() / (float)RAND_MAX * 0.2 - 0.1;//FEAT_INIT;
         }
     }
 }
@@ -101,7 +101,7 @@ void SVD::loadData() {
     int time;
     int rating;
     int i = 0;
-    ifstream trainingDta ("../processed_data/train+probe.dta"); 
+    ifstream trainingDta ("/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/train+probe.dta"); 
     if (trainingDta.fail()) {
         cout << "train.dta: Open failed.\n";
         exit(-1);
@@ -114,7 +114,7 @@ void SVD::loadData() {
         rating = atoi(strtok(NULL, " "));
         ratings[i].userId = userId;
         ratings[i].movieId = (short) movieId;
-        ratings[i].rating = rating;
+        ratings[i].rating = rating - (movieAvgs[movieId] + userOffsets[userId]);
         ratings[i].cache = 0.0; // set to 0 temporarily.
         i++;
     }
@@ -139,7 +139,7 @@ void SVD::computeBaselines() {
     double ratingSum = 0.0;
     double offSum = 0.0; // Sum of offsets for a user;
     Rating *ratingPtr;
-    ifstream trainingDtaMu("../processed_data/train-mu.dta");
+    ifstream trainingDtaMu("/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/train-mu.dta");
     cout << "computing baselines." << endl;
     if (trainingDtaMu.fail()) {
         cout << "train-mu: Open failed.\n";
@@ -268,7 +268,7 @@ inline double SVD::predictRating(short movieId, int userId, int feature, double 
     if (addTrailing) {
         sum += (NUM_FEATURES - feature - 1) * (FEAT_INIT * FEAT_INIT);
     }
-
+/*
 
     if (sum > 5) {
         sum = 5;
@@ -276,7 +276,7 @@ inline double SVD::predictRating(short movieId, int userId, int feature, double 
     else if (sum < 1) {
         sum = 1;
     }
-
+*/
     return sum;
 }
 
@@ -288,13 +288,14 @@ inline double SVD::predictRating(short movieId, int userId) {
     }
 
 //     sum += movieAvgs[movieId] + userOffsets[userId];
-
+/*
     if (sum > 5) {
         sum = 5;
     }
     else if (sum < 1) {
         sum = 1;
     }
+*/
     return sum;
 }
 
@@ -309,7 +310,7 @@ void SVD::outputRMSE(short numFeats) {
     stringstream fname;
     fname << "rmseOut" << mdata.str();
     ofstream rmseOut(fname.str().c_str(), ios::app);
-    ifstream probe("../processed_data/probe.dta");
+    ifstream probe("/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/probe.dta");
     if (!rmseOut.is_open() || !probe.is_open()) {
         cout << "Files for RMSE output: Open failed.\n";
         exit(-1);
@@ -336,9 +337,9 @@ void SVD::output() {
     int movieId;
     double rating;
     stringstream fname;
-    fname << "../results/output" << mdata.str();
+    fname << "/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/output" << mdata.str();
 
-    ifstream qual ("../processed_data/qual.dta");
+    ifstream qual ("/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/qual.dta");
     ofstream out (fname.str().c_str(), ios::trunc); 
     if (qual.fail() || out.fail()) {
         cout << "qual.dta: Open failed.\n";
@@ -349,7 +350,7 @@ void SVD::output() {
         userId = atoi(strtok(c_line, " ")) - 1;
         movieId = (short) atoi(strtok(NULL, " ")) - 1;
         rating = predictRating(movieId, userId);
-        out << rating << '\n';
+        out << (rating + movieAvgs[movieId] + userOffsets[userId]) << '\n';
     }
 }
 
@@ -388,7 +389,7 @@ void SVD::probe() {
     fname << "../results/probe" << mdata.str();
 
     ofstream saved(fname.str().c_str(), ios::trunc);
-    ifstream p("../processed_data/probe.dta");
+    ifstream p("/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/probe.dta");
     if (saved.fail()) {
         cout << "probe-: Open failed.\n";
         exit(-1);
@@ -414,8 +415,8 @@ void SVD::probe() {
 
 int main() {
     SVD *svd = new SVD();
-    svd->loadData();
     svd->computeBaselines();
+    svd->loadData();
 //     svd->initCache();
     svd->run();
     svd->output();

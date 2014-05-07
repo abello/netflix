@@ -84,11 +84,11 @@ SVD::SVD()
     for (f = 0; f < NUM_FEATURES; f++) {
         for (j = 0; j < NUM_USERS; j++) {
 //             userFeatures[f][j] = ((rand() % 201) - 100) / 1000.0;
-            userFeatures[f][j] = rand() / (float)RAND_MAX * 0.2 - 0.1;//FEAT_INIT;
+            userFeatures[f][j] = FEAT_INIT;
         }
         for (k = 0; k < NUM_MOVIES; k++) {
 //             movieFeatures[f][k] = ((rand() % 201) - 100) / 1000.0;
-            movieFeatures[f][k] = rand() / (float)RAND_MAX * 0.2 - 0.1;//FEAT_INIT;
+            movieFeatures[f][k] = FEAT_INIT;
         }
     }
 }
@@ -270,12 +270,12 @@ inline double SVD::predictRating(short movieId, int userId, int feature, double 
     }
 
 
-    if (sum > 5) {
-        sum = 5;
-    }
-    else if (sum < 1) {
-        sum = 1;
-    }
+//     if (sum > 5) {
+//         sum = 5;
+//     }
+//     else if (sum < 1) {
+//         sum = 1;
+//     }
 
     return sum;
 }

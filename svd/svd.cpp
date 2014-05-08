@@ -18,9 +18,9 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 80
+#define NUM_FEATURES 50
 #define MIN_EPOCHS 120
-#define MAX_EPOCHS 140 
+#define MAX_EPOCHS 180 
 #define MIN_IMPROVEMENT 0.0001
 #define LRATE 0.001
 #define K_MOVIE 25
@@ -98,7 +98,7 @@ void SVD::loadData() {
     int date;
     int rating;
     int i = 0;
-    ifstream trainingDta ("/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/train+probe.dta"); 
+    ifstream trainingDta ("../processed_data/train+probe.dta"); 
     if (trainingDta.fail()) {
         cout << "train.dta: Open failed.\n";
         exit(-1);
@@ -139,7 +139,7 @@ void SVD::computeBaselines() {
     double ratingSum = 0.0;
     double offSum = 0.0; // Sum of offsets for a user;
     Rating *ratingPtr;
-    ifstream trainingDtaMu("/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/train-mu.dta");
+    ifstream trainingDtaMu("../processed_data/train-mu.dta");
     cout << "computing baselines." << endl;
     if (trainingDtaMu.fail()) {
         cout << "train-mu: Open failed.\n";
@@ -310,7 +310,7 @@ void SVD::outputRMSE(short numFeats) {
     stringstream fname;
     fname << "rmseOut" << mdata.str();
     ofstream rmseOut(fname.str().c_str(), ios::app);
-    ifstream probe("/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/probe.dta");
+    ifstream probe("../processed_data/probe.dta");
     if (!rmseOut.is_open() || !probe.is_open()) {
         cout << "Files for RMSE output: Open failed.\n";
         exit(-1);
@@ -338,9 +338,9 @@ void SVD::output() {
     int date;
     double rating;
     stringstream fname;
-    fname << "/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/output" << mdata.str();
+    fname << "../processed_data/output" << mdata.str();
 
-    ifstream qual ("/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/qual.dta");
+    ifstream qual ("../processed_data/qual.dta");
     ofstream out (fname.str().c_str(), ios::trunc); 
     if (qual.fail() || out.fail()) {
         cout << "qual.dta: Open failed.\n";
@@ -395,7 +395,7 @@ void SVD::probe() {
     fname << "../results/probe" << mdata.str();
 
     ofstream saved(fname.str().c_str(), ios::trunc);
-    ifstream p("/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/probe.dta");
+    ifstream p("../processed_data/probe.dta");
     if (saved.fail()) {
         cout << "probe-: Open failed.\n";
         exit(-1);

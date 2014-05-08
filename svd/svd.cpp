@@ -288,7 +288,7 @@ inline double SVD::predictRating(short movieId, int userId) {
     }
 
     sum += movieAvgs[movieId] + userOffsets[userId];
-    rating = btp->postprocess(date, rating);
+    sum = btp->postprocess(date, sum);
 
     if (sum > 5) {
         sum = 5;

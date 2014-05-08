@@ -287,15 +287,16 @@ inline double SVD::predictRating(short movieId, int userId) {
         sum += userFeatures[f][userId] * movieFeatures[f][movieId];
     }
 
-//     sum += movieAvgs[movieId] + userOffsets[userId];
-/*
+    sum += movieAvgs[movieId] + userOffsets[userId];
+    rating = btp->postprocess(date, rating);
+
     if (sum > 5) {
         sum = 5;
     }
     else if (sum < 1) {
         sum = 1;
     }
-*/
+
     return sum;
 }
 
@@ -352,10 +353,6 @@ void SVD::output() {
         movieId = (short) atoi(strtok(NULL, " ")) - 1;
         date = atoi(strtok(NULL, " "));
         rating = predictRating(movieId, userId);
-        rating += movieAvgs[movieId] + userOffsets[userId];
-        rating = btp->postprocess(date, rating);
-        if (rating > 5.0) rating = 5.0;
-        if (rating < 1.0) rating = 1.0;
         out << rating << '\n';
     }
 }

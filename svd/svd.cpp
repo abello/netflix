@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <cstdlib>
 #include <time.h>
+#include "Rating.hpp"
+#include "BlockTimePreprocessor.hpp"
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
@@ -16,7 +18,7 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 50 
+#define NUM_FEATURES 80
 #define MIN_EPOCHS 120
 #define MAX_EPOCHS 140 
 #define MIN_IMPROVEMENT 0.0001
@@ -25,6 +27,7 @@
 #define K 0.02
 //#define FEAT_INIT GLOBAL_AVG/NUM_FEATURES
 #define FEAT_INIT 0.1
+#define NUM_BINS 5
 
 // Second chance settings
 #define SC_EPOCHS 0 
@@ -40,13 +43,6 @@
 
 using namespace std;
 
-struct Rating {
-    int userId;
-    short movieId;
-    short rating;
-    double cache;
-};
-
 class SVD {
 private:
     double movieAvgs[NUM_MOVIES];
@@ -54,6 +50,7 @@ private:
     double userFeatures[NUM_FEATURES][NUM_USERS];
     double movieFeatures[NUM_FEATURES][NUM_MOVIES];
     Rating ratings[NUM_RATINGS];
+    BlockTimePreprocessor *btp;
 //     ofstream rmseOut;
 //     ifstream probe;
     inline double predictRating(short movieId, int userId, int feature, double cached, bool addTrailing);
@@ -77,7 +74,7 @@ SVD::SVD()
 {
     int f, j, k;
 
-    mdata << "-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE << "-SC-E=" << SC_EPOCHS << "-SCC=" << SC_CHANCES;
+    mdata << "-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE << "-SC-E=" << SC_EPOCHS << "-SCC=" << SC_CHANCES << "-NBINS=" << NUM_BINS;
 
 
 //     srand(time(NULL));
@@ -98,10 +95,10 @@ void SVD::loadData() {
     char c_line[MAX_CHARS_PER_LINE];
     int userId;
     int movieId;
-    int time;
+    int date;
     int rating;
     int i = 0;
-    ifstream trainingDta ("../processed_data/train+probe.dta"); 
+    ifstream trainingDta ("/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/train+probe.dta"); 
     if (trainingDta.fail()) {
         cout << "train.dta: Open failed.\n";
         exit(-1);
@@ -110,15 +107,18 @@ void SVD::loadData() {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1; // sub 1 for zero indexed
         movieId = atoi(strtok(NULL, " ")) - 1;
-        time = atoi(strtok(NULL, " ")); 
+        date = atoi(strtok(NULL, " ")); 
         rating = atoi(strtok(NULL, " "));
         ratings[i].userId = userId;
         ratings[i].movieId = (short) movieId;
-        ratings[i].rating = rating;
+        ratings[i].date = date;
+        ratings[i].rating = rating - (movieAvgs[movieId] + userOffsets[userId]);
         ratings[i].cache = 0.0; // set to 0 temporarily.
         i++;
     }
     trainingDta.close();
+    btp = new BlockTimePreprocessor(NUM_BINS, ratings);
+    btp->preprocess(ratings);
 }
 
 void SVD::initCache() {
@@ -135,11 +135,11 @@ void SVD::computeBaselines() {
     int cur = 0;
     int iter = 0;
     int curCount = 0;
-    int userId, time, rating, i, movieId;
+    int userId, date, rating, i, movieId;
     double ratingSum = 0.0;
     double offSum = 0.0; // Sum of offsets for a user;
     Rating *ratingPtr;
-    ifstream trainingDtaMu("../processed_data/train-mu.dta");
+    ifstream trainingDtaMu("/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/train-mu.dta");
     cout << "computing baselines." << endl;
     if (trainingDtaMu.fail()) {
         cout << "train-mu: Open failed.\n";
@@ -150,7 +150,7 @@ void SVD::computeBaselines() {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1;
         iter = atoi(strtok(NULL, " ")) - 1;
-        time = atoi(strtok(NULL, " "));
+        date = atoi(strtok(NULL, " "));
         rating = atoi(strtok(NULL, " "));
         if (iter == cur) {
             curCount++;
@@ -268,7 +268,7 @@ inline double SVD::predictRating(short movieId, int userId, int feature, double 
     if (addTrailing) {
         sum += (NUM_FEATURES - feature - 1) * (FEAT_INIT * FEAT_INIT);
     }
-
+/*
 
     if (sum > 5) {
         sum = 5;
@@ -276,7 +276,7 @@ inline double SVD::predictRating(short movieId, int userId, int feature, double 
     else if (sum < 1) {
         sum = 1;
     }
-
+*/
     return sum;
 }
 
@@ -288,13 +288,14 @@ inline double SVD::predictRating(short movieId, int userId) {
     }
 
 //     sum += movieAvgs[movieId] + userOffsets[userId];
-
+/*
     if (sum > 5) {
         sum = 5;
     }
     else if (sum < 1) {
         sum = 1;
     }
+*/
     return sum;
 }
 
@@ -303,13 +304,13 @@ inline double SVD::predictRating(short movieId, int userId) {
 void SVD::outputRMSE(short numFeats) {
     string line;
     char c_line[MAX_CHARS_PER_LINE];
-    int userId, movieId, time;
+    int userId, movieId, date;
     double predicted, actual; // ratings
     double err, sq, rmse;
     stringstream fname;
     fname << "rmseOut" << mdata.str();
     ofstream rmseOut(fname.str().c_str(), ios::app);
-    ifstream probe("../processed_data/probe.dta");
+    ifstream probe("/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/probe.dta");
     if (!rmseOut.is_open() || !probe.is_open()) {
         cout << "Files for RMSE output: Open failed.\n";
         exit(-1);
@@ -319,7 +320,7 @@ void SVD::outputRMSE(short numFeats) {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) -1;
         movieId = atoi(strtok(NULL, " ")) - 1;
-        time = atoi(strtok(NULL, " "));
+        date = atoi(strtok(NULL, " "));
         actual = (double) atoi(strtok(NULL, " "));
         predicted = predictRating(movieId, userId);
         err = actual - predicted;
@@ -334,11 +335,12 @@ void SVD::output() {
     char c_line[MAX_CHARS_PER_LINE];
     int userId;
     int movieId;
+    int date;
     double rating;
     stringstream fname;
-    fname << "../results/output" << mdata.str();
+    fname << "/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/output" << mdata.str();
 
-    ifstream qual ("../processed_data/qual.dta");
+    ifstream qual ("/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/qual.dta");
     ofstream out (fname.str().c_str(), ios::trunc); 
     if (qual.fail() || out.fail()) {
         cout << "qual.dta: Open failed.\n";
@@ -348,7 +350,12 @@ void SVD::output() {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1;
         movieId = (short) atoi(strtok(NULL, " ")) - 1;
+        date = atoi(strtok(NULL, " "));
         rating = predictRating(movieId, userId);
+        rating += movieAvgs[movieId] + userOffsets[userId];
+        rating = btp->postprocess(date, rating);
+        if (rating > 5.0) rating = 5.0;
+        if (rating < 1.0) rating = 1.0;
         out << rating << '\n';
     }
 }
@@ -384,11 +391,11 @@ void SVD::probe() {
     string line;
     char c_line[MAX_CHARS_PER_LINE];
     stringstream fname;
-    int userId, movieId, time;
+    int userId, movieId, date;
     fname << "../results/probe" << mdata.str();
 
     ofstream saved(fname.str().c_str(), ios::trunc);
-    ifstream p("../processed_data/probe.dta");
+    ifstream p("/media/dhkim16/409A84829A847666/CS 156/netflix/processed_data/probe.dta");
     if (saved.fail()) {
         cout << "probe-: Open failed.\n";
         exit(-1);
@@ -403,7 +410,7 @@ void SVD::probe() {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1; // sub 1 for zero indexed
         movieId = (short) atoi(strtok(NULL, " ")) - 1;
-        time = atoi(strtok(NULL, " ")); 
+        date = atoi(strtok(NULL, " ")); 
         
         saved << predictRating(movieId, userId) << "\n";
     }
@@ -414,8 +421,8 @@ void SVD::probe() {
 
 int main() {
     SVD *svd = new SVD();
-    svd->loadData();
     svd->computeBaselines();
+    svd->loadData();
 //     svd->initCache();
     svd->run();
     svd->output();

@@ -312,7 +312,7 @@ void SVD::outputRMSE(short numFeats) {
     stringstream fname;
     fname << "rmseOut" << mdata.str();
     ofstream rmseOut(fname.str().c_str(), ios::app);
-    ifstream probe("../processed_data/probe.dta");
+    ifstream probe("../results/probe.dta");
     if (!rmseOut.is_open() || !probe.is_open()) {
         cout << "Files for RMSE output: Open failed.\n";
         exit(-1);
@@ -340,7 +340,7 @@ void SVD::output() {
     int date;
     double rating;
     stringstream fname;
-    fname << "../processed_data/output" << mdata.str();
+    fname << "../results/output" << mdata.str();
 
     ifstream qual ("../processed_data/qual.dta");
     ofstream out (fname.str().c_str(), ios::trunc); 

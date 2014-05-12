@@ -79,7 +79,7 @@ struct s_neighbors {
     float weight;
 };
 
-// Comparison operator for booleans
+// Comparison operator for s_neighors
 int operator<(const s_neighbors &a, const s_neighbors &b) {
     return a.weight > b.weight;
 }

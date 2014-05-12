@@ -18,7 +18,7 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 50
+#define NUM_FEATURES 80
 #define MIN_EPOCHS 120
 #define MAX_EPOCHS 180 
 #define MIN_IMPROVEMENT 0.0001
@@ -30,8 +30,8 @@
 #define NUM_BINS 5
 
 // Second chance settings
-#define SC_EPOCHS 0 
-#define SC_CHANCES 0
+#define SC_EPOCHS 10
+#define SC_CHANCES 3
 
 
 
@@ -54,7 +54,7 @@ private:
 //     ofstream rmseOut;
 //     ifstream probe;
     inline double predictRating(short movieId, int userId, int feature, double cached, bool addTrailing);
-    inline double predictRating(short movieId, int userId, int date); 
+    inline double predictRating(short movieId, int userId, int date, bool training); 
     void outputRMSE(short numFeats);
     stringstream mdata;
 public:
@@ -245,7 +245,7 @@ void SVD::run() {
                     movieId = rating->movieId;
                     userId = rating->userId;
                     date = rating->date;
-                    p = predictRating(movieId, userId, date);
+                    p = predictRating(movieId, userId, date, true);
                     err = (1.0 * rating->rating - p); 
                     sq += err * err;
                     uf = userFeatures[f][userId];
@@ -281,15 +281,17 @@ inline double SVD::predictRating(short movieId, int userId, int feature, double 
     return sum;
 }
 
-inline double SVD::predictRating(short movieId, int userId, int date) {
+inline double SVD::predictRating(short movieId, int userId, int date, bool training) {
     int f;
     double sum = 0;
     for (f = 0; f < NUM_FEATURES; f++) {
         sum += userFeatures[f][userId] * movieFeatures[f][movieId];
     }
 
-    sum += movieAvgs[movieId] + userOffsets[userId];
-    sum = btp->postprocess(date, sum);
+    if (!training) {
+        sum += movieAvgs[movieId] + userOffsets[userId];
+        sum = btp->postprocess(date, sum);
+    }
 
     if (sum > 5) {
         sum = 5;
@@ -324,7 +326,7 @@ void SVD::outputRMSE(short numFeats) {
         movieId = atoi(strtok(NULL, " ")) - 1;
         date = atoi(strtok(NULL, " "));
         actual = (double) atoi(strtok(NULL, " "));
-        predicted = predictRating(movieId, userId, date);
+        predicted = predictRating(movieId, userId, date, false);
         err = actual - predicted;
         sq += err * err;
     }
@@ -353,7 +355,7 @@ void SVD::output() {
         userId = atoi(strtok(c_line, " ")) - 1;
         movieId = (short) atoi(strtok(NULL, " ")) - 1;
         date = atoi(strtok(NULL, " "));
-        rating = predictRating(movieId, userId, date);
+        rating = predictRating(movieId, userId, date, false);
         out << rating << '\n';
     }
 }
@@ -410,7 +412,7 @@ void SVD::probe() {
         movieId = (short) atoi(strtok(NULL, " ")) - 1;
         date = atoi(strtok(NULL, " ")); 
         
-        saved << predictRating(movieId, userId, date) << "\n";
+        saved << predictRating(movieId, userId, date, false) << "\n";
     }
 
     saved.close();

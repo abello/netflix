@@ -171,7 +171,7 @@ void KNN::loadData() {
     i = -1;
     last_seen = 0;
 
-    // Repeat again, not for mu dta
+    // Repeat again, now for mu dta
     ifstream trainingDtaMu ("../processed_data/train-mu.dta"); 
     if (trainingDtaMu.fail()) {
         cout << "train-mu.dta: Open failed.\n";
@@ -296,7 +296,8 @@ void KNN::calcP() {
                 P[i][z].p = 0;
             }
             else {
-                tmp_f = (n * xy - x * y) / (sqrt((n - 1) * xx - x*x) * sqrt((n - 1) * yy - (y * y)));
+//                 tmp_f = (n * xy - x * y) / (sqrt((n- 1) * xx - x*x) * sqrt((n - 1) * yy - (y * y)));
+                tmp_f = (n * xy - x * y) / (sqrt(n * xx - x*x) * sqrt(n * yy - y*y));
                 // Test for NaN
                 if (tmp_f != tmp_f) {
                     tmp_f = 0.0;

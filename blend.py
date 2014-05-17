@@ -20,9 +20,14 @@ def blender(blend_dta, *funcs):
     w = np.dot(X_pinv, y)
 
     # Create returned function
-    def blended(user_id, movie_id):
-        summed = 0
-        for i in xrange(len(funcs)):
-            summed += w[i][0] * funcs[i](user_id, movie_id)
-    return blended
+#     def blended(user_id, movie_id):
+#         summed = 0
+#         for i in xrange(len(funcs)):
+#             summed += w[i][0] * funcs[i](user_id, movie_id)
+#     return blended
+
+
+    # Print weights
+    for i in xrange(len*funcs):
+        print w[i][0]
 

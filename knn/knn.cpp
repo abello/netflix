@@ -24,7 +24,7 @@
 
 
 // Max weight elements to consider when predicting
-#define MAX_W 40
+#define MAX_W 10
 
 // Ideas and some pseudocode from: http://dmnewbie.blogspot.com/2009/06/calculating-316-million-movie.html
 
@@ -416,6 +416,7 @@ double KNN::predictRating(unsigned int movie, unsigned int user) {
 
             // Fisher and inverse-fisher transform (from wikipedia)
             p_lower = tanh(atanh(pearson) - 1.96 / sqrt(common_users - 3));
+//             p_lower = pearson;
             neighbors[j].p_lower = p_lower;
             neighbors[j].weight = p_lower * p_lower * log(common_users);
             j++;

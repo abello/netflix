@@ -1,4 +1,5 @@
 import numpy as np
+from math import sqrt
 # Useful: arxiv.org/pdf/0911.0460.pdf
 
 PROBE = "processed_data/probe.dta"
@@ -18,7 +19,7 @@ def blender(blend_dta, *funcs):
         row = blend_dta[i]
         y[i][0] = row
         for j in xrange(len(funcs)):
-            X[i][j] = funcs[j](row)
+            X[i][j] = funcs[j](i)
     
     # Calculate w[i][0]
     # inv of X (this step might take a while...)
@@ -32,6 +33,27 @@ def blender(blend_dta, *funcs):
 #             summed += w[i][0] * funcs[i](user_id, movie_id)
 #     return blended
 
+
+    # Calculate RMSE-s
+    err = 0
+    for i in xrange(PROBE_SIZE):
+        err += (X[i][0] - blend_dta[i])**2
+
+    print "RMSE for 1:", str(sqrt(err/PROBE_SIZE))
+
+    err = 0
+    for i in xrange(PROBE_SIZE):
+        err += (X[i][1] - blend_dta[i])**2
+
+    print "RMSE for 2:", str(sqrt(err/PROBE_SIZE))
+
+
+    err = 0
+    for i in xrange(PROBE_SIZE):
+        err += (w[0][0] * X[i][0] + w[1][0] * X[i][1] - blend_dta[i])**2
+
+    print "RMSE for after blending:", str(sqrt(err/PROBE_SIZE))
+        
 
     # Print weights
     for i in xrange(len(funcs)):

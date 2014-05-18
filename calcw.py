@@ -81,8 +81,8 @@ def main():
 #     f5 =  open("results/probe-F=5-E=20,20-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
 #     f10 = open("results/probe-F=10-E=10,10-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
 
-    f5 =  open("results/probe-OBO-F=60-E=130,160-k=0.02-l=0.001-SC-E=10-SCC=3")
-    f10 = open("results/probe-OBO-F=50-E=130,160-k=0.02-l=0.001-SC-E=10-SCC=3")
+    f5 =  open("results/probe-F=10-E=30,30-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
+    f10 = open("results/probe-F=5-E=40,40-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
 
     for i in xrange(PROBE_SIZE):
         _f_5[i] = float(f5.readline().rstrip())

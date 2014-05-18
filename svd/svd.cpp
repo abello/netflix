@@ -12,15 +12,15 @@
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
-// #define NUM_RATINGS 98291669
-#define NUM_RATINGS 99666408
+#define NUM_RATINGS 98291669
+// #define NUM_RATINGS 99666408
 #define GLOBAL_AVG 3.512599976023349
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 10
-#define MIN_EPOCHS 10
-#define MAX_EPOCHS 10
+#define NUM_FEATURES 5
+#define MIN_EPOCHS 40
+#define MAX_EPOCHS 40
 #define MIN_IMPROVEMENT 0.0001
 #define LRATE 0.001
 #define K_MOVIE 25
@@ -98,8 +98,8 @@ void SVD::loadData() {
     int date;
     int rating;
     int i = 0;
-    ifstream trainingDta ("../processed_data/train+probe.dta"); 
-//     ifstream trainingDta ("../processed_data/train.dta"); 
+//     ifstream trainingDta ("../processed_data/train+probe.dta"); 
+    ifstream trainingDta ("../processed_data/train.dta"); 
     if (trainingDta.fail()) {
         cout << "train.dta: Open failed.\n";
         exit(-1);
@@ -392,6 +392,8 @@ void SVD::probe() {
     string line;
     char c_line[MAX_CHARS_PER_LINE];
     stringstream fname;
+    float err;
+    int predicted, actual, i;
     int userId, movieId, date;
     fname << "../results/probe" << mdata.str();
 
@@ -406,15 +408,23 @@ void SVD::probe() {
         exit(-1);
     }
 
+    err = 0;
+    i = 0;
     // For each line of probe, parse it and predict rating
     while (getline(p, line)) {
+        i += 1;
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1; // sub 1 for zero indexed
         movieId = (short) atoi(strtok(NULL, " ")) - 1;
         date = atoi(strtok(NULL, " ")); 
+        actual = atoi(strtok(NULL, " "));
+        predicted = predictRating(movieId, userId, date, false);
+        err += (actual - predicted) * (actual - predicted);
         
-        saved << predictRating(movieId, userId, date, false) << "\n";
+        saved << predicted << "\n";
     }
+
+    cout << "Probe RMSE: " << sqrt(err/i) << endl;
 
     saved.close();
     p.close();

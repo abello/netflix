@@ -4,9 +4,11 @@
 struct Rating {
     int userId;
     short movieId;
-    int date;
+    short date;
     float rating;
-    double cache;
+    float cache;
 };
 
 #endif // RATING_HPP
+
+

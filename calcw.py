@@ -3,7 +3,7 @@ from math import sqrt
 # Useful: arxiv.org/pdf/0911.0460.pdf
 
 PROBE = "processed_data/probe.dta"
-PROBE_SIZE = 1123759
+PROBE_SIZE = 1374739
 
 # Pass in all learned prediction functions, and the data used for blending 
 # (in numpy array format). All prediction functions passed to this function 
@@ -35,20 +35,20 @@ def blender(blend_dta, *funcs):
 
 
     # Calculate RMSE-s
-    err = 0
+    err = 0.0
     for i in xrange(PROBE_SIZE):
         err += (X[i][0] - blend_dta[i])**2
 
     print "RMSE for 1:", str(sqrt(err/PROBE_SIZE))
 
-    err = 0
+    err = 0.0
     for i in xrange(PROBE_SIZE):
         err += (X[i][1] - blend_dta[i])**2
 
     print "RMSE for 2:", str(sqrt(err/PROBE_SIZE))
 
 
-    err = 0
+    err = 0.0
     for i in xrange(PROBE_SIZE):
         err += (w[0][0] * X[i][0] + w[1][0] * X[i][1] - blend_dta[i])**2
 
@@ -81,8 +81,8 @@ def main():
 #     f5 =  open("results/probe-F=5-E=20,20-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
 #     f10 = open("results/probe-F=10-E=10,10-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
 
-    f5 =  open("results/probe-F=10-E=30,30-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
-    f10 = open("results/probe-F=5-E=40,40-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
+    f5 =  open("results/probe-F=5-E=20,20-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
+    f10 = open("results/probe-F=10-E=15,15-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
 
     for i in xrange(PROBE_SIZE):
         _f_5[i] = float(f5.readline().rstrip())

@@ -1,19 +1,24 @@
 import numpy as np
 # Useful: arxiv.org/pdf/0911.0460.pdf
 
+PROBE = "processed_data/probe.dta"
+PROBE_SIZE = 1123759
+
 # Pass in all learned prediction functions, and the data used for blending 
 # (in numpy array format). All prediction functions passed to this function 
-# should be of the format g(user_id, movie_id) = rating. 
+# should be of the format g(idx corresponding to (user_id, movie_id)) = rating. 
 def blender(blend_dta, *funcs):
+    funcs = funcs[0] # Unpack tuple
+
     X = np.ndarray(shape=(np.shape(blend_dta)[0], len(funcs)))
-    y = np.ndarray(shape=(np.shape(blend_dta[0], 1)))
+    y = np.ndarray(shape=(np.shape(blend_dta)[0], 1))
 
     # Initialize X
     for i in xrange(np.shape(blend_dta)[0]):
         row = blend_dta[i]
-        y[i][0] = row[-1]
+        y[i][0] = row
         for j in xrange(len(funcs)):
-            X[i][j] = funcs[j](row[0], row[1])
+            X[i][j] = funcs[j](row)
     
     # Calculate pinv of X (this step might take a while...)
     X_pinv = np.linalg.pinv(X)
@@ -28,6 +33,50 @@ def blender(blend_dta, *funcs):
 
 
     # Print weights
-    for i in xrange(len*funcs):
-        print w[i][0]
+    for i in xrange(len(funcs)):
+        print funcs[i].__name__, w[i][0]
 
+
+def main():
+    probe = open(PROBE, "r")
+    blend_dta = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.uint8)
+    i = 0
+
+    # Load blend_dta
+    for line in probe:
+        l = line.split()
+        rating = int(l[3].rstrip())
+        blend_dta[i] = rating
+        i += 1
+
+    probe.close()
+
+    # Create function's data
+    _f_5 = np.array([0 for i in xrange(PROBE_SIZE)])
+    _f_10 = np.array([0 for i in xrange(PROBE_SIZE)])
+
+    f5 =  open("results/output-F=5-E=20,20-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
+    f10 = open("results/output-F=10-E=10,10-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
+
+    for i in xrange(PROBE_SIZE):
+        _f_5[i] = float(f5.readline().rstrip())
+        _f_10[i] = float(f10.readline().rstrip())
+
+    f5.close()
+    f10.close()
+
+
+    def f_5(x):
+        return _f_5[x]
+
+    def f_10(x):
+        return _f_10[x]
+
+    funcs = [f_5, f_10]
+
+    blender(blend_dta, funcs)
+    
+    
+
+if __name__ == '__main__':
+    main()

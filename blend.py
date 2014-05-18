@@ -1,82 +1,16 @@
-import numpy as np
-# Useful: arxiv.org/pdf/0911.0460.pdf
+PROBE_SIZE = 2749898
 
-PROBE = "processed_data/probe.dta"
-PROBE_SIZE = 1123759
+f5 =  open("results/output-OBO-F=60-E=130,160-k=0.02-l=0.001-SC-E=10-SCC=3")
+f10 = open("results/output-OBO-F=50-E=130,160-k=0.02-l=0.001-SC-E=10-SCC=3")
 
-# Pass in all learned prediction functions, and the data used for blending 
-# (in numpy array format). All prediction functions passed to this function 
-# should be of the format g(idx corresponding to (user_id, movie_id)) = rating. 
-def blender(blend_dta, *funcs):
-    funcs = funcs[0] # Unpack tuple
+out = open("results/blended", "w")
 
-    X = np.ndarray(shape=(np.shape(blend_dta)[0], len(funcs)))
-    y = np.ndarray(shape=(np.shape(blend_dta)[0], 1))
+w5 = 12.9731248352
+w10 = -12.1284005209
 
-    # Initialize X
-    for i in xrange(np.shape(blend_dta)[0]):
-        row = blend_dta[i]
-        y[i][0] = row
-        for j in xrange(len(funcs)):
-            X[i][j] = funcs[j](row)
-    
-    # Calculate pinv of X (this step might take a while...)
-    X_pinv = np.linalg.pinv(X)
-    w = np.dot(X_pinv, y)
+for i in xrange(PROBE_SIZE):
+    r5 = float(f5.readline().rstrip())
+    r10 = float(f10.readline().rstrip())
+    b = r5 * w5 + r10 * w10
+    out.write(str(b) + "\n")
 
-    # Create returned function
-#     def blended(user_id, movie_id):
-#         summed = 0
-#         for i in xrange(len(funcs)):
-#             summed += w[i][0] * funcs[i](user_id, movie_id)
-#     return blended
-
-
-    # Print weights
-    for i in xrange(len(funcs)):
-        print funcs[i].__name__, w[i][0]
-
-
-def main():
-    probe = open(PROBE, "r")
-    blend_dta = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.uint8)
-    i = 0
-
-    # Load blend_dta
-    for line in probe:
-        l = line.split()
-        rating = int(l[3].rstrip())
-        blend_dta[i] = rating
-        i += 1
-
-    probe.close()
-
-    # Create function's data
-    _f_5 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
-    _f_10 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
-
-    f5 =  open("results/probe-F=5-E=20,20-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
-    f10 = open("results/probe-F=10-E=10,10-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
-
-    for i in xrange(PROBE_SIZE):
-        _f_5[i] = float(f5.readline().rstrip())
-        _f_10[i] = float(f10.readline().rstrip())
-
-    f5.close()
-    f10.close()
-
-
-    def f_5(x):
-        return _f_5[x]
-
-    def f_10(x):
-        return _f_10[x]
-
-    funcs = [f_5, f_10]
-
-    blender(blend_dta, funcs)
-    
-    
-
-if __name__ == '__main__':
-    main()

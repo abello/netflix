@@ -74,6 +74,10 @@ def main():
 
     probe.close()
 
+
+    # ======================================================================
+
+
     # Create function's data
     _f_20_1 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_20_2 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
@@ -82,6 +86,7 @@ def main():
     _f_100_2 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_GC_07 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_GC_13 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
+    _f_GC_29 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
 
 #     f5 =  open("results/probe-F=5-E=20,20-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
 #     f10 = open("results/probe-F=10-E=10,10-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
@@ -93,6 +98,7 @@ def main():
     f100_2 = open("results/pre_blending/probe-F=100-E=120,180-k=0.02-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
     f_GC_07 = open("results/pre_blending/probe-GC-0.07", "r")
     f_GC_13 = open("results/pre_blending/probe-GC-0.13", "r")
+    f_GC_29 = open("results/pre_blending/probe-GC-0.29", "r")
 
     for i in xrange(PROBE_SIZE):
         _f_20_1[i] = float(f20_1.readline().rstrip())
@@ -102,6 +108,12 @@ def main():
         _f_100_2[i] = float(f100_2.readline().rstrip())
         _f_GC_07[i] = float(f_GC_07.readline().rstrip())
         _f_GC_13[i] = float(f_GC_13.readline().rstrip())
+        _f_GC_29[i] = float(f_GC_29.readline().rstrip())
+
+    #
+    # NOTE: *TRIPLE* check these settings. As this code is really messy, it's easy to 
+    # miss stuff out
+    #
 
     f20_1.close()
     f20_2.close()
@@ -110,6 +122,7 @@ def main():
     f100_2.close()
     f_GC_07.close()
     f_GC_13.close()
+    f_GC_29.close()
 
 
     def f_20_1(x):
@@ -125,15 +138,18 @@ def main():
         return _f_100_1[x]
 
     def f_100_2(x):
-        return _f_100_1[x]
+        return _f_100_2[x]
 
     def f_GC_07(x):
         return _f_GC_07[x]
 
     def f_GC_13(x):
-        return _f_GC_07[x]
+        return _f_GC_13[x]
 
-    funcs = [f_20_1, f_20_2, f_50_1, f_100_1, f_100_2, f_GC_13]
+    def f_GC_29(x):
+        return _f_GC_29[x]
+
+    funcs = [f_20_1, f_20_2, f_50_1, f_100_1, f_100_2, f_GC_07, f_GC_13, f_GC_29]
 
     blender(blend_dta, funcs)
     

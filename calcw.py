@@ -57,7 +57,7 @@ def blender(blend_dta, *funcs):
 
     # Print weights
     for i in xrange(len(funcs)):
-        print funcs[i].__name__, w[i][0]
+        print "w" + funcs[i].__name__ + " = " +  str(w[i][0])
 
 
 def main():
@@ -79,6 +79,8 @@ def main():
     _f_20_2 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_50_1 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_100_1 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
+    _f_100_2 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
+    _f_GC_07 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
 
 #     f5 =  open("results/probe-F=5-E=20,20-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
 #     f10 = open("results/probe-F=10-E=10,10-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
@@ -87,17 +89,23 @@ def main():
     f20_2 = open("results/pre_blending/probe-F=20-E=80,180-k=0.02-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
     f50_1 =  open("results/pre_blending/probe-F=50-E=120,180-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
     f100_1 = open("results/pre_blending/probe-F=100-E=120,180-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
+    f100_2 = open("results/pre_blending/probe-F=100-E=120,180-k=0.02-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
+    f_GC_07 = open("results/pre_blending/probe-GC-0.07", "r")
 
     for i in xrange(PROBE_SIZE):
         _f_20_1[i] = float(f20_1.readline().rstrip())
         _f_20_2[i] = float(f20_2.readline().rstrip())
         _f_50_1[i] = float(f50_1.readline().rstrip())
         _f_100_1[i] = float(f100_1.readline().rstrip())
+        _f_100_2[i] = float(f100_2.readline().rstrip())
+        _f_GC_07[i] = float(f_GC_07.readline().rstrip())
 
     f20_1.close()
     f20_2.close()
     f50_1.close()
     f100_1.close()
+    f100_2.close()
+    f_GC_07.close()
 
 
     def f_20_1(x):
@@ -112,7 +120,13 @@ def main():
     def f_100_1(x):
         return _f_100_1[x]
 
-    funcs = [f_20_1, f_20_2, f_50_1, f_100_1]
+    def f_100_2(x):
+        return _f_100_1[x]
+
+    def f_GC_07(x):
+        return _f_GC_07[x]
+
+    funcs = [f_20_1, f_20_2, f_50_1, f_100_1, f_100_2, f_GC_07]
 
     blender(blend_dta, funcs)
     

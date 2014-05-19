@@ -35,24 +35,24 @@ def blender(blend_dta, *funcs):
 
 
     # Calculate RMSE-s
-    err = 0.0
-    for i in xrange(PROBE_SIZE):
-        err += (X[i][0] - blend_dta[i])**2
+    for f in xrange(len(funcs)):
+        err = 0.0
+        for i in xrange(PROBE_SIZE):
+            err += (X[i][f] - blend_dta[i])**2
 
-    print "RMSE for 1:", str(sqrt(err/PROBE_SIZE))
+        print "RMSE for :", funcs[f].__name__, str(sqrt(err/PROBE_SIZE))
 
-    err = 0.0
-    for i in xrange(PROBE_SIZE):
-        err += (X[i][1] - blend_dta[i])**2
-
-    print "RMSE for 2:", str(sqrt(err/PROBE_SIZE))
 
 
     err = 0.0
     for i in xrange(PROBE_SIZE):
-        err += (w[0][0] * X[i][0] + w[1][0] * X[i][1] - blend_dta[i])**2
+        b = 0
+        for f in xrange(len(funcs)):
+            b += w[f][0] * X[i][f]
+        err += (b - blend_dta[i])**2
 
-    print "RMSE for after blending:", str(sqrt(err/PROBE_SIZE))
+    print "======================"
+    print "RMSE after blending:", str(sqrt(err/PROBE_SIZE))
         
 
     # Print weights
@@ -75,30 +75,44 @@ def main():
     probe.close()
 
     # Create function's data
-    _f_5 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
-    _f_10 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
+    _f_20_1 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
+    _f_20_2 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
+    _f_50_1 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
+    _f_100_1 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
 
 #     f5 =  open("results/probe-F=5-E=20,20-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
 #     f10 = open("results/probe-F=10-E=10,10-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
 
-    f5 =  open("results/probe-F=5-E=20,20-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
-    f10 = open("results/probe-F=10-E=15,15-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
+    f20_1 =  open("results/pre_blending/probe-F=20-E=80,180-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
+    f20_2 = open("results/pre_blending/probe-F=20-E=80,180-k=0.02-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
+    f50_1 =  open("results/pre_blending/probe-F=50-E=120,180-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
+    f100_1 = open("results/pre_blending/probe-F=100-E=120,180-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5", "r")
 
     for i in xrange(PROBE_SIZE):
-        _f_5[i] = float(f5.readline().rstrip())
-        _f_10[i] = float(f10.readline().rstrip())
+        _f_20_1[i] = float(f20_1.readline().rstrip())
+        _f_20_2[i] = float(f20_2.readline().rstrip())
+        _f_50_1[i] = float(f50_1.readline().rstrip())
+        _f_100_1[i] = float(f100_1.readline().rstrip())
 
-    f5.close()
-    f10.close()
+    f20_1.close()
+    f20_2.close()
+    f50_1.close()
+    f100_1.close()
 
 
-    def f_5(x):
-        return _f_5[x]
+    def f_20_1(x):
+        return _f_20_1[x]
 
-    def f_10(x):
-        return _f_10[x]
+    def f_20_2(x):
+        return _f_20_2[x]
 
-    funcs = [f_5, f_10]
+    def f_50_1(x):
+        return _f_50_1[x]
+
+    def f_100_1(x):
+        return _f_100_1[x]
+
+    funcs = [f_20_1, f_20_2, f_50_1, f_100_1]
 
     blender(blend_dta, funcs)
     

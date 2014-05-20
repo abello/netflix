@@ -1,4 +1,4 @@
-CFLAGS=-c -O3 -Wall -Winline -g
+CFLAGS=-c -O0 -Wall -Winline -g
 CFLAGS2=-c -O0 -Wall -Winline -g
 
 all: svdpp

@@ -100,7 +100,7 @@ def main():
     f_GC_07 = open("results/pre_blending/probe-GC-0.07", "r")
     f_GC_13 = open("results/pre_blending/probe-GC-0.13", "r")
     f_GC_29 = open("results/pre_blending/probe-GC-0.29", "r")
-    f_PP_50_30_NA = open("results/pre_blending/probe-F=50-LRT_mb0.003-LAM_mb=0-LRT_ub=0.012-LAM_ub=0.03-LRT_mf=0.011-LAM_mf=0.006-LRT_uf=0.006-LAM_uf0.08-LRT_mw=0.001-LAM_mw=0.03-NBINS=5", "r")
+    f_PP_50_30_NA = open("results/pre_blending/probe-F=50-LRT_mb0.003-LAM_mb=0-LRT_ub=0.012-LAM_ub=0.03-LRT_mf=0.011-LAM_mf=0.006-LRT_uf=0.006-LAM_uf0.08-LRT_mw=0.001-LAM_mw=0.03-NBINS=5-NA", "r")
 
     for i in xrange(PROBE_SIZE):
         _f_20_1[i] = float(f20_1.readline().rstrip())

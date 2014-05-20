@@ -220,7 +220,7 @@ void SVDpp::run() {
                     userFeatures[f][userId] += (LRATE_uf * (err * mf - LAMDA_uf * uf)); 
                     movieFeatures[f][movieId] += 
                         (LRATE_mf * (err * (uf + (1.0 / sqrt(numRated[userId])) * sumMW[userId][f]) - LAMDA_mf * mf));
-                    tmpSum[f] += (err * numRated[userId] * mf);
+                    tmpSum[f] += (err * (1.0 / sqrt(numRated[userId])) * mf);
                 }
 //                 tot_tf =+ clock() - tf;
 

@@ -152,7 +152,7 @@ void SVDpp::run() {
     Rating *rating;
     int userLast = -1;
     short movieId;
-    clock_t time;
+    clock_t time, tf, tmw, tot_tf, tot_tmw;
 
     // Precalculate the sumMW values for all users.
     for (i = 0; i < NUM_USERS; i++) {
@@ -163,6 +163,9 @@ void SVDpp::run() {
     
     for (int z = 0; z < NUM_EPOCHS; z++) {
         sq = 0.0;
+        tot_tf = 0;
+        tot_tmw = 0;
+
         for (i = 0; i < NUM_RATINGS; i++) {
             rating = ratings + i;
             movieId = rating->movieId; 
@@ -184,6 +187,7 @@ void SVDpp::run() {
             userBias[userId] += (LRATE_ub * (err - LAMDA_ub * uBias));
             movieBias[movieId] += (LRATE_mb * (err - LAMDA_mb * mBias));          
             
+            tf = clock();
             for (f = 0; f < NUM_FEATURES; f++) {
                 uf = userFeatures[f][userId];
                 mf = movieFeatures[f][movieId];
@@ -192,8 +196,10 @@ void SVDpp::run() {
                     (LRATE_mf * (err * (uf + (1.0 / sqrt(numRated[userId])) * sumMW[userId][f]) - LAMDA_mf * mf));
                 tmpSum[f] += (err * numRated[userId] * mf);
             }
+            tot_tf =+ clock() - tf;
             
             // Train movie weights
+            tmw = clock();
             if (userId != userLast) {
                 rating = ratingLoc[userId];
                 while (rating->userId == userId) {
@@ -208,10 +214,15 @@ void SVDpp::run() {
                 }
                 userLast = userId;
             }
+            tot_tmw += clock();
         }
         time = clock() - time;
         cout << "Iteration " << z << " completed." << endl;
         cout << "RMSE: " << sqrt(sq/NUM_RATINGS) << " -- " << ((float) time)/CLOCKS_PER_SEC << endl;
+        cout << "TF: " << ((float) tot_tf)/(CLOCKS_PER_SEC * NUM_RATINGS) << endl;
+        cout << "TMW: " << ((float) tot_tmw)/(CLOCKS_PER_SEC * NUM_RATINGS) << endl;
+        cout << "=================================" << endl;
+
     }
 }
 

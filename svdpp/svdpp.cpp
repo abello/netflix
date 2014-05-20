@@ -44,6 +44,7 @@ private:
     double movieFeatures[NUM_FEATURES][NUM_MOVIES];
     int numRated[NUM_USERS];
     int ratingLoc[NUM_USERS]; // The first instance of users' rating in the ratings matrix
+
     double movieWeights[NUM_MOVIES][NUM_FEATURES];
     float sumMW[NUM_USERS][NUM_FEATURES];
     double tmpSum[NUM_FEATURES];
@@ -154,7 +155,7 @@ void SVDpp::loadData() {
 }
 
 void SVDpp::run() {
-    int f, i, userId;
+    int f, i, userId, k;
     double err, p, tmpMW, sq;
     double uBias, mBias;
     double uf, mf;
@@ -164,9 +165,9 @@ void SVDpp::run() {
     clock_t time, tf, tmw, tp, ts, tot_tf, tot_tmw, tot_tp, tot_ts;
 
     // Precalculate the sumMW values for all users.
-    for (i = 0; i < NUM_USERS; i++) {
-        calcMWSum(i);
-    }
+//     for (i = 0; i < NUM_USERS; i++) {
+//         calcMWSum(i);
+//     }
 
     time = clock();
     
@@ -177,24 +178,29 @@ void SVDpp::run() {
         tot_tp = 0;
         tot_ts = 0;
 
+        k = 0;
         for (i = 0; i < NUM_RATINGS; i++) {
+                
             rating = ratings + i;
             movieId = rating->movieId; 
             userId = rating->userId;
-            tp = clock();
-            p = predictRating(movieId, userId);
-            err = rating->rating - p;
-            sq += err * err;
-            tot_tp += clock() - tp;
 
             // This will be true right when we encounter the next user in the ratings list.
-            ts = clock();
             if (userId != userLast) {
+                calcMWSum(userId);
                 for (f = 0; f < NUM_FEATURES; f++) {
                     tmpSum[f] = 0.0;
                 }
             }
-            tot_ts += clock() - ts;
+
+//             tp = clock();
+            p = predictRating(movieId, userId);
+            err = rating->rating - p;
+            sq += err * err;
+//             tot_tp += clock() - tp;
+
+//             ts = clock();
+//             tot_ts += clock() - ts;
             
             // train biases
             uBias = userBias[userId];
@@ -202,7 +208,7 @@ void SVDpp::run() {
             userBias[userId] += (LRATE_ub * (err - LAMDA_ub * uBias));
             movieBias[movieId] += (LRATE_mb * (err - LAMDA_mb * mBias));          
             
-            tf = clock();
+//             tf = clock();
             for (f = 0; f < NUM_FEATURES; f++) {
                 uf = userFeatures[f][userId];
                 mf = movieFeatures[f][movieId];
@@ -211,13 +217,14 @@ void SVDpp::run() {
                     (LRATE_mf * (err * (uf + (1.0 / sqrt(numRated[userId])) * sumMW[userId][f]) - LAMDA_mf * mf));
                 tmpSum[f] += (err * numRated[userId] * mf);
             }
-            tot_tf =+ clock() - tf;
+//             tot_tf =+ clock() - tf;
             
+//             tmw = clock();
             // Train movie weights
-            tmw = clock();
             if (userId != userLast) {
                 rating = &ratings[ratingLoc[userId]];
-                while (rating->userId == userId) {
+                k = 0;
+                while (k < numRated[userId]) {
                     movieId = rating->movieId;
                     for (f = 0; f < NUM_FEATURES; f++) {
                         tmpMW = movieWeights[movieId][f];
@@ -226,11 +233,17 @@ void SVDpp::run() {
                         sumMW[userId][f] += movieWeights[movieId][f] - tmpMW;
                     }
                     rating++;
+                    k++;
                 }
                 userLast = userId;
             }
-            tot_tmw += clock() - tmw;
+//             tot_tmw += clock() - tmw;
         }
+
+        for (i = 0; i < NUM_USERS; i++) {
+            calcMWSum(i);
+        }
+
         time = clock() - time;
         cout << "Iteration " << z << " completed." << endl;
         cout << "RMSE: " << sqrt(sq/NUM_RATINGS) << " -- " << ((float) time)/CLOCKS_PER_SEC << endl;
@@ -244,19 +257,19 @@ void SVDpp::run() {
 }
 
 inline void SVDpp::calcMWSum(int userId) {
-    int curUser = userId;
     int movieId;
+    int k = 0;
     Rating *rating = &(ratings[ratingLoc[userId]]);
     for (int f = 0; f < NUM_FEATURES; f++) {
         sumMW[userId][f] = 0.0;
     }
-    while (curUser == userId) {
+    while (k < numRated[userId]) {
         movieId = rating->movieId; 
         for (int f = 0; f < NUM_FEATURES; f++) {
             sumMW[userId][f] += movieWeights[movieId][f];
         }
         rating++;
-        curUser = rating->userId;
+        k++;
     }
 }
 

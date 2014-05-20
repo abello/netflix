@@ -12,22 +12,22 @@
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
-#define NUM_RATINGS 98291669
-// #define NUM_RATINGS 99666408
+// #define NUM_RATINGS 98291669
+#define NUM_RATINGS 99666408
 #define GLOBAL_AVG 3.512599976023349
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 50
+#define NUM_FEATURES 100
 #define MIN_EPOCHS 120
 #define MAX_EPOCHS 160
 #define MIN_IMPROVEMENT 0.0001
 #define LRATE 0.001
 #define K_MOVIE 25
-#define K 0.015
+#define K 0.02
 //#define FEAT_INIT GLOBAL_AVG/NUM_FEATURES
 #define FEAT_INIT 0.1
-#define NUM_BINS 25
+#define NUM_BINS 15
 
 // Second chance settings
 #define SC_EPOCHS 0
@@ -98,8 +98,8 @@ void SVD::loadData() {
     int date;
     int rating;
     int i = 0;
-//     ifstream trainingDta ("../processed_data/train+probe.dta"); 
-    ifstream trainingDta ("../processed_data/train.dta"); 
+    ifstream trainingDta ("../processed_data/train+probe.dta"); 
+//     ifstream trainingDta ("../processed_data/train.dta"); 
     if (trainingDta.fail()) {
         cout << "train.dta: Open failed.\n";
         exit(-1);

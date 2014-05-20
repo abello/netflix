@@ -13,14 +13,16 @@
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
-//#define NUM_RATINGS 98291669
-#define NUM_RATINGS 99666408
+// #define NUM_RATINGS 98291669
+// #define NUM_RATINGS 99666408
 #define GLOBAL_AVG 3.512599976023349
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
+#define NUM_RATINGS NUM_PROBE_RATINGS
+
 #define MAX_CHARS_PER_LINE 30
-#define NUM_EPOCHS 120
-#define NUM_FEATURES 50
+#define NUM_EPOCHS 5
+#define NUM_FEATURES 10
 #define LRATE_mb 0.003     // m_bias
 #define LAMDA_mb 0.0       // m_bias
 #define LRATE_ub 0.012     // c_bias
@@ -105,11 +107,20 @@ void SVDpp::loadData() {
     int rating;
     int i = 0;
     int curUser = 0;
-    ifstream trainingDta ("../processed_data/train+probe.dta"); 
+//     ifstream trainingDta ("../processed_data/train+probe.dta"); 
+    ifstream trainingDta ("../processed_data/probe.dta"); 
     if (trainingDta.fail()) {
         cout << "train.dta: Open failed.\n";
         exit(-1);
     }
+
+    // Initialize ratingLoc to NULL
+    for (i = 0; i < NUM_USERS; i++) {
+        ratingLoc[i] = NULL;
+    }
+
+    // Reset i
+    i = 0;
     while (getline(trainingDta, line)) {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1; // sub 1 for zero indexed
@@ -159,9 +170,9 @@ void SVDpp::run() {
         calcMWSum(i);
     }
 
-    time = clock();
     
     for (int z = 0; z < NUM_EPOCHS; z++) {
+        time = clock();
         sq = 0.0;
         for (i = 0; i < NUM_RATINGS; i++) {
             rating = ratings + i;
@@ -223,12 +234,14 @@ inline void SVDpp::calcMWSum(int userId) {
         sumMW[userId][f] = 0.0;
     }
     while (curUser == userId) {
-        movieId = rating->movieId; 
-        for (int f = 0; f < NUM_FEATURES; f++) {
-            sumMW[userId][f] += movieWeights[movieId][f];
+        if (rating != NULL) {
+            movieId = rating->movieId; 
+            for (int f = 0; f < NUM_FEATURES; f++) {
+                sumMW[userId][f] += movieWeights[movieId][f];
+            }
+            rating++;
+            curUser = rating->userId;
         }
-        rating++;
-        curUser = rating->userId;
     }
 }
 
@@ -379,6 +392,7 @@ void SVDpp::probe() {
 int main() {
     SVDpp *svdpp = new SVDpp();
     svdpp->loadData();
+    cout << "Starting runs" << endl;
     svdpp->run();
     svdpp->output();
 //     svdpp->save();

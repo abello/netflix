@@ -169,7 +169,6 @@ void SVDpp::run() {
 //         calcMWSum(i);
 //     }
 
-    time = clock();
     
     for (int z = 0; z < NUM_EPOCHS; z++) {
         sq = 0.0;
@@ -180,6 +179,7 @@ void SVDpp::run() {
 
         k = 0;
         i = 0;
+        time = clock();
         while (i < NUM_RATINGS) {
 //             cout << "user: " << i << endl;
 //             cout << "numRated: " << numRated[i] << endl;

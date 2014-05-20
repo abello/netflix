@@ -40,12 +40,12 @@ class SVDpp {
 private:
     double userBias[NUM_USERS]; // b_u
     double movieBias[NUM_MOVIES]; // b_i
-    double userFeatures[NUM_FEATURES][NUM_USERS];
+    float userFeatures[NUM_FEATURES][NUM_USERS];
     double movieFeatures[NUM_FEATURES][NUM_MOVIES];
     int numRated[NUM_USERS];
     Rating *ratingLoc[NUM_USERS]; // The first instance of users' rating in the ratings matrix
     double movieWeights[NUM_MOVIES][NUM_FEATURES];
-    double sumMW[NUM_USERS][NUM_FEATURES];
+    float sumMW[NUM_USERS][NUM_FEATURES];
     double tmpSum[NUM_FEATURES];
     Rating ratings[NUM_RATINGS];
     BlockTimePreprocessor *btp;

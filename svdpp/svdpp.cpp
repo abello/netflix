@@ -19,7 +19,7 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_EPOCHS 120
+#define NUM_EPOCHS 30
 #define NUM_FEATURES 50
 #define LRATE_mb 0.003     // m_bias
 #define LAMDA_mb 0.0       // m_bias

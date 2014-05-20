@@ -67,6 +67,7 @@ public:
     void output();
     void save();
     void probe();
+    void probeRMSE();
 };
 
 SVD::SVD() 
@@ -428,6 +429,41 @@ void SVD::probe() {
     cout << "Probe RMSE: " << sqrt(err/i) << endl;
 
     saved.close();
+    p.close();
+}
+
+
+// Calculates RMSE for probe
+void SVDpp::probeRMSE() {
+    string line;
+    char c_line[MAX_CHARS_PER_LINE];
+    stringstream fname;
+    int userId, movieId, date, rating, num_probe;
+    double sq = 0, err = 0;
+
+    ifstream p("../processed_data/probe.dta");
+    if (p.fail()) {
+        cout << "probe.dta-: Open failed.\n";
+        exit(-1);
+    }
+
+    num_probe = 0;
+    // For each line of probe, parse it and predict rating
+    while (getline(p, line)) {
+        memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
+        userId = atoi(strtok(c_line, " ")) - 1; // sub 1 for zero indexed
+        movieId = (short) atoi(strtok(NULL, " ")) - 1;
+        date = atoi(strtok(NULL, " ")); 
+        
+        // Get actual rating
+        rating = atoi(strtok(NULL, " "));
+        
+        err = predictRating(movieId, userId, date) - rating;
+        sq += err * err;
+        num_probe ++;
+    }
+
+    cout << sqrt(sq/num_probe) << endl;
     p.close();
 }
 

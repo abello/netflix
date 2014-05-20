@@ -179,10 +179,13 @@ void SVDpp::run() {
         tot_ts = 0;
 
         k = 0;
-        for (i = 0; i < NUM_RATINGS; i++) {
+        i = 0;
+        while (i < NUM_USERS) {
+//             cout << "user: " << i << endl;
+//             cout << "numRated: " << numRated[i] << endl;
+//             cout << endl;
                 
             rating = ratings + i;
-            movieId = rating->movieId; 
             userId = rating->userId;
 
             // This will be true right when we encounter the next user in the ratings list.
@@ -191,53 +194,56 @@ void SVDpp::run() {
                 for (f = 0; f < NUM_FEATURES; f++) {
                     tmpSum[f] = 0.0;
                 }
+                userLast = userId;
             }
 
 //             tp = clock();
-            p = predictRating(movieId, userId);
-            err = rating->rating - p;
-            sq += err * err;
+            // For each movie rated by userId
+            for (k = 0; k < numRated[userId]; k++) {
+                rating = ratings + k + i;
+                movieId = rating->movieId; 
+                p = predictRating(movieId, userId);
+                err = rating->rating - p;
+                sq += err * err;
 //             tot_tp += clock() - tp;
 
 //             ts = clock();
 //             tot_ts += clock() - ts;
             
-            // train biases
-            uBias = userBias[userId];
-            mBias = movieBias[movieId];
-            userBias[userId] += (LRATE_ub * (err - LAMDA_ub * uBias));
-            movieBias[movieId] += (LRATE_mb * (err - LAMDA_mb * mBias));          
-            
-//             tf = clock();
-            for (f = 0; f < NUM_FEATURES; f++) {
-                uf = userFeatures[f][userId];
-                mf = movieFeatures[f][movieId];
-                userFeatures[f][userId] += (LRATE_uf * (err * mf - LAMDA_uf * uf)); 
-                movieFeatures[f][movieId] += 
-                    (LRATE_mf * (err * (uf + (1.0 / sqrt(numRated[userId])) * sumMW[userId][f]) - LAMDA_mf * mf));
-                tmpSum[f] += (err * numRated[userId] * mf);
-            }
-//             tot_tf =+ clock() - tf;
-            
-//             tmw = clock();
-            // Train movie weights
-            if (userId != userLast) {
-                rating = &ratings[ratingLoc[userId]];
-                k = 0;
-                while (k < numRated[userId]) {
-                    movieId = rating->movieId;
-                    for (f = 0; f < NUM_FEATURES; f++) {
-                        tmpMW = movieWeights[movieId][f];
-                        movieWeights[movieId][f] += (LRATE_mw * (tmpSum[f] - LAMDA_mw * tmpMW)); 
-                        // Update sumMW so we don't have to recalculate it entirely.
-                        sumMW[userId][f] += movieWeights[movieId][f] - tmpMW;
-                    }
-                    rating++;
-                    k++;
+                // train biases
+                uBias = userBias[userId];
+                mBias = movieBias[movieId];
+                userBias[userId] += (LRATE_ub * (err - LAMDA_ub * uBias));
+                movieBias[movieId] += (LRATE_mb * (err - LAMDA_mb * mBias));          
+                
+//                 tf = clock();
+                for (f = 0; f < NUM_FEATURES; f++) {
+                    uf = userFeatures[f][userId];
+                    mf = movieFeatures[f][movieId];
+                    userFeatures[f][userId] += (LRATE_uf * (err * mf - LAMDA_uf * uf)); 
+                    movieFeatures[f][movieId] += 
+                        (LRATE_mf * (err * (uf + (1.0 / sqrt(numRated[userId])) * sumMW[userId][f]) - LAMDA_mf * mf));
+                    tmpSum[f] += (err * numRated[userId] * mf);
                 }
-                userLast = userId;
+//                 tot_tf =+ clock() - tf;
+
             }
-//             tot_tmw += clock() - tmw;
+            
+
+            // For every movie rated by userId
+            for (k = 0; k < numRated[userId]; k++) {
+            // Train movie weights
+                rating = ratings + k + i;
+                movieId = rating->movieId;
+                for (f = 0; f < NUM_FEATURES; f++) {
+                    tmpMW = movieWeights[movieId][f];
+                    movieWeights[movieId][f] += (LRATE_mw * (tmpSum[f] - LAMDA_mw * tmpMW)); 
+                    // Update sumMW so we don't have to recalculate it entirely.
+                    sumMW[userId][f] += movieWeights[movieId][f] - tmpMW;
+                }
+            }
+            
+            i += numRated[i];
         }
 
         for (i = 0; i < NUM_USERS; i++) {

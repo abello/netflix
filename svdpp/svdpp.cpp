@@ -152,11 +152,14 @@ void SVDpp::run() {
     Rating *rating;
     int userLast = -1;
     short movieId;
+    clock_t time;
 
     // Precalculate the sumMW values for all users.
     for (i = 0; i < NUM_USERS; i++) {
         calcMWSum(i);
     }
+
+    time = clock();
     
     for (int z = 0; z < NUM_EPOCHS; z++) {
         sq = 0.0;
@@ -206,8 +209,9 @@ void SVDpp::run() {
                 userLast = userId;
             }
         }
+        time = clock() - time;
         cout << "Iteration " << z << " completed." << endl;
-        cout << "RMSE: " << sqrt(sq/NUM_RATINGS) << "." << endl;
+        cout << "RMSE: " << sqrt(sq/NUM_RATINGS) << " -- " << ((float) time)/CLOCKS_PER_SEC << endl;
     }
 }
 

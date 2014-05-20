@@ -19,8 +19,8 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_EPOCHS 8
-#define NUM_FEATURES 50
+#define NUM_EPOCHS 30
+#define NUM_FEATURES 100
 #define LRATE_mb 0.003     // m_bias
 #define LAMDA_mb 0.0       // m_bias
 #define LRATE_ub 0.012     // c_bias
@@ -253,6 +253,9 @@ void SVDpp::run() {
         cout << "Iteration " << z << " completed." << endl;
         cout << "RMSE: " << sqrt(sq/NUM_RATINGS) << " -- " << ((float) time)/CLOCKS_PER_SEC << endl;
         probeRMSE();
+
+        // Save probe for this iter
+        probe(z);
 
         cout << "=================================" << endl;
 

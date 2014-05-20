@@ -43,7 +43,7 @@ private:
     float userFeatures[NUM_FEATURES][NUM_USERS];
     double movieFeatures[NUM_FEATURES][NUM_MOVIES];
     int numRated[NUM_USERS];
-    Rating *ratingLoc[NUM_USERS]; // The first instance of users' rating in the ratings matrix
+    int ratingLoc[NUM_USERS]; // The first instance of users' rating in the ratings matrix
     double movieWeights[NUM_MOVIES][NUM_FEATURES];
     float sumMW[NUM_USERS][NUM_FEATURES];
     double tmpSum[NUM_FEATURES];
@@ -110,6 +110,13 @@ void SVDpp::loadData() {
         cout << "train.dta: Open failed.\n";
         exit(-1);
     }
+
+    // Initialize ratingLoc to -1
+    for (i = 0; i < NUM_USERS; i++) {
+        ratingLoc[i] = -1;
+    }
+    i = 0;
+
     while (getline(trainingDta, line)) {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);
         userId = atoi(strtok(c_line, " ")) - 1; // sub 1 for zero indexed
@@ -120,7 +127,10 @@ void SVDpp::loadData() {
         ratings[i].movieId = (short) movieId;
         ratings[i].date = (short) date;
         ratings[i].rating = rating;
-        ratingLoc[userId] = &ratings[i]; // Store the pointer to this rating for this user.
+//         ratings[i].cache = 0.0; // set to 0 temporarily.
+        if (ratingLoc[userId] == -1) {
+            ratingLoc[userId] = i; // Store the pointer to this rating for this user.
+        }
         i++;
         if (curUser == userId) {
             numRated[curUser]++; 
@@ -206,7 +216,7 @@ void SVDpp::run() {
             // Train movie weights
             tmw = clock();
             if (userId != userLast) {
-                rating = ratingLoc[userId];
+                rating = &ratings[ratingLoc[userId]];
                 while (rating->userId == userId) {
                     movieId = rating->movieId;
                     for (f = 0; f < NUM_FEATURES; f++) {
@@ -236,7 +246,7 @@ void SVDpp::run() {
 inline void SVDpp::calcMWSum(int userId) {
     int curUser = userId;
     int movieId;
-    Rating *rating = ratingLoc[userId];
+    Rating *rating = &(ratings[ratingLoc[userId]]);
     for (int f = 0; f < NUM_FEATURES; f++) {
         sumMW[userId][f] = 0.0;
     }

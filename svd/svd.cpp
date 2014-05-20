@@ -18,16 +18,16 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 100
+#define NUM_FEATURES 50
 #define MIN_EPOCHS 120
-#define MAX_EPOCHS 180
+#define MAX_EPOCHS 160
 #define MIN_IMPROVEMENT 0.0001
 #define LRATE 0.001
 #define K_MOVIE 25
-#define K 0.02
+#define K 0.015
 //#define FEAT_INIT GLOBAL_AVG/NUM_FEATURES
 #define FEAT_INIT 0.1
-#define NUM_BINS 5
+#define NUM_BINS 25
 
 // Second chance settings
 #define SC_EPOCHS 0
@@ -292,14 +292,15 @@ inline double SVD::predictRating(short movieId, int userId, int date, bool train
     if (!training) {
         sum += movieAvgs[movieId] + userOffsets[userId];
         sum = btp->postprocess(date, sum);
+
+        if (sum > 5) {
+            sum = 5;
+        }
+        else if (sum < 1) {
+            sum = 1;
+        }
     }
 
-    if (sum > 5) {
-        sum = 5;
-    }
-    else if (sum < 1) {
-        sum = 1;
-    }
 
     return sum;
 }

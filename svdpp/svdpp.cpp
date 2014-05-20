@@ -152,7 +152,7 @@ void SVDpp::run() {
     Rating *rating;
     int userLast = -1;
     short movieId;
-    clock_t time, tf, tmw, tot_tf, tot_tmw;
+    clock_t time, tf, tmw, tp, ts, tot_tf, tot_tmw, tot_tp, tot_ts;
 
     // Precalculate the sumMW values for all users.
     for (i = 0; i < NUM_USERS; i++) {
@@ -165,21 +165,27 @@ void SVDpp::run() {
         sq = 0.0;
         tot_tf = 0;
         tot_tmw = 0;
+        tot_tp = 0;
+        tot_ts = 0;
 
         for (i = 0; i < NUM_RATINGS; i++) {
             rating = ratings + i;
             movieId = rating->movieId; 
             userId = rating->userId;
+            tp = clock();
             p = predictRating(movieId, userId);
             err = rating->rating - p;
             sq += err * err;
+            tot_tp += clock() - tp;
 
             // This will be true right when we encounter the next user in the ratings list.
+            ts = clock();
             if (userId != userLast) {
                 for (f = 0; f < NUM_FEATURES; f++) {
                     tmpSum[f] = 0.0;
                 }
             }
+            tot_ts += clock() - ts;
             
             // train biases
             uBias = userBias[userId];
@@ -214,13 +220,15 @@ void SVDpp::run() {
                 }
                 userLast = userId;
             }
-            tot_tmw += clock();
+            tot_tmw += clock() - tmw;
         }
         time = clock() - time;
         cout << "Iteration " << z << " completed." << endl;
         cout << "RMSE: " << sqrt(sq/NUM_RATINGS) << " -- " << ((float) time)/CLOCKS_PER_SEC << endl;
-        cout << "TF: " << ((float) tot_tf)/(CLOCKS_PER_SEC * NUM_RATINGS) << endl;
-        cout << "TMW: " << ((float) tot_tmw)/(CLOCKS_PER_SEC * NUM_RATINGS) << endl;
+        cout << "TF: " << ((float) tot_tf)/(CLOCKS_PER_SEC) << endl;
+        cout << "TMW: " << ((float) tot_tmw)/(CLOCKS_PER_SEC) << endl;
+        cout << "TP: " << ((float) tot_tp)/(CLOCKS_PER_SEC) << endl;
+        cout << "TS: " << ((float) tot_ts)/(CLOCKS_PER_SEC) << endl;
         cout << "=================================" << endl;
 
     }

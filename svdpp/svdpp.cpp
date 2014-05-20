@@ -294,7 +294,7 @@ inline double SVDpp::predictRating(short movieId, int userId, int date) {
     double norm = 1.0 / sqrt(numRated[userId]);
     sum += userBias[userId] + movieBias[movieId];
     for (int f = 0; f < NUM_FEATURES; f++) {
-        sum += movieFeatures[movieId][f] * (userFeatures[userId][f] + norm * sumMW[userId][f]);
+        sum += movieFeatures[f][movieId] * (userFeatures[f][userId] + norm * sumMW[userId][f]);
     }
 
     sum = btp->postprocess(date, sum);

@@ -226,6 +226,7 @@ void SVD::run() {
 
 #ifdef RMSEOUT
         outputRMSE(f);
+        probeRMSE();
 #endif
         for (i = 0; i < NUM_RATINGS; i++) {
             rating = ratings + i;
@@ -434,7 +435,7 @@ void SVD::probe() {
 
 
 // Calculates RMSE for probe
-void SVDpp::probeRMSE() {
+void SVD::probeRMSE() {
     string line;
     char c_line[MAX_CHARS_PER_LINE];
     stringstream fname;
@@ -458,7 +459,7 @@ void SVDpp::probeRMSE() {
         // Get actual rating
         rating = atoi(strtok(NULL, " "));
         
-        err = predictRating(movieId, userId, date) - rating;
+        err = predictRating(movieId, userId, date, false) - rating;
         sq += err * err;
         num_probe ++;
     }

@@ -13,8 +13,8 @@
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
-//#define NUM_RATINGS 98291669
-#define NUM_RATINGS 99666408
+#define NUM_RATINGS 98291669
+// #define NUM_RATINGS 99666408
 #define GLOBAL_AVG 3.512599976023349
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
@@ -106,7 +106,8 @@ void SVDpp::loadData() {
     int rating;
     int i = 0;
     int curUser = 0;
-    ifstream trainingDta ("../processed_data/train+probe.dta"); 
+//     ifstream trainingDta ("../processed_data/train+probe.dta"); 
+    ifstream trainingDta ("../processed_data/train.dta"); 
     if (trainingDta.fail()) {
         cout << "train.dta: Open failed.\n";
         exit(-1);
@@ -278,7 +279,7 @@ inline void SVDpp::calcMWSum(int userId) {
 
 // Used for train
 inline double SVDpp::predictRating(short movieId, int userId) {
-    double sum = 0.0;
+    double sum = GLOBAL_AVG;
     double norm = 1.0 / sqrt(numRated[userId]);
     sum += userBias[userId] + movieBias[movieId];
     for (int f = 0; f < NUM_FEATURES; f++) {
@@ -290,7 +291,7 @@ inline double SVDpp::predictRating(short movieId, int userId) {
 }
 
 inline double SVDpp::predictRating(short movieId, int userId, int date) {
-    double sum = 0.0;
+    double sum = GLOBAL_AVG;
     double norm = 1.0 / sqrt(numRated[userId]);
     sum += userBias[userId] + movieBias[movieId];
     for (int f = 0; f < NUM_FEATURES; f++) {
@@ -426,7 +427,7 @@ int main() {
     svdpp->run();
     svdpp->output();
 //     svdpp->save();
-//     svdpp->probe();
+    svdpp->probe();
     cout << "SVD++ completed.\n";
 
     return 0;

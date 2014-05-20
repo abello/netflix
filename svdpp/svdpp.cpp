@@ -19,7 +19,7 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_EPOCHS 120
+#define NUM_EPOCHS 30 
 #define NUM_FEATURES 50
 #define LRATE_mb 0.003     // m_bias
 #define LAMDA_mb 0.0       // m_bias
@@ -278,7 +278,7 @@ inline void SVDpp::calcMWSum(int userId) {
 
 // Used for train
 inline double SVDpp::predictRating(short movieId, int userId) {
-    double sum = 0.0;
+    double sum = GLOBAL_AVG;
     double norm = 1.0 / sqrt(numRated[userId]);
     sum += userBias[userId] + movieBias[movieId];
     for (int f = 0; f < NUM_FEATURES; f++) {
@@ -290,7 +290,7 @@ inline double SVDpp::predictRating(short movieId, int userId) {
 }
 
 inline double SVDpp::predictRating(short movieId, int userId, int date) {
-    double sum = 0.0;
+    double sum = GLOBAL_AVG;
     double norm = 1.0 / sqrt(numRated[userId]);
     sum += userBias[userId] + movieBias[movieId];
     for (int f = 0; f < NUM_FEATURES; f++) {

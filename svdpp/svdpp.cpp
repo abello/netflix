@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <cstdlib>
 #include <time.h>
+
 #include "Rating.hpp"
 #include "BlockTimePreprocessor.hpp"
 
@@ -58,7 +59,7 @@ public:
     SVDpp();
     ~SVDpp() { };
     void loadData();
-    void calcMWSum(int userId);
+    inline void calcMWSum(int userId);
     void run();
     void output();
     void save();
@@ -210,7 +211,7 @@ void SVDpp::run() {
     }
 }
 
-void SVDpp::calcMWSum(int userId) {
+inline void SVDpp::calcMWSum(int userId) {
     int curUser = userId;
     int movieId;
     Rating *rating = ratingLoc[userId];

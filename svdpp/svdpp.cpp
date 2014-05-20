@@ -120,7 +120,6 @@ void SVDpp::loadData() {
         ratings[i].movieId = (short) movieId;
         ratings[i].date = (short) date;
         ratings[i].rating = rating;
-        ratings[i].cache = 0.0; // set to 0 temporarily.
         ratingLoc[userId] = &ratings[i]; // Store the pointer to this rating for this user.
         i++;
         if (curUser == userId) {

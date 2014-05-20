@@ -6,7 +6,6 @@ struct Rating {
     short movieId;
     short date;
     float rating;
-    float cache;
 };
 
 #endif // RATING_HPP

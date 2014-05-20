@@ -180,7 +180,7 @@ void SVDpp::run() {
 
         k = 0;
         i = 0;
-        while (i < NUM_USERS) {
+        while (i < NUM_RATINGS) {
 //             cout << "user: " << i << endl;
 //             cout << "numRated: " << numRated[i] << endl;
 //             cout << endl;

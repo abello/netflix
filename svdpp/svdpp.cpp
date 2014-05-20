@@ -189,12 +189,9 @@ void SVDpp::run() {
             userId = rating->userId;
 
             // This will be true right when we encounter the next user in the ratings list.
-            if (userId != userLast) {
-                calcMWSum(userId);
-                for (f = 0; f < NUM_FEATURES; f++) {
-                    tmpSum[f] = 0.0;
-                }
-                userLast = userId;
+            calcMWSum(userId);
+            for (f = 0; f < NUM_FEATURES; f++) {
+                tmpSum[f] = 0.0;
             }
 
 //             tp = clock();
@@ -231,17 +228,17 @@ void SVDpp::run() {
             
             k = 0;
             // For every movie rated by userId
-//             for (k = 0; k < numRated[userId]; k++) {
-//             // Train movie weights
-//                 rating = ratings + k + i;
-//                 movieId = rating->movieId;
-//                 for (f = 0; f < NUM_FEATURES; f++) {
-//                     tmpMW = movieWeights[movieId][f];
-//                     movieWeights[movieId][f] += (LRATE_mw * (tmpSum[f] - LAMDA_mw * tmpMW)); 
-//                     // Update sumMW so we don't have to recalculate it entirely.
-//                     sumMW[userId][f] += movieWeights[movieId][f] - tmpMW;
-//                 }
-//             }
+            for (k = 0; k < numRated[userId]; k++) {
+            // Train movie weights
+                rating = ratings + k + i;
+                movieId = rating->movieId;
+                for (f = 0; f < NUM_FEATURES; f++) {
+                    tmpMW = movieWeights[movieId][f];
+                    movieWeights[movieId][f] += (LRATE_mw * (tmpSum[f] - LAMDA_mw * tmpMW)); 
+                    // Update sumMW so we don't have to recalculate it entirely.
+                    sumMW[userId][f] += movieWeights[movieId][f] - tmpMW;
+                }
+            }
             
             i += numRated[userId];
         } // Finished all users

@@ -8,7 +8,7 @@
 #include <cstdlib>
 #include <time.h>
 #include "Rating.hpp"
-#include "BlockTimePreprocessor.hpp"
+// #include "BlockTimePreprocessor.hpp"
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
@@ -18,13 +18,13 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 50
-#define MIN_EPOCHS 120
+#define NUM_FEATURES 100
+#define MIN_EPOCHS 119
 #define MAX_EPOCHS 160
 #define MIN_IMPROVEMENT 0.0001
 #define LRATE 0.001
 #define K_MOVIE 25
-#define K 0.015
+#define K 0.02
 //#define FEAT_INIT GLOBAL_AVG/NUM_FEATURES
 #define FEAT_INIT 0.1
 #define NUM_BINS 25
@@ -50,7 +50,7 @@ private:
     double userFeatures[NUM_FEATURES][NUM_USERS];
     double movieFeatures[NUM_FEATURES][NUM_MOVIES];
     Rating ratings[NUM_RATINGS];
-    BlockTimePreprocessor *btp;
+//     BlockTimePreprocessor *btp;
 //     ofstream rmseOut;
 //     ifstream probe;
     inline double predictRating(short movieId, int userId, int feature, double cached, bool addTrailing);
@@ -118,8 +118,8 @@ void SVD::loadData() {
         i++;
     }
     trainingDta.close();
-    btp = new BlockTimePreprocessor(NUM_BINS, ratings);
-    btp->preprocess(ratings);
+//     btp = new BlockTimePreprocessor(NUM_BINS, ratings);
+//     btp->preprocess(ratings);
 }
 
 void SVD::initCache() {
@@ -291,7 +291,7 @@ inline double SVD::predictRating(short movieId, int userId, int date, bool train
 
     if (!training) {
         sum += movieAvgs[movieId] + userOffsets[userId];
-        sum = btp->postprocess(date, sum);
+//         sum = btp->postprocess(date, sum);
 
         if (sum > 5) {
             sum = 5;

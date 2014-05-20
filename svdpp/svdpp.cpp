@@ -13,13 +13,13 @@
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
-#define NUM_RATINGS 98291669
-// #define NUM_RATINGS 99666408
+// #define NUM_RATINGS 98291669
+#define NUM_RATINGS 99666408
 #define GLOBAL_AVG 3.512599976023349
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_EPOCHS 30
+#define NUM_EPOCHS 8
 #define NUM_FEATURES 50
 #define LRATE_mb 0.003     // m_bias
 #define LAMDA_mb 0.0       // m_bias
@@ -64,7 +64,7 @@ public:
     void run();
     void output();
     void save();
-    void probe();
+    void probe(int iter);
     void probeRMSE();
 };
 
@@ -107,8 +107,8 @@ void SVDpp::loadData() {
     int rating;
     int i = 0;
     int curUser = 0;
-//     ifstream trainingDta ("../processed_data/train+probe.dta"); 
-    ifstream trainingDta ("../processed_data/train.dta"); 
+    ifstream trainingDta ("../processed_data/train+probe.dta"); 
+//     ifstream trainingDta ("../processed_data/train.dta"); 
     if (trainingDta.fail()) {
         cout << "train.dta: Open failed.\n";
         exit(-1);
@@ -388,12 +388,12 @@ void SVDpp::save() {
 }
 
 /* Save the results of the probe */
-void SVDpp::probe() {
+void SVDpp::probe(int iter = NUM_EPOCHS) {
     string line;
     char c_line[MAX_CHARS_PER_LINE];
     stringstream fname;
     int userId, movieId, date;
-    fname << "../results/probe" << mdata.str();
+    fname << "../results/probe" << to_string(iter) << mdata.str();
 
     ofstream saved(fname.str().c_str(), ios::trunc);
     ifstream p("../processed_data/probe.dta");

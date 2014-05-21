@@ -19,8 +19,8 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_EPOCHS 15 
-#define NUM_FEATURES 50 
+#define NUM_EPOCHS 25
+#define NUM_FEATURES 100
 #define LRATE_mb 0.003     // m_bias
 #define LAMDA_mb 0.0       // m_bias
 #define LRATE_ub 0.012     // c_bias
@@ -72,7 +72,7 @@ SVDpp::SVDpp()
 {
     int f, j, k;
 
-    mdata << "-F=" << NUM_FEATURES << "-LRT_mb" << LRATE_mb << "-LAM_mb=" << LAMDA_mb << "-LRT_ub=" << LRATE_ub << "-LAM_ub=" << LAMDA_ub << "-LRT_mf=" << LRATE_mf << "-LAM_mf=" << LAMDA_mf << "-LRT_uf=" << LRATE_uf << "-LAM_uf" << LAMDA_uf << "-LRT_mw=" << LRATE_mw << "-LAM_mw=" << LAMDA_mw << "-NRTNS=" << NUM_RATINGS << "-NBINS=" << NUM_BINS << "-STEP_DEC";
+    mdata << "-F=" << NUM_FEATURES << "-LRT_mb" << LRATE_mb << "-L_mb=" << LAMDA_mb << "-LRT_ub=" << LRATE_ub << "-L_ub=" << LAMDA_ub << "-LRT_mf=" << LRATE_mf << "-L_mf=" << LAMDA_mf << "-LRT_uf=" << LRATE_uf << "-L_uf" << LAMDA_uf << "-LRT_mw=" << LRATE_mw << "-L_mw=" << LAMDA_mw << "-NR=" << NUM_RATINGS << "-NB=" << NUM_BINS << "-SD";
 
     // Init biases
     for (int i = 0; i < NUM_USERS; i++) {

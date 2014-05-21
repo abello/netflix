@@ -20,7 +20,7 @@
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
 #define NUM_EPOCHS 30
-#define NUM_FEATURES 100
+#define NUM_FEATURES 200
 #define LRATE_mb 0.003     // m_bias
 #define LAMDA_mb 0.0       // m_bias
 #define LRATE_ub 0.012     // c_bias
@@ -62,7 +62,7 @@ public:
     void loadData();
     inline void calcMWSum(int userId);
     void run();
-    void output();
+    void output(int iter);
     void save();
     void probe(int iter);
     void probeRMSE();
@@ -255,7 +255,8 @@ void SVDpp::run() {
         probeRMSE();
 
         // Save probe for this iter
-        probe(z);
+//         probe(z);
+        output(z);
 
         cout << "=================================" << endl;
 
@@ -338,7 +339,7 @@ void SVDpp::outputRMSE(short numFeats) {
     rmseOut << rmse << '\n';
 }
 
-void SVDpp::output() {
+void SVDpp::output(int iter = NUM_EPOCHS) {
     string line;
     char c_line[MAX_CHARS_PER_LINE];
     int userId;
@@ -346,7 +347,7 @@ void SVDpp::output() {
     int date;
     double rating;
     stringstream fname;
-    fname << "../results/output" << mdata.str();
+    fname << "../results/output" << iter << mdata.str();
 
     ifstream qual ("../processed_data/qual.dta");
     ofstream out (fname.str().c_str(), ios::trunc); 
@@ -396,7 +397,7 @@ void SVDpp::probe(int iter = NUM_EPOCHS) {
     char c_line[MAX_CHARS_PER_LINE];
     stringstream fname;
     int userId, movieId, date;
-    fname << "../results/probe" << to_string(iter) << mdata.str();
+    fname << "../results/probe" << iter << mdata.str();
 
     ofstream saved(fname.str().c_str(), ios::trunc);
     ifstream p("../processed_data/probe.dta");

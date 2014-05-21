@@ -19,8 +19,8 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_EPOCHS 30
-#define NUM_FEATURES 200
+#define NUM_EPOCHS 15 
+#define NUM_FEATURES 50 
 #define LRATE_mb 0.003     // m_bias
 #define LAMDA_mb 0.0       // m_bias
 #define LRATE_ub 0.012     // c_bias
@@ -72,7 +72,7 @@ SVDpp::SVDpp()
 {
     int f, j, k;
 
-    mdata << "-F=" << NUM_FEATURES << "-LRT_mb" << LRATE_mb << "-LAM_mb=" << LAMDA_mb << "-LRT_ub=" << LRATE_ub << "-LAM_ub=" << LAMDA_ub << "-LRT_mf=" << LRATE_mf << "-LAM_mf=" << LAMDA_mf << "-LRT_uf=" << LRATE_uf << "-LAM_uf" << LAMDA_uf << "-LRT_mw=" << LRATE_mw << "-LAM_mw=" << LAMDA_mw << "-NBINS=" << NUM_BINS;
+    mdata << "-F=" << NUM_FEATURES << "-LRT_mb" << LRATE_mb << "-LAM_mb=" << LAMDA_mb << "-LRT_ub=" << LRATE_ub << "-LAM_ub=" << LAMDA_ub << "-LRT_mf=" << LRATE_mf << "-LAM_mf=" << LAMDA_mf << "-LRT_uf=" << LRATE_uf << "-LAM_uf" << LAMDA_uf << "-LRT_mw=" << LRATE_mw << "-LAM_mw=" << LAMDA_mw << "-NRTNS=" << NUM_RATINGS << "-NBINS=" << NUM_BINS << "-STEP_DEC";
 
     // Init biases
     for (int i = 0; i < NUM_USERS; i++) {
@@ -160,7 +160,7 @@ void SVDpp::run() {
     int f, i, userId, k;
     double err, p, tmpMW, sq;
     double uBias, mBias;
-    double uf, mf;
+    double uf, mf, reg;
     Rating *rating;
     int userLast = -1;
     short movieId;
@@ -178,6 +178,7 @@ void SVDpp::run() {
         tot_tmw = 0;
         tot_tp = 0;
         tot_ts = 0;
+        reg = pow(0.9, z);
 
         k = 0;
         i = 0;
@@ -212,16 +213,16 @@ void SVDpp::run() {
                 // train biases
                 uBias = userBias[userId];
                 mBias = movieBias[movieId];
-                userBias[userId] += (LRATE_ub * (err - LAMDA_ub * uBias));
-                movieBias[movieId] += (LRATE_mb * (err - LAMDA_mb * mBias));          
+                userBias[userId] += (reg *LRATE_ub * (err - LAMDA_ub * uBias));
+                movieBias[movieId] += (reg * LRATE_mb * (err - LAMDA_mb * mBias));          
                 
 //                 tf = clock();
                 for (f = 0; f < NUM_FEATURES; f++) {
                     uf = userFeatures[f][userId];
                     mf = movieFeatures[f][movieId];
-                    userFeatures[f][userId] += (LRATE_uf * (err * mf - LAMDA_uf * uf)); 
+                    userFeatures[f][userId] += (reg * LRATE_uf * (err * mf - LAMDA_uf * uf)); 
                     movieFeatures[f][movieId] += 
-                        (LRATE_mf * (err * (uf + (1.0 / sqrt(numRated[userId])) * sumMW[userId][f]) - LAMDA_mf * mf));
+                        (reg * LRATE_mf * (err * (uf + (1.0 / sqrt(numRated[userId])) * sumMW[userId][f]) - LAMDA_mf * mf));
                     tmpSum[f] += (err * (1.0 / sqrt(numRated[userId])) * mf);
                 }
 //                 tot_tf =+ clock() - tf;
@@ -236,7 +237,7 @@ void SVDpp::run() {
                 movieId = rating->movieId;
                 for (f = 0; f < NUM_FEATURES; f++) {
                     tmpMW = movieWeights[movieId][f];
-                    movieWeights[movieId][f] += (LRATE_mw * (tmpSum[f] - LAMDA_mw * tmpMW)); 
+                    movieWeights[movieId][f] += (reg * LRATE_mw * (tmpSum[f] - LAMDA_mw * tmpMW)); 
                     // Update sumMW so we don't have to recalculate it entirely.
                     sumMW[userId][f] += movieWeights[movieId][f] - tmpMW;
                 }
@@ -464,7 +465,7 @@ int main() {
     svdpp->run();
     svdpp->output();
 //     svdpp->save();
-    svdpp->probe();
+//     svdpp->probe();
     cout << "SVD++ completed.\n";
 
     return 0;

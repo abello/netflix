@@ -14,26 +14,35 @@ f_PP_50_8 = open("results/output-F=50-LRT_mb0.003-LAM_mb=0-LRT_ub=0.012-LAM_ub=0
 f_PP_100_8 = open("results/output9-F=100-LRT_mb0.003-LAM_mb=0-LRT_ub=0.012-LAM_ub=0.03-LRT_mf=0.011-LAM_mf=0.006-LRT_uf=0.006-LAM_uf0.08-LRT_mw=0.001-LAM_mw=0.03-NBINS=5", "r")
 f_PP_200_8 = open("results/output7-F=200-LRT_mb0.003-LAM_mb=0-LRT_ub=0.012-LAM_ub=0.03-LRT_mf=0.011-LAM_mf=0.006-LRT_uf=0.006-LAM_uf0.08-LRT_mw=0.001-LAM_mw=0.03-NBINS=5", "r")
 
+#### RBM 
+# -0.14 below water
+f_RBM_200_181 = open("results/output-rbm-200-181", "r")
+f_RBM_200_240 = open("results/output-rbm-200-240", "r")
+f_RBM_200_349 = open("results/output-rbm-200-349", "r")
 
 
-files = [f20_1, f20_2, f50_1, f100_1, f100_2, f_GC_07, f_GC_13, f_GC_29, f_PP_50_30_NA, f_PP_50_8, f_PP_100_8, f_PP_200_8]
+
+files = [f20_1, f20_2, f50_1, f100_1, f100_2, f_GC_07, f_GC_13, f_GC_29, f_PP_50_30_NA, f_PP_50_8, f_PP_100_8, f_PP_200_8,  f_RBM_200_240, f_RBM_200_349]
 
 out = open("results/blended", "w")
 
-wf_20_1 = -0.110707708397
-wf_20_2 = 0.184133739411
-wf_50_1 = 0.0519691967317
-wf_100_1 = 0.0640736765834
-wf_100_2 = 0.042868291896
-wf_GC_07 = 0.0560245266197
-wf_GC_13 = 0.0457795997618
-wf_GC_29 = 0.0555481316039
-wf_PP_50_30_NA = 0.131562449403
-wf_PP_50_8 = -0.18549459827
-wf_PP_100_8 = 0.0297287036285
-wf_PP_200_8 = 0.636498840891
+wf_20_1 = 0.0978399809682
+wf_20_2 = -0.150585445632
+wf_50_1 = 0.0407473650102
+wf_100_1 = 0.071430689415
+wf_100_2 = 0.0635163433291
+wf_GC_07 = 0.0486622747122
+wf_GC_13 = 0.0374945830188
+wf_GC_29 = 0.0456688131485
+wf_PP_50_30_NA = 0.130496347987
+wf_PP_50_8 = -0.251187530756
+wf_PP_100_8 = 0.0026603915118
+wf_PP_200_8 = 0.578869818757
+wf_RBM_200_240 = 0.0744470075239
+wf_RBM_200_349 = 0.213250617594
 
-weights = [wf_20_1, wf_20_2, wf_50_1, wf_100_1, wf_100_2, wf_GC_07, wf_GC_13, wf_GC_29, wf_PP_50_30_NA, wf_PP_50_8, wf_PP_100_8, wf_PP_200_8]
+
+weights = [wf_20_1, wf_20_2, wf_50_1, wf_100_1, wf_100_2, wf_GC_07, wf_GC_13, wf_GC_29, wf_PP_50_30_NA, wf_PP_50_8, wf_PP_100_8, wf_PP_200_8,  wf_RBM_200_240, wf_RBM_200_349]
 
 assert(len(weights) == len(files))
 

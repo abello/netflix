@@ -90,6 +90,7 @@ def main():
     _f_PP_50_30_NA = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_PP_50_8 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_PP_100_8 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
+    _f_PP_200_8 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
 
 #     f5 =  open("results/probe-F=5-E=20,20-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
 #     f10 = open("results/probe-F=10-E=10,10-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
@@ -105,6 +106,7 @@ def main():
     f_PP_50_30_NA = open("results/pre_blending/probe-F=50-LRT_mb0.003-LAM_mb=0-LRT_ub=0.012-LAM_ub=0.03-LRT_mf=0.011-LAM_mf=0.006-LRT_uf=0.006-LAM_uf0.08-LRT_mw=0.001-LAM_mw=0.03-NBINS=5-NA", "r")
     f_PP_50_8 = open("results/pre_blending/probe-F=50-LRT_mb0.003-LAM_mb=0-LRT_ub=0.012-LAM_ub=0.03-LRT_mf=0.011-LAM_mf=0.006-LRT_uf=0.006-LAM_uf0.08-LRT_mw=0.001-LAM_mw=0.03-NBINS=5", "r")
     f_PP_100_8 = open("results/pre_blending/probe7-F=100-LRT_mb0.003-LAM_mb=0-LRT_ub=0.012-LAM_ub=0.03-LRT_mf=0.011-LAM_mf=0.006-LRT_uf=0.006-LAM_uf0.08-LRT_mw=0.001-LAM_mw=0.03-NBINS=5", "r")
+    f_PP_200_8 = open("results/pre_blending/probe7-F=200-LRT_mb0.003-LAM_mb=0-LRT_ub=0.012-LAM_ub=0.03-LRT_mf=0.011-LAM_mf=0.006-LRT_uf=0.006-LAM_uf0.08-LRT_mw=0.001-LAM_mw=0.03-NBINS=5", "r")
 
     for i in xrange(PROBE_SIZE):
         _f_20_1[i] = float(f20_1.readline().rstrip())
@@ -118,6 +120,7 @@ def main():
         _f_PP_50_30_NA[i] = float(f_PP_50_30_NA.readline().rstrip())
         _f_PP_50_8[i] = float(f_PP_50_8.readline().rstrip())
         _f_PP_100_8[i] = float(f_PP_100_8.readline().rstrip())
+        _f_PP_200_8[i] = float(f_PP_200_8.readline().rstrip())
 
     #
     # NOTE: *TRIPLE* check these settings. As this code is really messy, it's easy to 
@@ -135,6 +138,7 @@ def main():
     f_PP_50_30_NA.close()
     f_PP_50_8.close()
     f_PP_100_8.close()
+    f_PP_200_8.close()
 
 
     def f_20_1(x):
@@ -170,7 +174,10 @@ def main():
     def f_PP_100_8(x):
         return _f_PP_100_8[x]
 
-    funcs = [f_20_1, f_20_2, f_50_1, f_100_1, f_100_2, f_GC_07, f_GC_13, f_GC_29, f_PP_50_30_NA, f_PP_50_8, f_PP_100_8]
+    def f_PP_200_8(x):
+        return _f_PP_200_8[x]
+
+    funcs = [f_20_1, f_20_2, f_50_1, f_100_1, f_100_2, f_GC_07, f_GC_13, f_GC_29, f_PP_50_30_NA, f_PP_50_8, f_PP_100_8, f_PP_200_8]
 
     blender(blend_dta, funcs)
     

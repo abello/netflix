@@ -1,4 +1,4 @@
-CFLAGS=-c -Ofast -march=native -flto -fwhole-program -Wall -Winline
+CFLAGS=-c -O3 -march=native -flto -fwhole-program -Wall -Winline
 
 all: svd
 

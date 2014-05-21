@@ -8,7 +8,7 @@
 #include <cstdlib>
 #include <time.h>
 #include "Rating.hpp"
-// #include "BlockTimePreprocessor.hpp"
+#include "BlockTimePreprocessor.hpp"
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
@@ -19,7 +19,7 @@
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
 #define NUM_FEATURES 100
-#define MIN_EPOCHS 119
+#define MIN_EPOCHS 0
 #define MAX_EPOCHS 160
 #define MIN_IMPROVEMENT 0.0001
 #define LRATE 0.001
@@ -30,8 +30,8 @@
 #define NUM_BINS 25
 
 // Second chance settings
-#define SC_EPOCHS 0
-#define SC_CHANCES 0
+#define SC_EPOCHS 1 
+#define SC_CHANCES 10
 
 
 
@@ -50,7 +50,7 @@ private:
     double userFeatures[NUM_FEATURES][NUM_USERS];
     double movieFeatures[NUM_FEATURES][NUM_MOVIES];
     Rating ratings[NUM_RATINGS];
-//     BlockTimePreprocessor *btp;
+    BlockTimePreprocessor *btp;
 //     ofstream rmseOut;
 //     ifstream probe;
     inline double predictRating(short movieId, int userId, int feature, double cached, bool addTrailing);
@@ -119,8 +119,8 @@ void SVD::loadData() {
         i++;
     }
     trainingDta.close();
-//     btp = new BlockTimePreprocessor(NUM_BINS, ratings);
-//     btp->preprocess(ratings);
+    btp = new BlockTimePreprocessor(NUM_BINS, ratings);
+    btp->preprocess(ratings);
 }
 
 void SVD::initCache() {
@@ -237,6 +237,9 @@ void SVD::run() {
 
     // Second chance
     for (chances = 0; chances < SC_CHANCES; chances++) {
+        cout << "================================" << endl;
+        cout << "Epoch: " << chances << endl;
+        probeRMSE();
         for (f = 0; f < NUM_FEATURES; f++) {
             cout << "Computing feature " << f << ".\n";
             for (e = 0; (e < SC_EPOCHS); e++) {
@@ -293,7 +296,7 @@ inline double SVD::predictRating(short movieId, int userId, int date, bool train
 
     if (!training) {
         sum += movieAvgs[movieId] + userOffsets[userId];
-//         sum = btp->postprocess(date, sum);
+        sum = btp->postprocess(date, sum);
 
         if (sum > 5) {
             sum = 5;
@@ -464,7 +467,7 @@ void SVD::probeRMSE() {
         num_probe ++;
     }
 
-    cout << sqrt(sq/num_probe) << endl;
+    cout << "Probe RMSE: " << sqrt(sq/num_probe) << endl;
     p.close();
 }
 

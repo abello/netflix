@@ -13,14 +13,14 @@
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
-// #define NUM_RATINGS 98291669
-#define NUM_RATINGS 99666408
+#define NUM_RATINGS 98291669
+// #define NUM_RATINGS 99666408
 #define GLOBAL_AVG 3.512599976023349
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
 #define NUM_EPOCHS 25
-#define NUM_FEATURES 100
+#define NUM_FEATURES 300
 #define LRATE_mb 0.003     // m_bias
 #define LAMDA_mb 0.0       // m_bias
 #define LRATE_ub 0.012     // c_bias
@@ -72,7 +72,7 @@ SVDpp::SVDpp()
 {
     int f, j, k;
 
-    mdata << "-F=" << NUM_FEATURES << "-LRT_mb" << LRATE_mb << "-L_mb=" << LAMDA_mb << "-LRT_ub=" << LRATE_ub << "-L_ub=" << LAMDA_ub << "-LRT_mf=" << LRATE_mf << "-L_mf=" << LAMDA_mf << "-LRT_uf=" << LRATE_uf << "-L_uf" << LAMDA_uf << "-LRT_mw=" << LRATE_mw << "-L_mw=" << LAMDA_mw << "-NR=" << NUM_RATINGS << "-NB=" << NUM_BINS << "-SD";
+    mdata << "-F=" << NUM_FEATURES << "-NR=" << NUM_RATINGS << "-NB=" << NUM_BINS << "-SD";
 
     // Init biases
     for (int i = 0; i < NUM_USERS; i++) {
@@ -107,8 +107,8 @@ void SVDpp::loadData() {
     int rating;
     int i = 0;
     int curUser = 0;
-    ifstream trainingDta ("../processed_data/train+probe.dta"); 
-//     ifstream trainingDta ("../processed_data/train.dta"); 
+//     ifstream trainingDta ("../processed_data/train+probe.dta"); 
+    ifstream trainingDta ("../processed_data/train.dta"); 
     if (trainingDta.fail()) {
         cout << "train.dta: Open failed.\n";
         exit(-1);
@@ -178,7 +178,7 @@ void SVDpp::run() {
         tot_tmw = 0;
         tot_tp = 0;
         tot_ts = 0;
-        reg = pow(0.9, z);
+        reg = 1; //pow(0.9, z);
 
         k = 0;
         i = 0;
@@ -256,8 +256,8 @@ void SVDpp::run() {
         probeRMSE();
 
         // Save probe for this iter
-//         probe(z);
-        output(z);
+        probe(z);
+//         output(z);
 
         cout << "=================================" << endl;
 
@@ -463,7 +463,7 @@ int main() {
     SVDpp *svdpp = new SVDpp();
     svdpp->loadData();
     svdpp->run();
-    svdpp->output();
+//     svdpp->output();
 //     svdpp->save();
 //     svdpp->probe();
     cout << "SVD++ completed.\n";

@@ -1,5 +1,6 @@
 #ifndef RATING_HPP
 #define RATING_HPP
+#include <stdint.h>
 
 // For types, check: http://www.societyofrobots.com/member_tutorials/book/export/html/341
 // http://www.cplusplus.com/reference/cstdint/

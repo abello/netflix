@@ -19,7 +19,7 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_EPOCHS 15 
+#define NUM_EPOCHS 25 
 #define NUM_FEATURES 50 
 #define LRATE_mb 0.003     // m_bias
 #define LAMDA_mb 0.0       // m_bias
@@ -115,10 +115,9 @@ void SVDpp::loadData() {
     }
 
     // Initialize ratingLoc to -1
-    for (i = 0; i < NUM_USERS; i++) {
-        ratingLoc[i] = -1;
+    for (j = 0; j < NUM_USERS; j++) {
+        ratingLoc[j] = -1;
     }
-    i = 0;
 
     while (getline(trainingDta, line)) {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);

@@ -295,7 +295,7 @@ void TimeSVDpp::run() {
             calcMWSum(i);
         }
 
-        time = clock() - time;
+        itime = clock() - itime;
         cout << "Iteration " << z << " completed." << endl;
         cout << "RMSE: " << sqrt(sq/NUM_RATINGS) << " -- " << ((float) itime)/CLOCKS_PER_SEC << endl;
         probeRMSE();

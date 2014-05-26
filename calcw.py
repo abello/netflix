@@ -104,6 +104,9 @@ def main():
     _f_RBM_200_422 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_RBM_400_389 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
 
+
+    _f_KNN = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
+
 #     f5 =  open("results/probe-F=5-E=20,20-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
 #     f10 = open("results/probe-F=10-E=10,10-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
 
@@ -137,6 +140,8 @@ def main():
     f_RBM_200_422 = open("results/pre_blending/probe-rbm-200-422", "r")
     f_RBM_400_389 = open("results/pre_blending/probe-rbm-400-389", "r")
 
+    f_KNN = open("results/pre_blending/probe-KNN-", "r")
+
     for i in xrange(PROBE_SIZE):
         _f_20_1[i] = float(f20_1.readline().rstrip())
         _f_20_2[i] = float(f20_2.readline().rstrip())
@@ -163,6 +168,8 @@ def main():
         _f_RBM_400_394[i] = float(f_RBM_400_394.readline().rstrip())
         _f_RBM_200_422[i] = float(f_RBM_200_422.readline().rstrip())
         _f_RBM_400_389[i] = float(f_RBM_400_389.readline().rstrip())
+
+        _f_KNN[i] = float(f_KNN.readline().rstrip())
 
     #
     # NOTE: *TRIPLE* check these settings. As this code is really messy, it's easy to 
@@ -193,6 +200,9 @@ def main():
     f_RBM_400_394.close()
     f_RBM_200_422.close()
     f_RBM_400_389.close()
+
+    f_KNN.close()
+
 
 
     def f_20_1(x):
@@ -269,7 +279,12 @@ def main():
         return _f_RBM_400_389[x]
 
 
-    funcs = [f_20_1, f_20_2, f_50_1, f_100_1, f_100_2, f_GC_07, f_GC_13, f_GC_29, f_PP_50_30_NA, f_PP_50_8, f_PP_100_8, f_PP_200_8, f_PP_300_8, f_PPD_50_8, f_PPD_100_8, f_PPD_300_8, f_RBM_200_240, f_RBM_200_349, f_RBM_400_394, f_RBM_200_422]
+    def f_KNN(x):
+        return _f_KNN[x]
+
+
+
+    funcs = [f_20_1, f_20_2, f_50_1, f_100_1, f_100_2, f_GC_07, f_GC_13, f_GC_29, f_PP_50_30_NA, f_PP_50_8, f_PP_100_8, f_PP_200_8, f_PP_300_8, f_PPD_50_8, f_PPD_100_8, f_PPD_300_8, f_RBM_200_240, f_RBM_200_349, f_RBM_400_394, f_RBM_200_422, f_KNN]
 
     blender(blend_dta, funcs)
     

@@ -30,8 +30,8 @@
 #define LAMDA_uf 0.080     //  c_factor
 #define LRATE_mw 0.001     // movie_weights
 #define LAMDA_mw 0.030     // movie_weights
-#define LRATE_bl 0.01 // Baseline LRATE
-#define LAMDA_bl 0.030
+#define LRATE_bl 0.001 // Baseline LRATE
+#define LAMDA_bl 0.060
 #define BETA 0.4
 #define MIN_TIME
 #define MAX_TIME
@@ -169,7 +169,7 @@ void TimeSVDpp::loadData() {
             movieWeights[i][j] = (0.1 - 0.0) * (((double) rand()) / (double) RAND_MAX) + 0.0;
         }
         for (j = 0; j < BINS; j++) {
-            movieBins[i][j] = 0.1 * (((double) rand()) / (double) RAND_MAX);
+            movieBins[i][j] = 0.0; //0.1 * (((double) rand()) / (double) RAND_MAX);
         }
     }
 
@@ -182,7 +182,7 @@ void TimeSVDpp::loadData() {
         // Divide time sums in t_u[userId] by numRated[userId] to get means
         t_u[i] /= (double) numRated[i];
         // Initialize alpha array.
-        alpha[i] = 0.1 * (((double) rand()) / (double) RAND_MAX);
+        alpha[i] = 0.001;
     }
 }
 
@@ -194,8 +194,7 @@ void TimeSVDpp::run() {
     Rating *rating;
     short movieId, time;
     int curTime, binIdx, tmpbin;
-//     clock_t time, tf, tmw, tp, ts, tot_tf, tot_tmw, tot_tp, tot_ts;
-    clock_t tf, tmw, tp, ts, tot_tf, tot_tmw, tot_tp, tot_ts;
+    clock_t itime, tf, tmw, tp, ts, tot_tf, tot_tmw, tot_tp, tot_ts;
 
     // Precalculate the sumMW values for all users.
 //     for (i = 0; i < NUM_USERS; i++) {
@@ -213,7 +212,7 @@ void TimeSVDpp::run() {
 
         k = 0;
         i = 0;
-//         time = clock();
+        itime = clock();
         while (i < NUM_RATINGS) {
 //             cout << "user: " << i << endl;
 //             cout << "numRated: " << numRated[i] << endl;
@@ -292,9 +291,9 @@ void TimeSVDpp::run() {
             calcMWSum(i);
         }
 
-//         time = clock() - time;
+        time = clock() - time;
         cout << "Iteration " << z << " completed." << endl;
-        cout << "RMSE: " << sqrt(sq/NUM_RATINGS); //<< " -- " << ((float) time)/CLOCKS_PER_SEC << endl;
+        cout << "RMSE: " << sqrt(sq/NUM_RATINGS) << " -- " << ((float) itime)/CLOCKS_PER_SEC << endl;
         probeRMSE();
 
         // Save probe for this iter

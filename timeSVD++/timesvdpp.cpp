@@ -194,7 +194,7 @@ void TimeSVDpp::run() {
     int f, i, userId, k;
     double err, p, tmpMW, sq;
     double uBias, mBias;
-    double uf, mf, reg;
+    double uf, mf, decay;
     Rating *rating;
     short movieId, time;
     int curTime, binIdx, tmpbin;
@@ -212,7 +212,7 @@ void TimeSVDpp::run() {
         tot_tmw = 0;
         tot_tp = 0;
         tot_ts = 0;
-        reg = pow(0.9, z);
+        decay = pow(0.9, z);
 
         k = 0;
         i = 0;
@@ -249,27 +249,27 @@ void TimeSVDpp::run() {
 //                 }
 
                 // Update alphas
-                alpha[userId] += (reg * LRATE_bl * (dev(userId, time) * err - LAMDA_bl * alpha[userId]));
+                alpha[userId] += (decay * LRATE_bl * (dev(userId, time) * err - LAMDA_bl * alpha[userId]));
 
 //                 // Update userBins
-//                 userBins[userId][binIdx] += (reg * LRATE_bl * (err - LAMDA_bl * userBins[userId][binIdx]));
+//                 userBins[userId][binIdx] += (decay * LRATE_bl * (err - LAMDA_bl * userBins[userId][binIdx]));
 
                 // Update movieBins
                 tmpbin = bin(time);
-                movieBins[movieId][tmpbin] += (reg * LRATE_bl * (err - LAMDA_bl * movieBins[movieId][tmpbin]));
+                movieBins[movieId][tmpbin] += (decay * LRATE_bl * (err - LAMDA_bl * movieBins[movieId][tmpbin]));
             
                 // train biases
                 uBias = userBias[userId];
                 mBias = movieBias[movieId];
-                userBias[userId] += (reg *LRATE_ub * (err - LAMDA_ub * uBias));
-                movieBias[movieId] += (reg * LRATE_mb * (err - LAMDA_mb * mBias));          
+                userBias[userId] += (decay *LRATE_ub * (err - LAMDA_ub * uBias));
+                movieBias[movieId] += (decay * LRATE_mb * (err - LAMDA_mb * mBias));          
                 
                 for (f = 0; f < NUM_FEATURES; f++) {
                     uf = userFeatures[userId][f];
                     mf = movieFeatures[movieId][f];
-                    userFeatures[userId][f] += (reg * LRATE_uf * (err * mf - LAMDA_uf * uf)); 
+                    userFeatures[userId][f] += (decay * LRATE_uf * (err * mf - LAMDA_uf * uf)); 
                     movieFeatures[movieId][f] += 
-                        (reg * LRATE_mf * (err * (uf + (1.0 / sqrt(numRated[userId])) * sumMW[userId][f]) - LAMDA_mf * mf));
+                        (decay * LRATE_mf * (err * (uf + (1.0 / sqrt(numRated[userId])) * sumMW[userId][f]) - LAMDA_mf * mf));
                     tmpSum[f] += (err * (1.0 / sqrt(numRated[userId])) * mf);
                 }
             }
@@ -282,7 +282,7 @@ void TimeSVDpp::run() {
                 movieId = rating->movieId;
                 for (f = 0; f < NUM_FEATURES; f++) {
                     tmpMW = movieWeights[movieId][f];
-                    movieWeights[movieId][f] += (reg * LRATE_mw * (tmpSum[f] - LAMDA_mw * tmpMW)); 
+                    movieWeights[movieId][f] += (decay * LRATE_mw * (tmpSum[f] - LAMDA_mw * tmpMW)); 
                     // Uptime sumMW so we don't have to recalculate it entirely.
                     sumMW[userId][f] += movieWeights[movieId][f] - tmpMW;
                 }

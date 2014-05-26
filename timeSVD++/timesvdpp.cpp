@@ -82,7 +82,7 @@ TimeSVDpp::TimeSVDpp()
 {
     int f, j, k;
 
-    mdata << "-F=" << NUM_FEATURES << "-LRT_mb" << LRATE_mb << "-LAM_mb=" << LAMDA_mb << "-LRT_ub=" << LRATE_ub << "-LAM_ub=" << LAMDA_ub << "-LRT_mf=" << LRATE_mf << "-LAM_mf=" << LAMDA_mf << "-LRT_uf=" << LRATE_uf << "-LAM_uf" << LAMDA_uf << "-LRT_mw=" << LRATE_mw << "-LAM_mw=" << LAMDA_mw << "-NRTNS=" << NUM_RATINGS << "-NBINS=" << BINS << "-STEP_DEC";
+    mdata << "-F=" << NUM_FEATURES <<  "-NR=" << NUM_RATINGS << "-NB=" << BINS << "-SD";
 
     // Init biases
     for (int i = 0; i < NUM_USERS; i++) {

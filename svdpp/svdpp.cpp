@@ -9,7 +9,7 @@
 #include <time.h>
 
 #include "Rating.hpp"
-#include "BlockTimePreprocessor.hpp"
+// #include "BlockTimePreprocessor.hpp"
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
@@ -49,7 +49,7 @@ private:
     float sumMW[NUM_USERS][NUM_FEATURES];
     double tmpSum[NUM_FEATURES];
     Rating ratings[NUM_RATINGS];
-    BlockTimePreprocessor *btp;
+//     BlockTimePreprocessor *btp;
 //     ofstream rmseOut;
 //     ifstream probe;
     inline double predictRating(short movieId, int userId);
@@ -105,7 +105,7 @@ void SVDpp::loadData() {
     int movieId;
     int date;
     int rating;
-    int i = 0;
+    int j, i = 0;
     int curUser = 0;
     ifstream trainingDta ("../processed_data/train+probe.dta"); 
 //     ifstream trainingDta ("../processed_data/train.dta"); 
@@ -151,8 +151,8 @@ void SVDpp::loadData() {
     }
 
     trainingDta.close();
-    btp = new BlockTimePreprocessor(NUM_BINS, ratings);
-    btp->preprocess(ratings);
+//     btp = new BlockTimePreprocessor(NUM_BINS, ratings);
+//     btp->preprocess(ratings);
 }
 
 void SVDpp::run() {
@@ -301,7 +301,7 @@ inline double SVDpp::predictRating(short movieId, int userId, int date) {
         sum += movieFeatures[f][movieId] * (userFeatures[f][userId] + norm * sumMW[userId][f]);
     }
 
-    sum = btp->postprocess(date, sum);
+//     sum = btp->postprocess(date, sum);
 
     sum = sum > 5 ? 5 : sum;
     sum = sum < 1 ? 1 : sum;

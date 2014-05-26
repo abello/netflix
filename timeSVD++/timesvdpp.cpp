@@ -33,8 +33,8 @@
 #define LRATE_bl 0.001 // Baseline LRATE
 #define LAMDA_bl 0.060
 #define BETA 0.4
-#define MIN_TIME
-#define MAX_TIME
+#define MIN_TIME 1
+#define MAX_TIME 2243
 #define PER_BIN (MAX_TIME - MIN_TIME + 1) / BINS
 #define BINS 30
 
@@ -49,8 +49,8 @@ private:
     double t_u[NUM_USERS]; // t_u, precalculated before run()
 //     double *userBins[NUM_USERS]; // b_{u, t}
     double movieBins[NUM_MOVIES][BINS]; // b_{i, Bin(t)}
-    float userFeatures[NUM_FEATURES][NUM_USERS];
-    double movieFeatures[NUM_FEATURES][NUM_MOVIES];
+    float userFeatures[NUM_USERS][NUM_FEATURES];
+    double movieFeatures[NUM_MOVIES][NUM_FEATURES];
     int numRated[NUM_USERS];
     int ratingLoc[NUM_USERS]; // The first instance of users' rating in the ratings matrix
 
@@ -93,12 +93,16 @@ TimeSVDpp::TimeSVDpp()
     }
 
     // Init features
-    for (f = 0; f < NUM_FEATURES; f++) {
-        for (j = 0; j < NUM_USERS; j++) {
-            userFeatures[f][j] = (-0.002 - (-0.01)) * (((double) rand()) / (double) RAND_MAX) + (-0.01);
+    for (j = 0; j < NUM_USERS; j++) {
+        for (f = 0; f < NUM_FEATURES; f++) {
+            userFeatures[j][f] = (-0.002 - (-0.01)) * (((double) rand()) / (double) RAND_MAX) + (-0.01);
         }
-        for (k = 0; k < NUM_MOVIES; k++) {
-            movieFeatures[f][k] = (0.02 - 0.01) * (((double) rand()) / (double) RAND_MAX) + 0.01;
+    }
+
+    for (j = 0; j < NUM_MOVIES; j++) {
+        for (f = 0; f < NUM_FEATURES; f++) {
+            movieFeatures[j][f] = (0.02 - 0.01) * (((double) rand()) / (double) RAND_MAX) + 0.01;
+
         }
     }
 
@@ -261,10 +265,10 @@ void TimeSVDpp::run() {
                 movieBias[movieId] += (reg * LRATE_mb * (err - LAMDA_mb * mBias));          
                 
                 for (f = 0; f < NUM_FEATURES; f++) {
-                    uf = userFeatures[f][userId];
-                    mf = movieFeatures[f][movieId];
-                    userFeatures[f][userId] += (reg * LRATE_uf * (err * mf - LAMDA_uf * uf)); 
-                    movieFeatures[f][movieId] += 
+                    uf = userFeatures[userId][f];
+                    mf = movieFeatures[movieId][f];
+                    userFeatures[userId][f] += (reg * LRATE_uf * (err * mf - LAMDA_uf * uf)); 
+                    movieFeatures[movieId][f] += 
                         (reg * LRATE_mf * (err * (uf + (1.0 / sqrt(numRated[userId])) * sumMW[userId][f]) - LAMDA_mf * mf));
                     tmpSum[f] += (err * (1.0 / sqrt(numRated[userId])) * mf);
                 }
@@ -344,7 +348,7 @@ inline double TimeSVDpp::predictRating(short movieId, int userId, int time, shor
         movieBins[movieId][bin(time)];
 //         userBins[userId][timeIdx] + movieBins[movieId][bin(time)];
     for (int f = 0; f < NUM_FEATURES; f++) {
-        sum += movieFeatures[f][movieId] * (userFeatures[f][userId] + norm * sumMW[userId][f]);
+        sum += movieFeatures[movieId][f] * (userFeatures[userId][f] + norm * sumMW[userId][f]);
     }
     sum = sum > 5 ? 5 : sum;
     sum = sum < 1 ? 1 : sum;
@@ -358,7 +362,7 @@ inline double TimeSVDpp::predictRating(short movieId, int userId, short time) {
         movieBins[movieId][bin(time)];
 //         userBins[userId][time] + movieBins[movieId][bin(time)];
     for (int f = 0; f < NUM_FEATURES; f++) {
-        sum += movieFeatures[f][movieId] * (userFeatures[f][userId] + norm * sumMW[userId][f]);
+        sum += movieFeatures[movieId][f] * (userFeatures[userId][f] + norm * sumMW[userId][f]);
     }
     sum = sum > 5 ? 5 : sum;
     sum = sum < 1 ? 1 : sum;
@@ -435,13 +439,13 @@ void TimeSVDpp::save() {
     }
     for (i = 0; i < NUM_USERS; i++) {
         for (j = 0; j < NUM_FEATURES; j++) {
-            saved << userFeatures[j][i] << ' ';
+            saved << userFeatures[i][j] << ' ';
         }
         saved << '\n';
     }
     for (i = 0; i < NUM_MOVIES; i++) {
         for (j = 0; j < NUM_FEATURES; j++) {
-            saved << movieFeatures[j][i] << ' ';
+            saved << movieFeatures[i][j] << ' ';
         }
         saved << '\n';
     }

@@ -93,13 +93,16 @@ def main():
     _f_PP_200_8 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_PP_300_8 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
 
+    _f_PPD_50_8 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_PPD_100_8 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
+    _f_PPD_300_8 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
 
     _f_RBM_200_181 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_RBM_200_240 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_RBM_200_349 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_RBM_400_394 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_RBM_200_422 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
+    _f_RBM_400_389 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
 
 #     f5 =  open("results/probe-F=5-E=20,20-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
 #     f10 = open("results/probe-F=10-E=10,10-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
@@ -116,10 +119,14 @@ def main():
     f_PP_50_8 = open("results/pre_blending/probe-F=50-LRT_mb0.003-LAM_mb=0-LRT_ub=0.012-LAM_ub=0.03-LRT_mf=0.011-LAM_mf=0.006-LRT_uf=0.006-LAM_uf0.08-LRT_mw=0.001-LAM_mw=0.03-NBINS=5", "r")
     f_PP_100_8 = open("results/pre_blending/probe7-F=100-LRT_mb0.003-LAM_mb=0-LRT_ub=0.012-LAM_ub=0.03-LRT_mf=0.011-LAM_mf=0.006-LRT_uf=0.006-LAM_uf0.08-LRT_mw=0.001-LAM_mw=0.03-NBINS=5", "r")
     f_PP_200_8 = open("results/pre_blending/probe7-F=200-LRT_mb0.003-LAM_mb=0-LRT_ub=0.012-LAM_ub=0.03-LRT_mf=0.011-LAM_mf=0.006-LRT_uf=0.006-LAM_uf0.08-LRT_mw=0.001-LAM_mw=0.03-NBINS=5", "r")
-    f_PP_300_8 = open("results/pre_blending/probe7-F=300-NR=98291669-NB=5-SD", "r")
+    f_PP_300_8 = open("results/pre_blending/probe7-F=300-NR=98291669-NB=5", "r")
 
     # Step decay
-    f_PPD_100_8 = open("results/pre_blending/probe7-F=100-NR=98291669-NB=5-SD", "r")
+    f_PPD_50_8 = open("results/pre_blending/probe17-F=50--NR=98291669-NBINS=5-SD", "r")
+
+    # This should be 16 instead of 7, but for some reason 7 performs better
+    f_PPD_100_8 = open("results/pre_blending/probe16-F=100-NR=98291669-NB=5-SD", "r")
+    f_PPD_300_8 = open("results/pre_blending/probe14-F=300-NR=98291669-NB=5-SD", "r")
 
 
     # RBMs
@@ -128,6 +135,7 @@ def main():
     f_RBM_200_349 = open("results/pre_blending/probe-rbm-200-349", "r")
     f_RBM_400_394 = open("results/pre_blending/probe-rbm-400-394", "r")
     f_RBM_200_422 = open("results/pre_blending/probe-rbm-200-422", "r")
+    f_RBM_400_389 = open("results/pre_blending/probe-rbm-400-389", "r")
 
     for i in xrange(PROBE_SIZE):
         _f_20_1[i] = float(f20_1.readline().rstrip())
@@ -144,7 +152,9 @@ def main():
         _f_PP_200_8[i] = float(f_PP_200_8.readline().rstrip())
         _f_PP_300_8[i] = float(f_PP_300_8.readline().rstrip())
 
+        _f_PPD_50_8[i] = float(f_PPD_50_8.readline().rstrip())
         _f_PPD_100_8[i] = float(f_PPD_100_8.readline().rstrip())
+        _f_PPD_300_8[i] = float(f_PPD_300_8.readline().rstrip())
 
 
         _f_RBM_200_181[i] = float(f_RBM_200_181.readline().rstrip())
@@ -152,6 +162,7 @@ def main():
         _f_RBM_200_349[i] = float(f_RBM_200_349.readline().rstrip())
         _f_RBM_400_394[i] = float(f_RBM_400_394.readline().rstrip())
         _f_RBM_200_422[i] = float(f_RBM_200_422.readline().rstrip())
+        _f_RBM_400_389[i] = float(f_RBM_400_389.readline().rstrip())
 
     #
     # NOTE: *TRIPLE* check these settings. As this code is really messy, it's easy to 
@@ -172,13 +183,16 @@ def main():
     f_PP_200_8.close()
     f_PP_300_8.close()
 
+    f_PPD_50_8.close()
     f_PPD_100_8.close()
+    f_PPD_300_8.close()
 
     f_RBM_200_181.close()
     f_RBM_200_240.close()
     f_RBM_200_349.close()
     f_RBM_400_394.close()
     f_RBM_200_422.close()
+    f_RBM_400_389.close()
 
 
     def f_20_1(x):
@@ -221,8 +235,16 @@ def main():
         return _f_PP_300_8[x]
 
     
+
+    def f_PPD_50_8(x):
+        return _f_PPD_50_8[x]
+
     def f_PPD_100_8(x):
         return _f_PPD_100_8[x]
+
+    def f_PPD_300_8(x):
+        return _f_PPD_300_8[x]
+
 
 
 
@@ -241,8 +263,13 @@ def main():
 
     def f_RBM_200_422(x):
         return _f_RBM_200_422[x]
+    
+    # Not using
+    def f_RBM_400_389(x):
+        return _f_RBM_400_389[x]
 
-    funcs = [f_20_1, f_20_2, f_50_1, f_100_1, f_100_2, f_GC_07, f_GC_13, f_GC_29, f_PP_50_30_NA, f_PP_50_8, f_PP_100_8, f_PP_200_8, f_PP_300_8, f_PPD_100_8, f_RBM_200_240, f_RBM_200_349, f_RBM_400_394, f_RBM_200_422]
+
+    funcs = [f_20_1, f_20_2, f_50_1, f_100_1, f_100_2, f_GC_07, f_GC_13, f_GC_29, f_PP_50_30_NA, f_PP_50_8, f_PP_100_8, f_PP_200_8, f_PP_300_8, f_PPD_50_8, f_PPD_100_8, f_PPD_300_8, f_RBM_200_240, f_RBM_200_349, f_RBM_400_394, f_RBM_200_422]
 
     blender(blend_dta, funcs)
     

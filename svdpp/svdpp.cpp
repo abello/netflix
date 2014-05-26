@@ -115,10 +115,9 @@ void SVDpp::loadData() {
     }
 
     // Initialize ratingLoc to -1
-    for (i = 0; i < NUM_USERS; i++) {
-        ratingLoc[i] = -1;
+    for (j = 0; j < NUM_USERS; j++) {
+        ratingLoc[j] = -1;
     }
-    i = 0;
 
     while (getline(trainingDta, line)) {
         memcpy(c_line, line.c_str(), MAX_CHARS_PER_LINE);

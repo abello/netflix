@@ -97,6 +97,8 @@ def main():
     _f_PPD_100_8 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_PPD_300_8 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
 
+    _f_PPD_300_2 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
+
     _f_RBM_200_181 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_RBM_200_240 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_RBM_200_349 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
@@ -130,6 +132,7 @@ def main():
     # This should be 16 instead of 7, but for some reason 7 performs better
     f_PPD_100_8 = open("results/pre_blending/probe16-F=100-NR=98291669-NB=5-SD", "r")
     f_PPD_300_8 = open("results/pre_blending/probe14-F=300-NR=98291669-NB=5-SD", "r")
+    f_PPD_300_2 = open("results/pre_blending/probe19-F=300-NR=98291669-NB=5-SD-TBS", "r")
 
 
     # RBMs
@@ -160,6 +163,7 @@ def main():
         _f_PPD_50_8[i] = float(f_PPD_50_8.readline().rstrip())
         _f_PPD_100_8[i] = float(f_PPD_100_8.readline().rstrip())
         _f_PPD_300_8[i] = float(f_PPD_300_8.readline().rstrip())
+        _f_PPD_300_2[i] = float(f_PPD_300_2.readline().rstrip())
 
 
         _f_RBM_200_181[i] = float(f_RBM_200_181.readline().rstrip())
@@ -193,6 +197,7 @@ def main():
     f_PPD_50_8.close()
     f_PPD_100_8.close()
     f_PPD_300_8.close()
+    f_PPD_300_2.close()
 
     f_RBM_200_181.close()
     f_RBM_200_240.close()
@@ -255,6 +260,11 @@ def main():
     def f_PPD_300_8(x):
         return _f_PPD_300_8[x]
 
+    def f_PPD_300_2(x):
+        return _f_PPD_300_2[x]
+
+
+
 
 
 
@@ -284,7 +294,7 @@ def main():
 
 
 
-    funcs = [f_20_1, f_20_2, f_50_1, f_100_1, f_100_2, f_GC_07, f_GC_13, f_GC_29, f_PP_50_30_NA, f_PP_50_8, f_PP_100_8, f_PP_200_8, f_PP_300_8, f_PPD_50_8, f_PPD_100_8, f_PPD_300_8, f_RBM_200_240, f_RBM_200_349, f_RBM_400_394, f_RBM_200_422, f_KNN]
+    funcs = [f_20_1, f_20_2, f_50_1, f_100_1, f_100_2, f_GC_07, f_GC_13, f_GC_29, f_PP_50_30_NA, f_PP_50_8, f_PP_100_8, f_PP_200_8, f_PP_300_8, f_PPD_50_8, f_PPD_100_8, f_PPD_300_8, f_PPD_300_2, f_RBM_200_240, f_RBM_200_349, f_RBM_400_394, f_RBM_200_422, f_KNN]
 
     blender(blend_dta, funcs)
     

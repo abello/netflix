@@ -13,14 +13,14 @@
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
-#define NUM_RATINGS 98291669
-// #define NUM_RATINGS 99666408
+// #define NUM_RATINGS 98291669
+#define NUM_RATINGS 99666408
 #define GLOBAL_AVG 3.512599976023349
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_EPOCHS 30
-#define NUM_FEATURES 300
+#define NUM_EPOCHS 25
+#define NUM_FEATURES 50 
 #define LRATE_mb 0.003     // m_bias
 #define LAMDA_mb 0.0       // m_bias
 #define LRATE_ub 0.012     // c_bias
@@ -33,6 +33,9 @@
 #define LAMDA_mw 0.030     // movie_weights
 #define LRATE_mbn 0.012
 #define LAMDA_mbn 0.060
+#define LRATE_au 0.012
+#define LAMDA_au 0.060
+#define BETA 0.4
 #define NUM_BINS 5
 
 
@@ -45,6 +48,8 @@ private:
     float userFeatures[NUM_USERS][NUM_FEATURES];
     double movieFeatures[NUM_MOVIES][NUM_FEATURES];
     double movieBins[NUM_MOVIES][NUM_BINS];
+    double t_u[NUM_USERS];
+    double alpha[NUM_USERS]; // alpha_u
     int numRated[NUM_USERS];
     int ratingLoc[NUM_USERS]; // The first instance of users' rating in the ratings matrix
 
@@ -56,7 +61,8 @@ private:
 //     ofstream rmseOut;
 //     ifstream probe;
     inline double predictRating(short movieId, int userId, short date); 
-    int bin(short date);
+    inline int bin(short date);
+    inline double dev(int userId, short time); 
     void outputRMSE(short numFeats);
     stringstream mdata;
 public:
@@ -75,7 +81,7 @@ SVDpp::SVDpp()
 {
     int f, j, k;
 
-    mdata << "-F=" << NUM_FEATURES << "-NR=" << NUM_RATINGS << "-NB=" << NUM_BINS << "-SD-TBS";
+    mdata << "-F=" << NUM_FEATURES << "-NR=" << NUM_RATINGS << "-NB=" << NUM_BINS << "-SD-TBS" << "-AU";
 
     // Init biases
     for (int i = 0; i < NUM_USERS; i++) {
@@ -112,8 +118,8 @@ void SVDpp::loadData() {
     int rating;
     int j, i = 0;
     int curUser = 0;
-//     ifstream trainingDta ("../processed_data/train+probe.dta"); 
-    ifstream trainingDta ("../processed_data/train.dta"); 
+    ifstream trainingDta ("../processed_data/train+probe.dta"); 
+//     ifstream trainingDta ("../processed_data/train.dta"); 
     if (trainingDta.fail()) {
         cout << "train.dta: Open failed.\n";
         exit(-1);
@@ -122,6 +128,7 @@ void SVDpp::loadData() {
     // Initialize ratingLoc to -1
     for (j = 0; j < NUM_USERS; j++) {
         ratingLoc[j] = -1;
+        t_u[j] = 0.0;
     }
 
     while (getline(trainingDta, line)) {
@@ -134,6 +141,7 @@ void SVDpp::loadData() {
         ratings[i].movieId = (short) movieId;
         ratings[i].date = (short) date;
         ratings[i].rating = rating;
+        t_u[userId] += date;
 //         ratings[i].cache = 0.0; // set to 0 temporarily.
         if (ratingLoc[userId] == -1) {
             ratingLoc[userId] = i; // Store the pointer to this rating for this user.
@@ -146,6 +154,11 @@ void SVDpp::loadData() {
             numRated[userId]++;
             curUser = userId;
         }
+    }
+
+    for (int i = 0; i < NUM_USERS; i++) {
+        t_u[i] /= (double) numRated[i];
+        alpha[i] = 0.0;
     }
     
     // Initialize movie weights
@@ -219,6 +232,7 @@ void SVDpp::run() {
 //             tot_ts += clock() - ts;
             
                 movieBins[movieId][bin(date)] += (reg * LRATE_mbn * (err - LAMDA_mbn * movieBins[movieId][bin(date)]));
+                alpha[userId] += (reg * LRATE_au * (err * dev(userId, date) - LAMDA_au * alpha[userId]));
                 // train biases
                 uBias = userBias[userId];
                 mBias = movieBias[movieId];
@@ -273,11 +287,17 @@ void SVDpp::run() {
     }
 }
 
-int SVDpp::bin(short date) {
+inline int SVDpp::bin(short date) {
     int idx = date / (2243 / NUM_BINS);
     if (idx == NUM_BINS) 
         idx--;
     return idx;
+}
+
+inline double SVDpp::dev(int userId, short time) {
+    short diff = time - t_u[userId];
+    int sign = diff > 0 ? 1 : -1;
+    return sign * pow(sign * diff, BETA);
 }
 
 inline void SVDpp::calcMWSum(int userId) {
@@ -301,7 +321,7 @@ inline void SVDpp::calcMWSum(int userId) {
 inline double SVDpp::predictRating(short movieId, int userId, short date) {
     double sum = GLOBAL_AVG;
     double norm = 1.0 / sqrt(numRated[userId]);
-    sum += userBias[userId] + movieBias[movieId] + movieBins[movieId][bin(date)];
+    sum += userBias[userId] + movieBias[movieId]; //+ movieBins[movieId][bin(date)];
     for (int f = 0; f < NUM_FEATURES; f++) {
         sum += movieFeatures[movieId][f] * (userFeatures[userId][f] + norm * sumMW[userId][f]);
     }
@@ -399,7 +419,7 @@ void SVDpp::probe(int iter = NUM_EPOCHS) {
     char c_line[MAX_CHARS_PER_LINE];
     stringstream fname;
     int userId, movieId, date;
-    fname << "../results/probe" << iter << mdata.str();
+    fname << "../results/probeGraph" << iter << mdata.str();
 
     ofstream saved(fname.str().c_str(), ios::trunc);
     ifstream p("../processed_data/probe.dta");

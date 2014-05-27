@@ -8,7 +8,7 @@
 #include <cstdlib>
 #include <time.h>
 #include "Rating.hpp"
-#include "BlockTimePreprocessor.hpp"
+// #include "BlockTimePreprocessor.hpp"
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
@@ -18,9 +18,9 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_FEATURES 100
+#define NUM_FEATURES 50 
 #define MIN_EPOCHS 0
-#define MAX_EPOCHS 160
+#define MAX_EPOCHS 100
 #define MIN_IMPROVEMENT 0.0001
 #define LRATE 0.001
 #define K_MOVIE 25
@@ -36,7 +36,7 @@
 
 
 // calculate and save out of sample RMSE
-// #define RMSEOUT
+#define RMSEOUT
 
 
 // Created using this article and some code: http://www.timelydevelopment.com/demos/NetflixPrize.aspx
@@ -50,7 +50,7 @@ private:
     double userFeatures[NUM_FEATURES][NUM_USERS];
     double movieFeatures[NUM_FEATURES][NUM_MOVIES];
     Rating ratings[NUM_RATINGS];
-    BlockTimePreprocessor *btp;
+//     BlockTimePreprocessor *btp;
 //     ofstream rmseOut;
 //     ifstream probe;
     inline double predictRating(short movieId, int userId, int feature, double cached, bool addTrailing);
@@ -75,7 +75,7 @@ SVD::SVD()
 {
     int f, j, k;
 
-    mdata << "-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE << "-SC-E=" << SC_EPOCHS << "-SCC=" << SC_CHANCES << "-NBINS=" << NUM_BINS;
+    mdata << "-G-" << "-F=" << NUM_FEATURES << "-E=" << MIN_EPOCHS << "," << MAX_EPOCHS << "-k=" << K << "-l=" << LRATE << "-SC-E=" << SC_EPOCHS << "-SCC=" << SC_CHANCES << "-NBINS=" << NUM_BINS;
 
 
 //     srand(time(NULL));
@@ -119,8 +119,8 @@ void SVD::loadData() {
         i++;
     }
     trainingDta.close();
-    btp = new BlockTimePreprocessor(NUM_BINS, ratings);
-    btp->preprocess(ratings);
+//     btp = new BlockTimePreprocessor(NUM_BINS, ratings);
+//     btp->preprocess(ratings);
 }
 
 void SVD::initCache() {
@@ -296,7 +296,7 @@ inline double SVD::predictRating(short movieId, int userId, int date, bool train
 
     if (!training) {
         sum += movieAvgs[movieId] + userOffsets[userId];
-        sum = btp->postprocess(date, sum);
+//         sum = btp->postprocess(date, sum);
 
         if (sum > 5) {
             sum = 5;
@@ -319,9 +319,9 @@ void SVD::outputRMSE(short numFeats) {
     double predicted, actual; // ratings
     double err, sq, rmse;
     stringstream fname;
-    fname << "rmseOut" << mdata.str();
-    ofstream rmseOut(fname.str().c_str(), ios::app);
-    ifstream probe("../results/probe.dta");
+    fname << "rmseOut" << numFeats << mdata.str();
+    ofstream rmseOut(fname.str().c_str(), ios::trunc);
+    ifstream probe("../processed_data/probe.dta");
     if (!rmseOut.is_open() || !probe.is_open()) {
         cout << "Files for RMSE output: Open failed.\n";
         exit(-1);

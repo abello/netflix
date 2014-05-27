@@ -1,10 +1,11 @@
 #ifndef RATING_HPP
 #define RATING_HPP
+#include <stdint.h>
 
 struct Rating {
-    int userId;
-    short movieId;
-    short date;
+    uint32_t userId;
+    uint16_t movieId;
+    uint16_t date;
     float rating;
 };
 

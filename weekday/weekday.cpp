@@ -63,6 +63,11 @@ private:
 
     float m_users[NUM_USERS][7];
     float m_movies[NUM_MOVIES][7];
+    float m_weeks[7];
+
+    unsigned int n_users[NUM_USERS][7];
+    unsigned int n_movies[NUM_MOVIES][7];
+    unsigned int n_weeks[7];
 public:
     Weekday();
     ~Weekday() { };
@@ -79,7 +84,7 @@ Weekday::Weekday()
 {
     int f, j, k;
 
-    mdata << "-F=" << NUM_FEATURES << "-NR=" << NUM_RATINGS << "-NB=" << NUM_BINS << "-SD-TBS";
+    mdata << "weekday";
 
     // Init biases
     for (int i = 0; i < NUM_USERS; i++) {
@@ -179,8 +184,6 @@ void Weekday::run() {
     // weekday
     int wd;
 
-    unsigned int n_users[NUM_USERS][7];
-    unsigned int n_movies[NUM_MOVIES][7];
 
     for (i = 0; i < NUM_USERS; i++) {
         for (w = 0; w < 7; w++) {
@@ -196,6 +199,11 @@ void Weekday::run() {
         }
     }
 
+    for (w = 0; w < 7; w++) {
+        m_weeks[w] = 0;
+        n_weeks[w] = 0;
+    }
+
 
 
     for (i = 0; i < NUM_RATINGS; i++) {
@@ -205,6 +213,9 @@ void Weekday::run() {
         date = rating->date;
 
         wd = date % 7;
+
+        m_weeks[wd] += rating->rating;
+        n_weeks[wd] += 1;
 
 
 
@@ -230,6 +241,12 @@ void Weekday::run() {
             if (n_movies[i][w] != 0) {
                 m_movies[i][w] = m_movies[i][w] / n_movies[i][w];
             }
+        }
+    }
+
+    for (w = 0; w < 7; w++) {
+        if (n_weeks[w] != 0) {
+            m_weeks[w] = m_weeks[w] / n_weeks[w];
         }
     }
 
@@ -263,14 +280,34 @@ inline void Weekday::calcMWSum(int userId) {
 // Used for train
 inline double Weekday::predictRating(short movieId, int userId, short date) {
     double sum = GLOBAL_AVG;
-    double norm = 1.0 / sqrt(numRated[userId]);
-    sum += userBias[userId] + movieBias[movieId] + movieBins[movieId][bin(date)];
-    for (int f = 0; f < NUM_FEATURES; f++) {
-        sum += movieFeatures[movieId][f] * (userFeatures[userId][f] + norm * sumMW[userId][f]);
+    double r_bar, r_tilde, r_hat;
+    date = date % 7;
+
+    double alpha, beta, gamma, delta, epsilon, v;
+    alpha = 5.7;
+    beta = 7.8;
+    gamma = 1.1 * pow(10, 16);
+    delta = 0.13;
+    epsilon = 9.6 * pow(10, -12);
+    v = 1.28;
+
+    r_bar = m_users[userId][date] * pow(n_users[userId][date], v) / 
+                (pow(n_users[userId][date], v) + alpha);
+
+    r_tilde = (m_movies[movieId][date] * pow(n_movies[movieId][date], epsilon) + r_bar * beta) / 
+                (pow(n_movies[movieId][date], epsilon) + beta);
+
+    r_hat = (m_weeks[date] * pow(n_weeks[date], delta) + r_tilde * gamma) / 
+                (pow(n_weeks[date], delta) + gamma);
+
+    if (r_hat < 1) {
+        r_hat = 1;
     }
-    sum = sum > 5 ? 5 : sum;
-    sum = sum < 1 ? 1 : sum;
-    return sum;
+    else if (r_hat > 5) {
+        r_hat = 5;
+    }
+
+    return r_hat;
 }
 
 /* Generate out of sample RMSE for the current number of features, then
@@ -312,7 +349,7 @@ void Weekday::output(int iter = NUM_EPOCHS) {
     int date;
     double rating;
     stringstream fname;
-    fname << "../results/output" << iter << mdata.str();
+    fname << "../results/output" << mdata.str();
 
     ifstream qual ("../processed_data/qual.dta");
     ofstream out (fname.str().c_str(), ios::trunc); 
@@ -427,7 +464,7 @@ int main() {
     Weekday *model = new Weekday();
     model->loadData();
     model->run();
-//     svdpp->output();
+    model->output();
 //     svdpp->save();
 //     svdpp->probe();
     cout << "Weekday completed.\n";

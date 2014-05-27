@@ -1,4 +1,4 @@
-CFLAGS= -g -c -O0 -march=native -flto -fwhole-program -Wall -Winline
+CFLAGS= -g -c -O3 -march=native -flto -fwhole-program -Wall -Winline
 
 all: weekday
 

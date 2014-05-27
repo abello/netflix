@@ -14,14 +14,14 @@
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
-// #define NUM_RATINGS 98291669
-#define NUM_RATINGS 99666408
+#define NUM_RATINGS 98291669
+// #define NUM_RATINGS 99666408
 #define GLOBAL_AVG 3.512599976023349
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
 #define NUM_EPOCHS 25
-#define NUM_FEATURES 50 
+#define NUM_FEATURES 100 
 #define LRATE_mb 0.003     // m_bias
 #define LAMDA_mb 0.0       // m_bias
 #define LRATE_ub 0.012     // c_bias
@@ -85,7 +85,7 @@ SVDpp::SVDpp()
 {
     int f, j, k;
 
-    mdata << "-F=" << NUM_FEATURES << "-NR=" << NUM_RATINGS << "-NB=" << NUM_BINS << "-SD-TBS" << "-AU";
+    mdata << "-F=" << NUM_FEATURES << "-NR=" << NUM_RATINGS << "-NB=" << NUM_BINS << "-SD-TBS" << "-Time";
 
     // Init biases
     for (int i = 0; i < NUM_USERS; i++) {
@@ -122,8 +122,8 @@ void SVDpp::loadData() {
     int rating;
     int j, i = 0;
     int curUser = 0;
-    ifstream trainingDta ("../processed_data/train+probe.dta"); 
-//     ifstream trainingDta ("../processed_data/train.dta"); 
+//     ifstream trainingDta ("../processed_data/train+probe.dta"); 
+    ifstream trainingDta ("../processed_data/train.dta"); 
     if (trainingDta.fail()) {
         cout << "train.dta: Open failed.\n";
         exit(-1);
@@ -236,7 +236,7 @@ void SVDpp::run() {
 //             tot_ts += clock() - ts;
             
                 movieBins[movieId][bin(date)] += (reg * LRATE_mbn * (err - LAMDA_mbn * movieBins[movieId][bin(date)]));
-                alpha[userId] += (reg * LRATE_au * (err * dev(userId, date) - LAMDA_au * alpha[userId]));
+                alpha[userId] += (reg * LRATE_au * (err * (dev(userId, date)/25.0) - LAMDA_au * alpha[userId]));
                 userBins[userId][date] += (reg * LRATE_ubn * (err - LAMDA_ubn * userBins[userId][date]));
                 // train biases
                 uBias = userBias[userId];
@@ -284,7 +284,7 @@ void SVDpp::run() {
         probeRMSE();
 
         // Save probe for this iter
-//         probe(z);
+        probe(z);
         output(z);
 
         cout << "=================================" << endl;
@@ -424,7 +424,7 @@ void SVDpp::probe(int iter = NUM_EPOCHS) {
     char c_line[MAX_CHARS_PER_LINE];
     stringstream fname;
     int userId, movieId, date;
-    fname << "../results/probeGraph" << iter << mdata.str();
+    fname << "../results/probe" << iter << mdata.str();
 
     ofstream saved(fname.str().c_str(), ios::trunc);
     ifstream p("../processed_data/probe.dta");

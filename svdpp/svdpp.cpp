@@ -85,7 +85,7 @@ SVDpp::SVDpp()
 {
     int f, j, k;
 
-    mdata << "-F=" << NUM_FEATURES << "-NR=" << NUM_RATINGS << "-NB=" << NUM_BINS << "-SD-TBS" << "-AU";
+    mdata << "-F=" << NUM_FEATURES << "-NR=" << NUM_RATINGS << "-NB=" << NUM_BINS << "-SD-TBS" << "-Time";
 
     // Init biases
     for (int i = 0; i < NUM_USERS; i++) {
@@ -236,7 +236,7 @@ void SVDpp::run() {
 //             tot_ts += clock() - ts;
             
                 movieBins[movieId][bin(date)] += (reg * LRATE_mbn * (err - LAMDA_mbn * movieBins[movieId][bin(date)]));
-                alpha[userId] += (reg * LRATE_au * (err * dev(userId, date) - LAMDA_au * alpha[userId]));
+                alpha[userId] += (reg * LRATE_au * (err * (dev(userId, date)/25.0) - LAMDA_au * alpha[userId]));
                 userBins[userId][date] += (reg * LRATE_ubn * (err - LAMDA_ubn * userBins[userId][date]));
                 // train biases
                 uBias = userBias[userId];

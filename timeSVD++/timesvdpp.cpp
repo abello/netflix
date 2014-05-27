@@ -18,24 +18,35 @@
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
-#define NUM_EPOCHS 25 
+#define NUM_EPOCHS 30 
 #define NUM_FEATURES 50 
-#define LRATE_mb 0.003     // m_bias
-#define LAMDA_mb 0.0       // m_bias
-#define LRATE_ub 0.012     // c_bias
-#define LAMDA_ub 0.030     // c_bias
-#define LRATE_mf 0.011     // m_factor
-#define LAMDA_mf 0.006     // m_factor
-#define LRATE_uf 0.006     //  c_factor
-#define LAMDA_uf 0.080     //  c_factor
-#define LRATE_mw 0.001     // movie_weights
-#define LAMDA_mw 0.030     // movie_weights
-#define LRATE_bl 0.001 // Baseline LRATE
-#define LAMDA_bl 0.060
+#define LRATE_mb 0.003     
+// m_bias
+#define LAMDA_mb 0.0       
+// m_bias
+#define LRATE_ub 0.012     
+// c_bias
+#define LAMDA_ub 0.030     
+// c_bias
+#define LRATE_mf 0.011     
+// m_factor
+#define LAMDA_mf 0.006     
+// m_factor
+#define LRATE_uf 0.006     
+//  c_factor
+#define LAMDA_uf 0.080     
+//  c_factor
+#define LRATE_mw 0.001     
+// movie_weights
+#define LAMDA_mw 0.030     
+// movie_weights
+#define LRATE_mbn 0 
+//0.006
+#define LAMDA_mbn 0.080
 #define BETA 0.4
 #define MIN_TIME 1
 #define MAX_TIME 2243
-#define PER_BIN (MAX_TIME - MIN_TIME + 1) / BINS
+#define PER_BIN (MAX_TIME - MIN_TIME + 1.0) / BINS
 #define BINS 30
 
 
@@ -45,10 +56,10 @@ class TimeSVDpp {
 private:
     double userBias[NUM_USERS]; // b_u
     double movieBias[NUM_MOVIES]; // b_i
-    double alpha[NUM_USERS]; // alpha_u
-    double t_u[NUM_USERS]; // t_u, precalculated before run()
+//     double alpha[NUM_USERS]; // alpha_u
+//     double t_u[NUM_USERS]; // t_u, precalculated before run()
 //     double *userBins[NUM_USERS]; // b_{u, t}
-    double movieBins[NUM_MOVIES][BINS]; // b_{i, Bin(t)}
+//     double movieBins[NUM_MOVIES][BINS]; // b_{i, Bin(t)}
     float userFeatures[NUM_USERS][NUM_FEATURES];
     double movieFeatures[NUM_MOVIES][NUM_FEATURES];
     int numRated[NUM_USERS];
@@ -95,13 +106,13 @@ TimeSVDpp::TimeSVDpp()
     // Init features
     for (j = 0; j < NUM_USERS; j++) {
         for (f = 0; f < NUM_FEATURES; f++) {
-            userFeatures[j][f] = (-0.002 - (-0.01)) * (((double) rand()) / (double) RAND_MAX) + (-0.01);
+            userFeatures[j][f] = 0; //(-0.002 - (-0.01)) * (((double) rand()) / (double) RAND_MAX) + (-0.01);
         }
     }
 
     for (j = 0; j < NUM_MOVIES; j++) {
         for (f = 0; f < NUM_FEATURES; f++) {
-            movieFeatures[j][f] = (0.02 - 0.01) * (((double) rand()) / (double) RAND_MAX) + 0.01;
+            movieFeatures[j][f] = 0; //(0.02 - 0.01) * (((double) rand()) / (double) RAND_MAX) + 0.01;
 
         }
     }
@@ -131,7 +142,7 @@ void TimeSVDpp::loadData() {
     for (j = 0; j < NUM_USERS; j++) {
         userDays[j] = 0; 
         ratingLoc[j] = -1; // Initialize ratingLoc to -1
-        t_u[j] = 0.0; // Initialize the t_u array to all zeros. 
+//         t_u[j] = 0.0; // Initialize the t_u array to all zeros. 
     }
 
     while (getline(trainingDta, line)) {
@@ -145,7 +156,7 @@ void TimeSVDpp::loadData() {
         ratings[i].time = (short) time;
         ratings[i].rating = rating;
 
-        t_u[userId] += time;
+//         t_u[userId] += time;
 
         if (ratingLoc[userId] == -1) {
             ratingLoc[userId] = i; // Store the pointer to this rating for this user.
@@ -170,11 +181,11 @@ void TimeSVDpp::loadData() {
     // Initialize movie weights
     for (i = 0; i < NUM_MOVIES; i++) {
         for (j = 0; j < NUM_FEATURES; j++) {
-            movieWeights[i][j] = (0.1 - 0.0) * (((double) rand()) / (double) RAND_MAX) + 0.0;
+            movieWeights[i][j] = 0; //(0.1 - 0.0) * (((double) rand()) / (double) RAND_MAX) + 0.0;
         }
-        for (j = 0; j < BINS; j++) {
-            movieBins[i][j] = 0.0; //0.1 * (((double) rand()) / (double) RAND_MAX);
-        }
+//         for (j = 0; j < BINS; j++) {
+//             movieBins[i][j] = 0.0; 
+//         }
     }
 
     // Initialize userBins arrays.
@@ -184,9 +195,9 @@ void TimeSVDpp::loadData() {
 //             userBins[i][j] = 0.1 * (((double) rand()) / (double) RAND_MAX);
 //         }
         // Divide time sums in t_u[userId] by numRated[userId] to get means
-        t_u[i] /= (double) numRated[i];
+//         t_u[i] /= (double) numRated[i];
         // Initialize alpha array.
-        alpha[i] = 0.001;
+//         alpha[i] = 0.001;
     }
 }
 
@@ -248,15 +259,15 @@ void TimeSVDpp::run() {
 //                     binIdx++;
 //                 }
 
-                // Update alphas
-                alpha[userId] += (decay * LRATE_bl * (dev(userId, time) * err - LAMDA_bl * alpha[userId]));
+//                 // Update alphas
+//                 alpha[userId] += (LRATE_bl * (dev(userId, time) * err - LAMDA_bl * alpha[userId]));
 
 //                 // Update userBins
 //                 userBins[userId][binIdx] += (decay * LRATE_bl * (err - LAMDA_bl * userBins[userId][binIdx]));
 
                 // Update movieBins
-                tmpbin = bin(time);
-                movieBins[movieId][tmpbin] += (decay * LRATE_bl * (err - LAMDA_bl * movieBins[movieId][tmpbin]));
+//                 tmpbin = bin(time);
+//                 movieBins[movieId][tmpbin] += (decay * LRATE_mbn * (err - LAMDA_mbn * movieBins[movieId][tmpbin]));
             
                 // train biases
                 uBias = userBias[userId];
@@ -326,12 +337,12 @@ inline void TimeSVDpp::calcMWSum(int userId) {
     }
 }
 
-inline double TimeSVDpp::dev(int userId, short time) {
-    short diff = time - t_u[userId];
-    int sign = diff > 0 ? 1 : -1;
-    return sign * pow(sign * diff, BETA);
-
-}
+// inline double TimeSVDpp::dev(int userId, short time) {
+//     short diff = time - t_u[userId];
+//     int sign = diff > 0 ? 1 : -1;
+//     return sign * pow(sign * diff, BETA);
+// 
+// }
 
 inline int TimeSVDpp::bin(short time) {
     int bin = time / PER_BIN;
@@ -344,9 +355,8 @@ inline int TimeSVDpp::bin(short time) {
 inline double TimeSVDpp::predictRating(short movieId, int userId, int time, short timeIdx) {
     double sum = GLOBAL_AVG;
     double norm = 1.0 / sqrt(numRated[userId]);
-    sum += userBias[userId] + movieBias[movieId] + alpha[userId] * dev(userId, time) + 
-        movieBins[movieId][bin(time)];
-//         userBins[userId][timeIdx] + movieBins[movieId][bin(time)];
+    sum += userBias[userId] + movieBias[movieId];  //alpha[userId] * dev(userId, time) + 
+//         movieBins[movieId][bin(time)];
     for (int f = 0; f < NUM_FEATURES; f++) {
         sum += movieFeatures[movieId][f] * (userFeatures[userId][f] + norm * sumMW[userId][f]);
     }
@@ -358,9 +368,8 @@ inline double TimeSVDpp::predictRating(short movieId, int userId, int time, shor
 inline double TimeSVDpp::predictRating(short movieId, int userId, short time) {
     double sum = GLOBAL_AVG;
     double norm = 1.0 / sqrt(numRated[userId]);
-    sum += userBias[userId] + movieBias[movieId] + alpha[userId] * dev(userId, time) + 
-        movieBins[movieId][bin(time)];
-//         userBins[userId][time] + movieBins[movieId][bin(time)];
+    sum += userBias[userId] + movieBias[movieId];  //alpha[userId] * dev(userId, time) + 
+//         movieBins[movieId][bin(time)];
     for (int f = 0; f < NUM_FEATURES; f++) {
         sum += movieFeatures[movieId][f] * (userFeatures[userId][f] + norm * sumMW[userId][f]);
     }
@@ -524,8 +533,8 @@ int main() {
     tsvdpp->loadData();
     tsvdpp->run();
     tsvdpp->output();
-//     tsvdpp->save();
-//     tsvdpp->probe();
+    tsvdpp->save();
+    tsvdpp->probe();
     cout << "TimeSVD++ completed.\n";
 
     return 0;

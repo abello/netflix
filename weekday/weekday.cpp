@@ -9,12 +9,11 @@
 #include <time.h>
 
 #include "Rating.hpp"
-// #include "BlockTimePreprocessor.hpp"
 
 #define NUM_USERS 458293
 #define NUM_MOVIES 17770
-#define NUM_RATINGS 98291669
-// #define NUM_RATINGS 99666408
+// #define NUM_RATINGS 98291669
+#define NUM_RATINGS 99666408
 #define GLOBAL_AVG 3.512599976023349
 #define GLOBAL_OFF_AVG 0.0481786328365
 #define NUM_PROBE_RATINGS 1374739
@@ -35,10 +34,13 @@
 #define LAMDA_mbn 0.060
 #define NUM_BINS 5
 
+#define NUM_WEEKS 321
+
 
 using namespace std;
 
-class SVDpp {
+
+class Weekday {
 private:
     double userBias[NUM_USERS]; // b_u
     double movieBias[NUM_MOVIES]; // b_i
@@ -52,16 +54,18 @@ private:
     float sumMW[NUM_USERS][NUM_FEATURES];
     double tmpSum[NUM_FEATURES];
     Rating ratings[NUM_RATINGS];
-//     BlockTimePreprocessor *btp;
 //     ofstream rmseOut;
 //     ifstream probe;
     inline double predictRating(short movieId, int userId, short date); 
     int bin(short date);
     void outputRMSE(short numFeats);
     stringstream mdata;
+
+    float m_users[NUM_USERS][7];
+    float m_movies[NUM_MOVIES][7];
 public:
-    SVDpp();
-    ~SVDpp() { };
+    Weekday();
+    ~Weekday() { };
     void loadData();
     inline void calcMWSum(int userId);
     void run();
@@ -71,7 +75,7 @@ public:
     void probeRMSE();
 };
 
-SVDpp::SVDpp() 
+Weekday::Weekday() 
 {
     int f, j, k;
 
@@ -103,7 +107,7 @@ SVDpp::SVDpp()
     }
 }
 
-void SVDpp::loadData() {
+void Weekday::loadData() {
     string line;
     char c_line[MAX_CHARS_PER_LINE];
     int userId;
@@ -112,8 +116,8 @@ void SVDpp::loadData() {
     int rating;
     int j, i = 0;
     int curUser = 0;
-//     ifstream trainingDta ("../processed_data/train+probe.dta"); 
-    ifstream trainingDta ("../processed_data/train.dta"); 
+    ifstream trainingDta ("../processed_data/train+probe.dta"); 
+//     ifstream trainingDta ("../processed_data/train.dta"); 
     if (trainingDta.fail()) {
         cout << "train.dta: Open failed.\n";
         exit(-1);
@@ -159,11 +163,9 @@ void SVDpp::loadData() {
     }
 
     trainingDta.close();
-//     btp = new BlockTimePreprocessor(NUM_BINS, ratings);
-//     btp->preprocess(ratings);
 }
 
-void SVDpp::run() {
+void Weekday::run() {
     int f, i, userId, k;
     double err, p, tmpMW, sq;
     double uBias, mBias;
@@ -171,116 +173,77 @@ void SVDpp::run() {
     Rating *rating;
     int userLast = -1;
     short movieId, date;
-    clock_t time, tf, tmw, tp, ts, tot_tf, tot_tmw, tot_tp, tot_ts;
 
-    // Precalculate the sumMW values for all users.
-//     for (i = 0; i < NUM_USERS; i++) {
-//         calcMWSum(i);
-//     }
+    int w;
 
-    
-    for (int z = 0; z < NUM_EPOCHS; z++) {
-        sq = 0.0;
-        tot_tf = 0;
-        tot_tmw = 0;
-        tot_tp = 0;
-        tot_ts = 0;
-        reg = pow(0.9, z);
+    // weekday
+    int wd;
 
-        k = 0;
-        i = 0;
-        time = clock();
-        while (i < NUM_RATINGS) {
-//             cout << "user: " << i << endl;
-//             cout << "numRated: " << numRated[i] << endl;
-//             cout << endl;
-                
-            rating = ratings + i;
-            userId = rating->userId;
+    unsigned int n_users[NUM_USERS][7];
+    unsigned int n_movies[NUM_MOVIES][7];
 
-            // This will be true right when we encounter the next user in the ratings list.
-            calcMWSum(userId);
-            for (f = 0; f < NUM_FEATURES; f++) {
-                tmpSum[f] = 0.0;
-            }
-
-//             tp = clock();
-            // For each movie rated by userId
-            for (k = 0; k < numRated[userId]; k++) {
-                rating = ratings + k + i;
-                movieId = rating->movieId; 
-                date = rating->date;
-                p = predictRating(movieId, userId, date);
-                err = rating->rating - p;
-                sq += err * err;
-//             tot_tp += clock() - tp;
-
-//             ts = clock();
-//             tot_ts += clock() - ts;
-            
-                movieBins[movieId][bin(date)] += (reg * LRATE_mbn * (err - LAMDA_mbn * movieBins[movieId][bin(date)]));
-                // train biases
-                uBias = userBias[userId];
-                mBias = movieBias[movieId];
-                userBias[userId] += (reg *LRATE_ub * (err - LAMDA_ub * uBias));
-                movieBias[movieId] += (reg * LRATE_mb * (err - LAMDA_mb * mBias));          
-                
-//                 tf = clock();
-                for (f = 0; f < NUM_FEATURES; f++) {
-                    uf = userFeatures[userId][f];
-                    mf = movieFeatures[movieId][f];
-                    userFeatures[userId][f] += (reg * LRATE_uf * (err * mf - LAMDA_uf * uf)); 
-                    movieFeatures[movieId][f] += 
-                        (reg * LRATE_mf * (err * (uf + (1.0 / sqrt(numRated[userId])) * sumMW[userId][f]) - LAMDA_mf * mf));
-                    tmpSum[f] += (err * (1.0 / sqrt(numRated[userId])) * mf);
-                }
-//                 tot_tf =+ clock() - tf;
-
-            }
-            
-            k = 0;
-            // For every movie rated by userId
-            for (k = 0; k < numRated[userId]; k++) {
-            // Train movie weights
-                rating = ratings + k + i;
-                movieId = rating->movieId;
-                for (f = 0; f < NUM_FEATURES; f++) {
-                    tmpMW = movieWeights[movieId][f];
-                    movieWeights[movieId][f] += (reg * LRATE_mw * (tmpSum[f] - LAMDA_mw * tmpMW)); 
-                    // Update sumMW so we don't have to recalculate it entirely.
-                    sumMW[userId][f] += movieWeights[movieId][f] - tmpMW;
-                }
-            }
-            
-            i += numRated[userId];
-        } // Finished all users
-
-        for (i = 0; i < NUM_USERS; i++) {
-            calcMWSum(i);
+    for (i = 0; i < NUM_USERS; i++) {
+        for (w = 0; w < 7; w++) {
+            n_users[i][w] = 0;
+            m_users[i][w] = 0;
         }
-
-        time = clock() - time;
-        cout << "Iteration " << z << " completed." << endl;
-        cout << "RMSE: " << sqrt(sq/NUM_RATINGS) << " -- " << ((float) time)/CLOCKS_PER_SEC << endl;
-        probeRMSE();
-
-        // Save probe for this iter
-        probe(z);
-//         output(z);
-
-        cout << "=================================" << endl;
-
     }
+
+    for (i = 0; i < NUM_MOVIES; i++) {
+        for (w = 0; w < 7; w++) {
+            n_movies[i][w] = 0;
+            m_movies[i][w] = 0;
+        }
+    }
+
+
+
+    for (i = 0; i < NUM_RATINGS; i++) {
+        rating = ratings + i;
+        userId = rating->userId;
+        movieId = rating->movieId;
+        date = rating->date;
+
+        wd = date % 7;
+
+
+
+        m_users[userId][wd] += rating->rating;
+        m_movies[movieId][wd] += rating->rating;
+
+
+        n_users[userId][wd] += 1;
+        n_movies[movieId][wd] += 1;
+    }
+
+    for (i = 0; i < NUM_USERS; i++) {
+        for (w = 0; w < 7; w++) {
+            if (n_users[i][w] != 0) {
+                m_users[i][w] = m_users[i][w] / n_users[i][w];
+            }
+        }
+    }
+
+
+    for (i = 0; i < NUM_MOVIES; i++) {
+        for (w = 0; w < 7; w++) {
+            if (n_movies[i][w] != 0) {
+                m_movies[i][w] = m_movies[i][w] / n_movies[i][w];
+            }
+        }
+    }
+
+
 }
 
-int SVDpp::bin(short date) {
+int Weekday::bin(short date) {
     int idx = date / (2243 / NUM_BINS);
     if (idx == NUM_BINS) 
         idx--;
     return idx;
 }
 
-inline void SVDpp::calcMWSum(int userId) {
+inline void Weekday::calcMWSum(int userId) {
     int movieId;
     int k = 0;
     Rating *rating = &(ratings[ratingLoc[userId]]);
@@ -298,7 +261,7 @@ inline void SVDpp::calcMWSum(int userId) {
 }
 
 // Used for train
-inline double SVDpp::predictRating(short movieId, int userId, short date) {
+inline double Weekday::predictRating(short movieId, int userId, short date) {
     double sum = GLOBAL_AVG;
     double norm = 1.0 / sqrt(numRated[userId]);
     sum += userBias[userId] + movieBias[movieId] + movieBins[movieId][bin(date)];
@@ -312,7 +275,7 @@ inline double SVDpp::predictRating(short movieId, int userId, short date) {
 
 /* Generate out of sample RMSE for the current number of features, then
    write this to a rmseOut. */
-void SVDpp::outputRMSE(short numFeats) {
+void Weekday::outputRMSE(short numFeats) {
     string line;
     char c_line[MAX_CHARS_PER_LINE];
     int userId, movieId, date;
@@ -341,7 +304,7 @@ void SVDpp::outputRMSE(short numFeats) {
     rmseOut << rmse << '\n';
 }
 
-void SVDpp::output(int iter = NUM_EPOCHS) {
+void Weekday::output(int iter = NUM_EPOCHS) {
     string line;
     char c_line[MAX_CHARS_PER_LINE];
     int userId;
@@ -368,7 +331,7 @@ void SVDpp::output(int iter = NUM_EPOCHS) {
 }
 
 /* Save the calculated features and other parameters. */
-void SVDpp::save() {
+void Weekday::save() {
     int i, j;
     stringstream fname;
     fname << "../results/features" << mdata.str();
@@ -394,7 +357,7 @@ void SVDpp::save() {
 }
 
 /* Save the results of the probe */
-void SVDpp::probe(int iter = NUM_EPOCHS) {
+void Weekday::probe(int iter = NUM_EPOCHS) {
     string line;
     char c_line[MAX_CHARS_PER_LINE];
     stringstream fname;
@@ -427,7 +390,7 @@ void SVDpp::probe(int iter = NUM_EPOCHS) {
 }
 
 // Calculates RMSE for probe
-void SVDpp::probeRMSE() {
+void Weekday::probeRMSE() {
     string line;
     char c_line[MAX_CHARS_PER_LINE];
     stringstream fname;
@@ -461,13 +424,13 @@ void SVDpp::probeRMSE() {
 }
 
 int main() {
-    SVDpp *svdpp = new SVDpp();
-    svdpp->loadData();
-    svdpp->run();
+    Weekday *model = new Weekday();
+    model->loadData();
+    model->run();
 //     svdpp->output();
 //     svdpp->save();
 //     svdpp->probe();
-    cout << "SVD++ completed.\n";
+    cout << "Weekday completed.\n";
 
     return 0;
 }

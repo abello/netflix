@@ -1,4 +1,5 @@
 #include <math.h>
+#include <map>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -35,6 +36,8 @@
 #define LAMDA_mbn 0.060
 #define LRATE_au 0.012
 #define LAMDA_au 0.060
+#define LRATE_ubn 0.012
+#define LAMDA_ubn 0.060
 #define BETA 0.4
 #define NUM_BINS 5
 
@@ -50,6 +53,7 @@ private:
     double movieBins[NUM_MOVIES][NUM_BINS];
     double t_u[NUM_USERS];
     double alpha[NUM_USERS]; // alpha_u
+    map<short, double> userBins[NUM_USERS];
     int numRated[NUM_USERS];
     int ratingLoc[NUM_USERS]; // The first instance of users' rating in the ratings matrix
 
@@ -142,7 +146,7 @@ void SVDpp::loadData() {
         ratings[i].date = (short) date;
         ratings[i].rating = rating;
         t_u[userId] += date;
-//         ratings[i].cache = 0.0; // set to 0 temporarily.
+        userBins[userId][date] = 0.0; // Initialize user bins
         if (ratingLoc[userId] == -1) {
             ratingLoc[userId] = i; // Store the pointer to this rating for this user.
         }
@@ -233,6 +237,7 @@ void SVDpp::run() {
             
                 movieBins[movieId][bin(date)] += (reg * LRATE_mbn * (err - LAMDA_mbn * movieBins[movieId][bin(date)]));
                 alpha[userId] += (reg * LRATE_au * (err * dev(userId, date) - LAMDA_au * alpha[userId]));
+                userBins[userId][date] += (reg * LRATE_ubn * (err - LAMDA_ubn * userBins[userId][date]));
                 // train biases
                 uBias = userBias[userId];
                 mBias = movieBias[movieId];
@@ -279,8 +284,8 @@ void SVDpp::run() {
         probeRMSE();
 
         // Save probe for this iter
-        probe(z);
-//         output(z);
+//         probe(z);
+        output(z);
 
         cout << "=================================" << endl;
 

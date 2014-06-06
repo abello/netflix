@@ -21,7 +21,7 @@
 #define NUM_PROBE_RATINGS 1374739
 #define MAX_CHARS_PER_LINE 30
 #define NUM_EPOCHS 25
-#define NUM_FEATURES 100 
+#define NUM_FEATURES 10 
 #define LRATE_mb 0.003     // m_bias
 #define LAMDA_mb 0.0       // m_bias
 #define LRATE_ub 0.012     // c_bias
@@ -40,6 +40,8 @@
 #define LAMDA_ubn 0.060
 #define BETA 0.4
 #define NUM_BINS 5
+
+// Based on this discussion: http://www.netflixprize.com/community/viewtopic.php?id=1359
 
 
 using namespace std;

@@ -96,6 +96,8 @@ def main():
     _f_PPD_50_8 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_PPD_100_8 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
     _f_PPD_300_8 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
+    
+    _f_PPD_100_t = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
 
     _f_PPD_300_2 = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
 
@@ -108,6 +110,7 @@ def main():
 
 
     _f_KNN = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
+    _f_last = np.array([0 for i in xrange(PROBE_SIZE)], dtype=np.float32)
 
 #     f5 =  open("results/probe-F=5-E=20,20-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
 #     f10 = open("results/probe-F=10-E=10,10-k=0.015-l=0.001-SC-E=0-SCC=0-NBINS=5")
@@ -135,6 +138,9 @@ def main():
     f_PPD_300_2 = open("results/pre_blending/probe19-F=300-NR=98291669-NB=5-SD-TBS", "r")
 
 
+    f_PPD_100_t = open("results/pre_blending/probe16-F=100-NR=98291669-NB=5-SD-TBS-Time", "r")
+
+
     # RBMs
     f_RBM_200_181 = open("results/pre_blending/probe-rbm-200-181", "r")
     f_RBM_200_240 = open("results/pre_blending/probe-rbm-200-240", "r")
@@ -142,6 +148,8 @@ def main():
     f_RBM_400_394 = open("results/pre_blending/probe-rbm-400-394", "r")
     f_RBM_200_422 = open("results/pre_blending/probe-rbm-200-422", "r")
     f_RBM_400_389 = open("results/pre_blending/probe-rbm-400-389", "r")
+
+    f_last = open("results/pre_blending/probelast-ronnel", "r")
 
     f_KNN = open("results/pre_blending/probe-KNN-", "r")
 
@@ -165,6 +173,8 @@ def main():
         _f_PPD_300_8[i] = float(f_PPD_300_8.readline().rstrip())
         _f_PPD_300_2[i] = float(f_PPD_300_2.readline().rstrip())
 
+        _f_PPD_100_t[i] = float(f_PPD_100_t.readline().rstrip())
+
 
         _f_RBM_200_181[i] = float(f_RBM_200_181.readline().rstrip())
         _f_RBM_200_240[i] = float(f_RBM_200_240.readline().rstrip())
@@ -172,6 +182,8 @@ def main():
         _f_RBM_400_394[i] = float(f_RBM_400_394.readline().rstrip())
         _f_RBM_200_422[i] = float(f_RBM_200_422.readline().rstrip())
         _f_RBM_400_389[i] = float(f_RBM_400_389.readline().rstrip())
+
+        _f_last[i] = float(f_last.readline().rstrip())
 
         _f_KNN[i] = float(f_KNN.readline().rstrip())
 
@@ -199,12 +211,15 @@ def main():
     f_PPD_300_8.close()
     f_PPD_300_2.close()
 
+    f_PPD_300_2.close()
+
     f_RBM_200_181.close()
     f_RBM_200_240.close()
     f_RBM_200_349.close()
     f_RBM_400_394.close()
     f_RBM_200_422.close()
     f_RBM_400_389.close()
+    f_last.close()
 
     f_KNN.close()
 
@@ -265,6 +280,9 @@ def main():
 
 
 
+    def f_PPD_100_t(x):
+        return _f_PPD_100_t[x]
+
 
 
 
@@ -289,12 +307,16 @@ def main():
         return _f_RBM_400_389[x]
 
 
+    def f_last(x):
+        return _f_last[x]
+
+
     def f_KNN(x):
         return _f_KNN[x]
 
 
 
-    funcs = [f_20_1, f_20_2, f_50_1, f_100_1, f_100_2, f_GC_07, f_GC_13, f_GC_29, f_PP_50_30_NA, f_PP_50_8, f_PP_100_8, f_PP_200_8, f_PP_300_8, f_PPD_50_8, f_PPD_100_8, f_PPD_300_8, f_PPD_300_2, f_RBM_200_240, f_RBM_200_349, f_RBM_400_394, f_RBM_200_422, f_KNN]
+    funcs = [f_20_1, f_20_2, f_50_1, f_100_1, f_100_2, f_GC_07, f_GC_13, f_GC_29, f_PP_50_8, f_PP_100_8, f_PP_200_8, f_PP_300_8, f_PPD_50_8, f_PPD_100_8, f_PPD_300_8, f_PPD_300_2, f_RBM_200_240, f_RBM_200_349, f_RBM_400_394, f_RBM_200_422,  f_KNN]
 
     blender(blend_dta, funcs)
     
